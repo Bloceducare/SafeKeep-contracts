@@ -29,7 +29,9 @@ struct Vault{
     mapping(address=>uint256) _VAULT_TOKEN_BALANCES;     
     mapping(address=>uint256) _inheritorWeishares;
     mapping(address=>mapping(address=>uint)) _inheritorTokenShares;
+    mapping(address=>mapping(address=>bool)) _inheritorActiveTokens;
     mapping(address=>bool) activeInheritors;
+    mapping(address=>bool) activeTokens;
     mapping(address=> address[]) inheritorAllocatedTokens; 
 } 
 
@@ -71,10 +73,16 @@ mapping(address=>bool) public _whitelistedAssets;
 mapping(uint256=>Vault) public vaultDefaultIndex;
 mapping(bytes32=> SFStorage) private contractStore;
 
+
 modifier vaultOwner(uint vaultID){
-    require(vaultDefaultIndex[vaultID]._owner==msg.sender,'vaultOwner: you are not the vault owner');
+    require(msg.sender==vaultDefaultIndex[vaultID]._owner,'vaultOwner: you are not the vault owner');
     _;
 } 
+
+modifier vaultExists(uint vaultId){
+    require(vaultDefaultIndex[vaultId]._owner!=address(0),"vault does not exist");
+    _;
+}
 
 modifier vaultBackup(uint vaultID){
     require(vaultDefaultIndex[vaultID].backup==msg.sender,'vaultBackup: you are not the vault backup address');
@@ -89,15 +97,28 @@ modifier notExpired(uint vaultID){
 
 receive() external payable {
     }
+/////////////    
+///EVENTS///
+////////////
+event vaultCreated(address indexed owner,address indexed backup,uint256 indexed startingBalance, address[] inheritors_);
+event inheritorsAdded(address[] indexed newInheritors);
+event inheritorsRemoved(address[] indexed inheritors);
+event EthAllocated(address[] indexed inheritors,uint[] amounts);
+event tokenAllocated(address indexed token,address[] indexed inheritors,uint[] amounts);
+event EthDeposited(uint _amount);
+event tokensDeposited(address[] indexed tokens,uint[] amounts);
+event claimedTokens(address indexed inheritor,address indexed token,uint amount);
+event claimedEth(address indexed inheritor, uint _amount);
 
 
 ///////////////////
 //VIEW FUNCTIONS//
 /////////////////
 
-function checkAllTokenAllocations(uint256 _vaultId) public view returns(tokenAllocs[] memory tAllocs){
+function checkAllMyTokenAllocations(uint256 _vaultId) public view returns(tokenAllocs[] memory tAllocs){
     Vault storage v=vaultDefaultIndex[_vaultId];
     require(v.inheritorAllocatedTokens[msg.sender].length>0,'ClaimTokens: you do not have any allocated tokens in this vault');
+    require(msg.sender!=v._owner,'you are the owner');
     uint256 count=v.inheritorAllocatedTokens[msg.sender].length;
     tAllocs=new tokenAllocs[](count);
     for(uint256 i;i<count;i++){
@@ -118,36 +139,72 @@ function checkAllEtherAllocations(uint256 _vaultId) public view returns(allInher
     }
 } 
 
-function checkEtherAllocation(uint256 _vaultId) public view returns(uint256 _allocated){
+function checkMyEtherAllocation(uint256 _vaultId) public view returns(uint256 _allocated){
     Vault storage v=vaultDefaultIndex[_vaultId];
+    require(msg.sender!=v._owner,'you are the owner');
     require(v._inheritorWeishares[msg.sender]>0,'ClaimTokens: you do not have any allocated ether in this vault');
+    require(anInheritor(_vaultId,msg.sender)==true,'Check: you are not an inheritor');
     _allocated=v._inheritorWeishares[msg.sender];
 }
 
+function checkVaultEtherBalance(uint256 _vaultId) public view vaultExists(_vaultId) returns(uint256 etherBalance){
+    etherBalance=vaultDefaultIndex[_vaultId]._VAULT_WEI_BALANCE;
+}
+
+
+//because of multiple dimensions, only displays the first token
 function checkAllAllocatedTokens(uint256 _vaultId) public view returns(allInheritorTokenAllocs[] memory allTokenAllocs){
     Vault storage v=vaultDefaultIndex[_vaultId];
     require(v._owner!=address(0),'Vault has not been created yet');
+    //require(msg.sender!=v._owner,'you are the owner');
     uint256 inheritorCount=v._inheritors.length;
     allTokenAllocs=new allInheritorTokenAllocs[](inheritorCount);
     for(uint256 i;i<inheritorCount;i++){
         allTokenAllocs[i].inheritor_=v._inheritors[i];
+        address currentInheritor=v._inheritors[i];
         for(uint256 j;j<v.inheritorAllocatedTokens[allTokenAllocs[i].inheritor_].length;j++){
-            uint256 _bal=v._inheritorTokenShares[msg.sender][v.inheritorAllocatedTokens[msg.sender][j]];
-            address _tok=v.inheritorAllocatedTokens[msg.sender][j];
+            uint256 _bal=v._inheritorTokenShares[currentInheritor][v.inheritorAllocatedTokens[currentInheritor][j]];
+            address _tok=v.inheritorAllocatedTokens[currentInheritor][j];
             allTokenAllocs[i].amount_=_bal;
             allTokenAllocs[i].token_=_tok;
         }
     }
 }
 
+    
+    function checkActive(address _add) public view returns(bool act){
+        act=vaultDefaultIndex[0].activeTokens[_add];
+    }
+    
+
+function checkVaultTokenBalance(uint256 _vaultId,address token) public view returns(uint256 bal_){
+    bal_=vaultDefaultIndex[_vaultId]._VAULT_TOKEN_BALANCES[token];
+}
+
+function checkMyVaultTokenBalance(uint256 _vaultId,address token) public view returns(uint256 bal_){
+    require(anInheritor(_vaultId,msg.sender)==true,'Check: you are not an inheritor in this vault');
+    bal_=vaultDefaultIndex[_vaultId]._inheritorTokenShares[msg.sender][token];
+}
+
 
 function checkAllVaultTokenBalances(uint256 _vaultId) public view returns(tokenBal[] memory _tBal){
     Vault storage v=vaultDefaultIndex[_vaultId];
+    require(v.tokensDeposited.length>0,"Vault does not contain any tokens");
+    uint tokenCount=v.tokensDeposited.length;
+    _tBal=new tokenBal[](tokenCount);
     for(uint256 k;k<v.tokensDeposited.length;k++){
-        _tBal[k].bal_=v._VAULT_TOKEN_BALANCES[v.tokensDeposited[k]];
-        _tBal[k].token_=v.tokensDeposited[k];
+        if(v.activeTokens[v.tokensDeposited[k]]==true){
+            address _addr=v.tokensDeposited[k];
+            uint256 _balance=v._VAULT_TOKEN_BALANCES[_addr];
+            _tBal[k].token_= _addr;
+            _tBal[k].bal_=_balance;
+        }
     }
     
+}
+
+function checkVaultDepositedTokens(uint256 _vaultId) public view returns(address[] memory _tok){
+    _tok=vaultDefaultIndex[_vaultId].tokensDeposited;
 }
 
 function getAllInheritors(uint256 _vaultId) public view returns(address[] memory inheritors_){
@@ -160,6 +217,7 @@ function getAllInheritors(uint256 _vaultId) public view returns(address[] memory
 ////////////////////
 function createVault(address[] calldata inheritors,uint256 _startingBal,address _backupAddress) public payable returns(uint){
     require(msg.value==_startingBal,'CreateVault: Sent ether does not match inputted ether');
+    require(_backupAddress!=msg.sender,"you cannot be the backup address");
     SFStorage storage s=contractStore[_contractIdentifier];
     require(s.hasVault[msg.sender]==false,'you already have a vault');
     vaultDefaultIndex[s.VAULT_ID]._id=s.VAULT_ID;
@@ -174,6 +232,8 @@ function createVault(address[] calldata inheritors,uint256 _startingBal,address 
         vaultDefaultIndex[s.VAULT_ID].activeInheritors[inheritors[k]]=true;//all new inheritors are active by default
     }
     s.VAULT_ID++;
+    emit vaultCreated(msg.sender,_backupAddress,_startingBal,inheritors);
+    emit inheritorsAdded(inheritors);
     return vaultDefaultIndex[s.VAULT_ID]._id;
     
   
@@ -196,6 +256,7 @@ function addInheritors(uint256 _vaultId,address[] calldata _newInheritors,uint25
         v.activeInheritors[_newInheritors[k]]=true;
     }
     _ping(_vaultId);
+    emit inheritorsAdded(_newInheritors);
     return(_newInheritors,_weiShare); 
 }
 
@@ -210,6 +271,7 @@ function removeInheritors(uint256 _vaultId,address[] calldata _inheritors) exter
         reset(_vaultId,_inheritors[k]);
     }
     _ping(_vaultId);
+    emit inheritorsAdded(_inheritors);
     return _inheritors;
     
 }
@@ -219,22 +281,29 @@ function depositEther(uint256 _vaultId,uint256 _amount) external payable vaultOw
     require(_amount==msg.value,'DepositEther:Amount sent does not equal amount entered');
     v._VAULT_WEI_BALANCE+=_amount;
     _ping(_vaultId);
+    emit EthDeposited(_amount);
     return v._VAULT_WEI_BALANCE;
 }
 
 function depositTokens(uint256 _id,address[] calldata tokenDeps, uint256[] calldata _amounts) external vaultOwner(_id) notExpired(_id) nonReentrant returns(address[] memory,uint256[] memory){
     Vault storage v=vaultDefaultIndex[_id];
-   require(tokenDeps.length==_amounts.length,'TokenDeposit: number of tokens does not match number of amounts');
-      for (uint256 j;j<tokenDeps.length;j++){
+    require(tokenDeps.length==_amounts.length,'TokenDeposit: number of tokens does not match number of amounts');
+    for(uint256 j;j<tokenDeps.length;j++){
         IERC20 _j=IERC20(tokenDeps[j]);
         require(_j.allowance(msg.sender,address(this))>=_amounts[j],'TokenDeposit: you have not approved safekeep to spend one or more of your tokens');
         require(_j.transferFrom(msg.sender,address(this),_amounts[j]));
         v._VAULT_TOKEN_BALANCES[tokenDeps[j]]+=_amounts[j];
-        v.tokensDeposited.push(tokenDeps[j]);
+        if(v.activeTokens[tokenDeps[j]]==false){
+            v.tokensDeposited.push(tokenDeps[j]);
+            v.activeTokens[tokenDeps[j]]=true;
+            //require(v.activeTokens[tokenDeps[j]]==true,"didn't do it, sorry");
+        }
     }
+    emit tokensDeposited(tokenDeps,_amounts);
+     return(tokenDeps,_amounts);
     _ping(_id);
-    return(tokenDeps,_amounts);
-}
+}    
+    
 
 function allocateTokens(uint256 _vaultId,address tokenAdd,address[] calldata _inheritors,uint256[] calldata _shares) external nonReentrant returns(address[] memory,uint256[] memory){
     Vault storage v=vaultDefaultIndex[_vaultId];
@@ -247,11 +316,14 @@ function allocateTokens(uint256 _vaultId,address tokenAdd,address[] calldata _in
         existingAllocated=getCurrentAllocatedTokens(_vaultId,tokenAdd);
         require(_total<=v._VAULT_TOKEN_BALANCES[tokenAdd],'AllocateTokens: you do not have that much tokens to allocate,unallocate or deposit more tokens');
         require(v.activeInheritors[_inheritors[k]]==true,'AllocateTokens: one of the addresses is not an active inheritor');
-        v._inheritorTokenShares[tokenAdd][_inheritors[k]]=_shares[k];
-        v.inheritorAllocatedTokens[_inheritors[k]].push(tokenAdd);
-        //v._ownerTokenBalances[tokenAdd]-=_shares[k]; //reduce vault owner allocation
+        v._inheritorTokenShares[_inheritors[k]][tokenAdd]=_shares[k];
+        if(v._inheritorActiveTokens[_inheritors[k]][tokenAdd]==false){
+            v.inheritorAllocatedTokens[_inheritors[k]].push(tokenAdd);
+            v._inheritorActiveTokens[_inheritors[k]][tokenAdd]=true;
+        }
     }
     _ping(_vaultId);
+     emit tokenAllocated(tokenAdd,_inheritors,_shares);
  return (_inheritors,_shares);   
 }
 
@@ -269,6 +341,7 @@ function allocateEther(uint256 _vaultId,address[] calldata _inheritors,uint256[]
      //   v._OWNER_WEI_SHARE-=_ethShares[k];
     }
     _ping(_vaultId);
+    emit EthAllocated(_inheritors,_ethShares);
     return(_inheritors,_ethShares);
     
 }
@@ -294,7 +367,7 @@ function checkTokenLimit(uint256 _vaultId,address token) internal view returns(u
 }
 
 
-function findAddIndex(address _item,address[] memory addressArray) public pure returns(uint i){
+function findAddIndex(address _item,address[] memory addressArray) internal pure returns(uint i){
       for( i;i<addressArray.length;i++){
         //using the conventional method since we cannot have duplicate addresses
         if(addressArray[i]==_item){
@@ -305,18 +378,20 @@ function findAddIndex(address _item,address[] memory addressArray) public pure r
 function removeAddress(address[] storage _array,address _add)internal{
     uint index=findAddIndex(_add,_array);
     for(uint256 i=index;i<_array.length;i++){
-        _array[i]=_array[i+1];
+        _array[i]=_array[i-1];
     }
     _array.pop();
 }
 
+//only used for multiple elemented arrays
 function reset(uint _vaultId,address _inheritor) internal returns(uint unAllocatedWei){
     Vault storage v=vaultDefaultIndex[_vaultId];
     unAllocatedWei=v._inheritorWeishares[_inheritor];
     v._inheritorWeishares[_inheritor]=0;
     //resetting all token allocations
     for(uint256 x;x<v.inheritorAllocatedTokens[_inheritor].length;x++){
-        v._inheritorTokenShares[v.inheritorAllocatedTokens[_inheritor][x]][_inheritor]=0;
+        v._inheritorTokenShares[_inheritor][v.inheritorAllocatedTokens[_inheritor][x]]=0;
+        v._inheritorActiveTokens[_inheritor][v.inheritorAllocatedTokens[_inheritor][x]]=false;
     }
     //remove all token addresses
     delete v.inheritorAllocatedTokens[_inheritor];
@@ -345,7 +420,7 @@ function withdrawEth(uint256 _vaultId,uint256 _amount) public vaultOwner(_vaultI
     uint256 _avail=v._VAULT_WEI_BALANCE.sub(getCurrentAllocatedEth(_vaultId));
     require(_amount<=_avail,'withdrawEth: Not enough eth, Unallocate from some inheritors or deposit more');
     //reduce balance after checks
-    v._VAULT_WEI_BALANCE.sub(_amount);
+    (v._VAULT_WEI_BALANCE-=_amount);
     payable(v._owner).transfer(_amount);
     _ping(_vaultId);
     return(v._VAULT_WEI_BALANCE);
@@ -359,11 +434,18 @@ function withdrawTokens(uint256 _vaultId,address[] calldata tokenAdds,uint256[] 
     //transfer tokens after checks then reduce balance
     IERC20 _j=IERC20(tokenAdds[x]);
     require(_j.transfer(v._owner,_amounts[x]));
-    v._VAULT_TOKEN_BALANCES[tokenAdds[x]].sub(_amounts[x]);
+    v._VAULT_TOKEN_BALANCES[tokenAdds[x]]-=(_amounts[x]);
+    //if there is just a token and balance is 0
+    if(v.tokensDeposited.length==1 && v._VAULT_TOKEN_BALANCES[v.tokensDeposited[0]]==0){
+        v.activeTokens[v.tokensDeposited[0]]=false;
+        v.tokensDeposited.pop();
+        continue;
+    }
     //if no tokens remain,delete the array
-        if (v._VAULT_TOKEN_BALANCES[tokenAdds[x]]==0){
-            removeAddress(v.tokensDeposited,tokenAdds[x]);
-        }
+    if (v.tokensDeposited.length>1 && v._VAULT_TOKEN_BALANCES[tokenAdds[x]]==0){
+        v.activeTokens[tokenAdds[x]]=false;
+        removeAddress(v.tokensDeposited,tokenAdds[x]);
+    }
     
     }
     _ping(_vaultId);
@@ -379,12 +461,21 @@ function ping(uint256 _vaultId) external {
     _ping(_vaultId);
 }
 
+function anInheritor(uint256 vaultId,address inheritor_) internal view returns(bool) {
+    Vault storage v=vaultDefaultIndex[vaultId];
+    for(uint256 i;i<v._inheritors.length;i++){
+        if(inheritor_==v._inheritors[i]){
+            return true;
+        }
+    }
+}
+
 //////////
 //DANGER//
 /////////
 function transferOwner(uint256 _vaultId,address _newOwner) public vaultOwner(_vaultId) returns(address){
     vaultDefaultIndex[_vaultId]._owner=_newOwner;
-    _ping(_vaultId);
+  //  _ping(_vaultId);
     return _newOwner;
 }
 
@@ -402,29 +493,38 @@ function claimOwnership(uint256 _vaultId,address _backup) public vaultBackup(_va
 //////////
 //CLAIMS//
 //////////
-function claimAllTokens(uint256 _vaultId) internal nonReentrant{
+function claimAllTokens(uint256 _vaultId) internal {
     Vault storage v=vaultDefaultIndex[_vaultId];
-    require(block.timestamp.sub(v._lastPing)>24 weeks,'Has not expired');
+    //this is used for testing
+    require(block.timestamp.sub(v._lastPing)>10 seconds,'Has not expired');
     require(v.inheritorAllocatedTokens[msg.sender].length>0,'ClaimTokens: you do not have any allocated tokens in this vault');
     for(uint256 i;i<v.inheritorAllocatedTokens[msg.sender].length;i++){
         IERC20 _t=IERC20(v.inheritorAllocatedTokens[msg.sender][i]);
         require(_t.transfer(msg.sender,v._inheritorTokenShares[msg.sender][v.inheritorAllocatedTokens[msg.sender][i]]));
+        v._inheritorActiveTokens[msg.sender][v.inheritorAllocatedTokens[msg.sender][i]]=false;
+        v._VAULT_TOKEN_BALANCES[v.inheritorAllocatedTokens[msg.sender][i]]-=v._inheritorTokenShares[msg.sender][v.inheritorAllocatedTokens[msg.sender][i]];
+        emit claimedTokens(msg.sender,v.inheritorAllocatedTokens[msg.sender][i],v._inheritorTokenShares[msg.sender][v.inheritorAllocatedTokens[msg.sender][i]]);
     }
     removeAddress(v._inheritors,msg.sender);
     reset(_vaultId,msg.sender);
+    
 }
 
-function claimEth(uint256 _vaultId) public returns(uint256){
+function claim(uint256 _vaultId) public nonReentrant returns(uint256){
     Vault storage v=vaultDefaultIndex[_vaultId];
-    require(block.timestamp.sub(v._lastPing)>24 weeks,'Has not expired');
+    require(block.timestamp.sub(v._lastPing)>10 seconds,'Has not expired');
     require(v._inheritorWeishares[msg.sender]>0,'ClaimEth: you do not have allocated eth this vault');
     uint256 _toClaim=v._inheritorWeishares[msg.sender];
+    v._VAULT_WEI_BALANCE-=_toClaim;
     //reset balance
     v._inheritorWeishares[msg.sender]=0;
     v._VAULT_WEI_BALANCE.sub(_toClaim);
     //send out balance
     payable(msg.sender).transfer(_toClaim);
-    claimAllTokens(_vaultId);
+    if(v.inheritorAllocatedTokens[msg.sender].length>0){
+        claimAllTokens(_vaultId);
+    }
+    emit claimedEth(msg.sender, _toClaim);
     return _toClaim;
 }
 
