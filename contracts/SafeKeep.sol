@@ -1,14 +1,14 @@
 //SPDX-License-Identifier: Unlicense
 //2020 Safekeep Finance v1
 
-pragma solidity ^0.8.0;
+pragma solidity 0.8.1;
 
 import "hardhat/console.sol";
 //import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+//import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract SafeKeep is Ownable, ReentrancyGuard {
@@ -32,13 +32,15 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         mapping(address => bool) activeInheritors;
         mapping(address => bool) activeTokens;
         mapping(address => address[]) inheritorAllocatedTokens;
+        //strictly for returning values
+        mapping(address=>mapping(address=>uint)) inheritorTokenAllocations;
+        //mapping(uint=>address) aaveToks;
     }
 
     struct tokenAllocs {
         address token;
         uint256 amount;
     }
-
     struct allInheritorTokenAllocs {
         address inheritor_;
         address token_;
@@ -55,6 +57,8 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         uint256 bal_;
     }
 
+   
+
     //using a central struct
     struct SFStorage {
         //Vault[] vaults;
@@ -69,6 +73,8 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     mapping(address => bool) public _whitelistedAssets;
     mapping(uint256 => Vault) public vaultDefaultIndex;
     mapping(bytes32 => SFStorage) private contractStore;
+    mapping(address=>mapping(uint=>bool)) inheritorActiveVaults;
+    mapping(address=>uint[]) userVaults;
 
     modifier vaultOwner(uint256 vaultID) {
         require(
@@ -140,17 +146,21 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     //VIEW FUNCTIONS//
     /////////////////
 
-    function checkAllMyTokenAllocations(uint256 _vaultId)
+    function checkAddressTokenAllocations(uint256 _vaultId,address _inheritor)
         public
         view
         returns (tokenAllocs[] memory tAllocs)
     {
         Vault storage v = vaultDefaultIndex[_vaultId];
         require(
-            v.inheritorAllocatedTokens[msg.sender].length > 0,
+            anInheritor(_vaultId, _inheritor) == true,
+            "Check: you are not an inheritor in this vault"
+        );
+        require(
+            v.inheritorAllocatedTokens[_inheritor].length > 0,
             "ClaimTokens: you do not have any allocated tokens in this vault"
         );
-        require(msg.sender != v._owner, "you are the owner");
+        require(_inheritor != v._owner, "address is the owner");
         uint256 count = v.inheritorAllocatedTokens[msg.sender].length;
         tAllocs = new tokenAllocs[](count);
         for (uint256 i; i < count; i++) {
@@ -175,22 +185,27 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         }
     }
 
-    function checkMyEtherAllocation(uint256 _vaultId)
+    function checkAddressEtherAllocation(uint256 _vaultId,address _inheritor)
         public
         view
+        vaultExists(_vaultId)
         returns (uint256 _allocated)
     {
         Vault storage v = vaultDefaultIndex[_vaultId];
-        require(msg.sender != v._owner, "you are the owner");
+        require(_inheritor != v._owner, "address is the owner");
         require(
-            v._inheritorWeishares[msg.sender] > 0,
-            "ClaimTokens: you do not have any allocated ether in this vault"
+            v._inheritorWeishares[_inheritor] > 0,
+            "ClaimTokens: address does not have any allocated ether in this vault"
         );
         require(
-            anInheritor(_vaultId, msg.sender) == true,
-            "Check: you are not an inheritor"
+            anInheritor(_vaultId, _inheritor) == true,
+            "Check: address is not an inheritor"
         );
         _allocated = v._inheritorWeishares[msg.sender];
+    }
+    
+    function checkAllAddressVaults(address _inheritor) public view returns(uint[] memory){
+        return userVaults[_inheritor];
     }
 
     function checkVaultEtherBalance(uint256 _vaultId)
@@ -202,15 +217,15 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         etherBalance = vaultDefaultIndex[_vaultId]._VAULT_WEI_BALANCE;
     }
 
+//removing this function as it is currently not feasible
     //because of multiple dimensions, only displays the first token
+    /**
     function checkAllAllocatedTokens(uint256 _vaultId)
         public
         view
         returns (allInheritorTokenAllocs[] memory allTokenAllocs)
     {
         Vault storage v = vaultDefaultIndex[_vaultId];
-        require(v._owner != address(0), "Vault has not been created yet");
-        //require(msg.sender!=v._owner,'you are the owner');
         uint256 inheritorCount = v._inheritors.length;
         allTokenAllocs = new allInheritorTokenAllocs[](inheritorCount);
         for (uint256 i; i < inheritorCount; i++) {
@@ -222,15 +237,14 @@ contract SafeKeep is Ownable, ReentrancyGuard {
                 v.inheritorAllocatedTokens[allTokenAllocs[i].inheritor_].length;
                 j++
             ) {
-                uint256 _bal = v._inheritorTokenShares[currentInheritor][
-                    v.inheritorAllocatedTokens[currentInheritor][j]
-                ];
+                uint256 _bal = v.inheritorTokenAllocations[currentInheritor][v.inheritorAllocatedTokens[currentInheritor][j]];
                 address _tok = v.inheritorAllocatedTokens[currentInheritor][j];
                 allTokenAllocs[i].amount_ = _bal;
                 allTokenAllocs[i].token_ = _tok;
             }
         }
     }
+    **/
 
     function checkActive(address _add) public view returns (bool act) {
         act = vaultDefaultIndex[0].activeTokens[_add];
@@ -296,6 +310,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         inheritors_ = vaultDefaultIndex[_vaultId]._inheritors;
     }
 
+
     //////////////////////
     ///WRITE FUNCTIONS///
     ////////////////////
@@ -326,6 +341,9 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             vaultDefaultIndex[s.VAULT_ID].activeInheritors[
                 inheritors[k]
             ] = true; //all new inheritors are active by default
+            inheritorActiveVaults[inheritors[k]][s.VAULT_ID]=true;
+            //vaultId is unique so add to array
+                userVaults[inheritors[k]].push(s.VAULT_ID);
         }
         s.VAULT_ID++;
         emit vaultCreated(msg.sender, _backupAddress, _startingBal, inheritors);
@@ -367,6 +385,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             //append the inheritors for a vault
             (v._inheritors).push(_newInheritors[k]);
             v.activeInheritors[_newInheritors[k]] = true;
+            userVaults[_newInheritors[k]].push(_vaultId);
         }
         _ping(_vaultId);
         emit inheritorsAdded(_newInheritors);
@@ -391,6 +410,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             v.activeInheritors[_inheritors[k]] = false;
             //pop out the address from the array
             removeAddress(v._inheritors, _inheritors[k]);
+            removeUint(userVaults[_inheritors[k]],_vaultId);
             reset(_vaultId, _inheritors[k]);
         }
         _ping(_vaultId);
@@ -448,8 +468,10 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             }
         }
         emit tokensDeposited(tokenDeps, _amounts);
+         _ping(_id);
+        
         return (tokenDeps, _amounts);
-        _ping(_id);
+       
     }
 
     function allocateTokens(
@@ -484,6 +506,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             if (v._inheritorActiveTokens[_inheritors[k]][tokenAdd] == false) {
                 v.inheritorAllocatedTokens[_inheritors[k]].push(tokenAdd);
                 v._inheritorActiveTokens[_inheritors[k]][tokenAdd] = true;
+                v.inheritorTokenAllocations[_inheritors[k]][tokenAdd]=_shares[k];
             }
         }
         _ping(_vaultId);
@@ -573,16 +596,47 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             }
         }
     }
+    
+    function findUintIndex(uint _item,uint[] memory noArray) internal pure returns(uint256 i){
+        for(i;i<noArray.length;i++){
+            if(noArray[i]==_item){
+                return i;
+        }
+    }
+    }
+    
+    function removeUint(uint[] storage _noArray,uint to) internal{
+        uint256 index=findUintIndex(to,_noArray);
+        if(_noArray.length<=1){
+            _noArray.pop();
+        }
+        if(_noArray.length>1){
+        for(uint256 i=index;i<_noArray.length;i++){
+            _noArray[i]=_noArray[i-1];
+            
+        }
+        _noArray.pop();
+        }
+        
+    }
 
     function removeAddress(address[] storage _array, address _add) internal {
         uint256 index = findAddIndex(_add, _array);
+        if(_array.length<=1){
+            _array.pop();
+        }
+        
+        if(_array.length>1){
         for (uint256 i = index; i < _array.length; i++) {
             _array[i] = _array[i - 1];
         }
         _array.pop();
     }
+    }
+    
+    
 
-    //only used for multiple elemented arrays
+    //only used for multiple address elemented arrays
     function reset(uint256 _vaultId, address _inheritor)
         internal
         returns (uint256 unAllocatedWei)
@@ -685,7 +739,6 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             }
             //if no tokens remain,delete the array
             if (
-                v.tokensDeposited.length > 1 &&
                 v._VAULT_TOKEN_BALANCES[tokenAdds[x]] == 0
             ) {
                 v.activeTokens[tokenAdds[x]] = false;
@@ -712,12 +765,12 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     function anInheritor(uint256 vaultId, address inheritor_)
         internal
         view
-        returns (bool)
+        returns (bool inh)
     {
         Vault storage v = vaultDefaultIndex[vaultId];
         for (uint256 i; i < v._inheritors.length; i++) {
             if (inheritor_ == v._inheritors[i]) {
-                return true;
+                inh= true;
             }
         }
     }
@@ -759,6 +812,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         return msg.sender;
     }
 
+
     //////////
     //CLAIMS//
     //////////
@@ -795,7 +849,8 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             ] -= v._inheritorTokenShares[msg.sender][
                 v.inheritorAllocatedTokens[msg.sender][i]
             ];
-            delete v.inheritorAllocatedTokens[msg.sender];
+            v.inheritorTokenAllocations[msg.sender][v.inheritorAllocatedTokens[msg.sender][i]]=0;
+           
             emit claimedTokens(
                 msg.sender,
                 v.inheritorAllocatedTokens[msg.sender][i],
@@ -803,12 +858,13 @@ contract SafeKeep is Ownable, ReentrancyGuard {
                     v.inheritorAllocatedTokens[msg.sender][i]
                 ]
             );
+             delete v.inheritorAllocatedTokens[msg.sender];
         }
-        removeAddress(v._inheritors, msg.sender);
+        
         reset(_vaultId, msg.sender);
     }
 
-    function claim(uint256 _vaultId) public nonReentrant {
+    function claim(uint256 _vaultId) external nonReentrant {
         Vault storage v = vaultDefaultIndex[_vaultId];
         require(
             block.timestamp.sub(v._lastPing) > 10 seconds,
@@ -819,7 +875,6 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             v._VAULT_WEI_BALANCE -= _toClaim;
             //reset balance
             v._inheritorWeishares[msg.sender] = 0;
-            v._VAULT_WEI_BALANCE.sub(_toClaim);
             //send out balance
             payable(msg.sender).transfer(_toClaim);
             emit claimedEth(msg.sender, _toClaim);
@@ -827,5 +882,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         if (v.inheritorAllocatedTokens[msg.sender].length > 0) {
             claimAllTokens(_vaultId);
         }
+        removeAddress(v._inheritors, msg.sender);
+        removeUint(userVaults[msg.sender],_vaultId);
     }
 }
