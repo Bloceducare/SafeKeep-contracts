@@ -75,6 +75,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     mapping(bytes32 => SFStorage) private contractStore;
     mapping(address=>mapping(uint=>bool)) inheritorActiveVaults;
     mapping(address=>uint[]) userVaults;
+    mapping(address=>uint) ownerVault;
 
     modifier vaultOwner(uint256 vaultID) {
         require(
@@ -168,6 +169,13 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             tAllocs[i].amount = v._inheritorTokenShares[msg.sender][_t];
             tAllocs[i].token = _t;
         }
+    }
+    
+    //returns the vaultID of an address(if he has any)
+    function checkOwnerVault(address _vaultOwner) public view returns(uint256 _ID){
+        SFStorage storage s=contractStore[_contractIdentifier];
+        require(s.hasVault[_vaultOwner]==true,"This address does not have a vault");
+        _ID=ownerVault[_vaultOwner];
     }
 
     function checkAllEtherAllocations(uint256 _vaultId)
@@ -337,6 +345,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         vaultDefaultIndex[s.VAULT_ID]._lastPing = block.timestamp;
         vaultDefaultIndex[s.VAULT_ID].backup = _backupAddress;
         s.hasVault[msg.sender] = true; //you now have a vault
+        ownerVault[msg.sender]=s.VAULT_ID;
         for (uint256 k; k < inheritors.length; k++) {
             vaultDefaultIndex[s.VAULT_ID].activeInheritors[
                 inheritors[k]
@@ -784,6 +793,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         returns (address)
     {
         vaultDefaultIndex[_vaultId]._owner = _newOwner;
+        ownerVault[_newOwner]=_vaultId;
         //  _ping(_vaultId);
         return _newOwner;
     }
@@ -809,6 +819,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         );
         vaultDefaultIndex[_vaultId]._owner = msg.sender;
         vaultDefaultIndex[_vaultId].backup = _backup;
+        ownerVault[msg.sender]=_vaultId;
         return msg.sender;
     }
 
