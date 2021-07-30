@@ -193,6 +193,11 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         }
     }
 
+    function checkBackupAddress(uint _vaultId) internal view vaultExists(_vaultId) returns(address _backup){
+        Vault storage v=vaultDefaultIndex[_vaultId];
+        _backup=v.backup;
+    }
+
     function checkAddressEtherAllocation(uint256 _vaultId,address _inheritor)
         public
         view
