@@ -193,9 +193,10 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         }
     }
 
-    function checkBackupAddress(uint _vaultId) public view vaultExists(_vaultId) returns(address _backup){
+    function checkBackupAddressAndPing(uint _vaultId) public view vaultExists(_vaultId) returns(address _backup,uint _p){
         Vault storage v=vaultDefaultIndex[_vaultId];
         _backup=v.backup;
+        _p=v._lastPing;
     }
 
     function checkAddressEtherAllocation(uint256 _vaultId,address _inheritor)
@@ -258,10 +259,6 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         }
     }
     **/
-
-    function checkActive(address _add) public view returns (bool act) {
-        act = vaultDefaultIndex[0].activeTokens[_add];
-    }
 
     function checkVaultTokenBalance(uint256 _vaultId, address token)
         public
