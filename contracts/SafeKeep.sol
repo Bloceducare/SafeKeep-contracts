@@ -172,10 +172,15 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     }
     
     //returns the vaultID of an address(if he has any)
-    function checkOwnerVault(address _vaultOwner) public view returns(uint256 _ID){
+    function checkOwnerVault(address _vaultOwner) public view returns(int256 ){
         SFStorage storage s=contractStore[_contractIdentifier];
-        require(s.hasVault[_vaultOwner]==true,"This address does not have a vault");
-        _ID=ownerVault[_vaultOwner];
+        if(s.hasVault[_vaultOwner]){
+            return ownerVault[_vaultOwner];
+        };
+        else{
+            return -1;
+        }
+        
     }
 
     function checkAllEtherAllocations(uint256 _vaultId)
@@ -267,6 +272,10 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     {
         bal_ = vaultDefaultIndex[_vaultId]._VAULT_TOKEN_BALANCES[token];
     }
+
+   // function checkAllVaultDetails(uint256 _vaultId) public view returns(Vault memory v){
+     //   v=vaultDefaultIndex[_vaultId];
+    //}
 
     function checkMyVaultTokenBalance(uint256 _vaultId, address token)
         public
@@ -833,7 +842,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         Vault storage v = vaultDefaultIndex[_vaultId];
         //this is used for testing
         require(
-            block.timestamp.sub(v._lastPing) > 10 seconds,
+            block.timestamp.sub(v._lastPing) > 24 weeks,
             "Has not expired"
         );
         require(
