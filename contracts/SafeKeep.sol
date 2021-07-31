@@ -172,13 +172,10 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     }
     
     //returns the vaultID of an address(if he has any)
-    function checkOwnerVault(address _vaultOwner) public view returns(int256 ){
+    function checkOwnerVault(address _vaultOwner) public view returns(uint256 _ID){
         SFStorage storage s=contractStore[_contractIdentifier];
-        if(s.hasVault[_vaultOwner]){
-            return ownerVault[_vaultOwner];
-        };
-        else{
-            return -1;
+        if(s.hasVault[_vaultOwner]==true,"This address does not have a vault"){
+_ID=ownerVault[_vaultOwner];
         }
         
     }
