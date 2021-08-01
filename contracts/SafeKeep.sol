@@ -3,7 +3,7 @@
 
 pragma solidity 0.8.1;
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 //import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -106,11 +106,6 @@ contract SafeKeep is Ownable, ReentrancyGuard {
             block.timestamp.sub(vaultDefaultIndex[vaultID]._lastPing) <=
                 24 weeks,
             "Has expired"
-        );
-        console.log(
-            "still has",
-            block.timestamp.sub(vaultDefaultIndex[vaultID]._lastPing),
-            "seconds left"
         );
         _;
     }
