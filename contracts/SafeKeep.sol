@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: Unlicense
-//2020 Safekeep Finance v1
+//2021 Safekeep Finance v1
 
 pragma solidity 0.8.1;
 
@@ -55,6 +55,17 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     struct tokenBal {
         address token_;
         uint256 bal_;
+    }
+
+    struct vaultDeets{
+address _owner;
+uint256 _VAULT_WEI_BALANCE;
+        uint256 _lastPing;
+        uint256 _id;
+        address backup;
+        address[] _inheritors;
+        address[] tokensDeposited;
+
     }
 
    
@@ -136,12 +147,25 @@ contract SafeKeep is Ownable, ReentrancyGuard {
         address indexed token,
         uint256 amount
     );
-    event claimedEth(address indexed inheritor, uint256 _amount);
+    event ClaimedEth(address indexed inheritor, uint256 _amount);
 
     ///////////////////
     //VIEW FUNCTIONS//
     /////////////////
 
+
+
+function checkVault(uint256 _vaultId) public view returns(vaultDeets memory deets){
+ Vault storage v = vaultDefaultIndex[_vaultId];
+ deets._owner=v._owner;
+ deets._VAULT_WEI_BALANCE=v._VAULT_WEI_BALANCE;
+ deets._lastPing=v._lastPing;
+ deets._id=v._id;
+ deets.backup=v.backup;
+ deets._inheritors=v._inheritors;
+ deets.tokensDeposited=v.tokensDeposited;
+
+}
     function checkAddressTokenAllocations(uint256 _vaultId,address _inheritor)
         public
         view
@@ -169,7 +193,7 @@ contract SafeKeep is Ownable, ReentrancyGuard {
     //returns the vaultID of an address(if he has any)
     function checkOwnerVault(address _vaultOwner) public view returns(uint256 _ID){
         SFStorage storage s=contractStore[_contractIdentifier];
-        if(s.hasVault[_vaultOwner]{
+        if(s.hasVault[_vaultOwner]){
 _ID=ownerVault[_vaultOwner];
         }
         
@@ -891,7 +915,7 @@ _ID=ownerVault[_vaultOwner];
             v._inheritorWeishares[msg.sender] = 0;
             //send out balance
             payable(msg.sender).transfer(_toClaim);
-            emit claimedEth(msg.sender, _toClaim);
+            emit ClaimedEth(msg.sender, _toClaim);
         }
         if (v.inheritorAllocatedTokens[msg.sender].length > 0) {
             claimAllTokens(_vaultId);
