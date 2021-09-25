@@ -495,8 +495,10 @@ _ID=ownerVault[_vaultOwner];
                 _j.allowance(msg.sender, address(this)) >= _amounts[j],
                 "TokenDeposit: you have not approved safekeep to spend one or more of your tokens"
             );
+            uint256 tokenBalanceBefore= _j.balanceOf(address(this));
             require(_j.transferFrom(msg.sender, address(this), _amounts[j]));
-            v._VAULT_TOKEN_BALANCES[tokenDeps[j]] += _amounts[j];
+            uint256 toAdd=_j.balanceOf(address(this))-tokenBalanceBefore;
+            v._VAULT_TOKEN_BALANCES[tokenDeps[j]] += toAdd;
             if (v.activeTokens[tokenDeps[j]] == false) {
                 v.tokensDeposited.push(tokenDeps[j]);
                 v.activeTokens[tokenDeps[j]] = true;
