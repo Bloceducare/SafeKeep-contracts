@@ -1,2 +1,3 @@
 # SafeKeep
-Repo for safekeep finance containing all frontend and contract components
+
+Repo for safekeep finance containing allcontract components
