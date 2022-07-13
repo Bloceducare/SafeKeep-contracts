@@ -3,7 +3,7 @@ pragma solidity 0.8.4;
 
 import "forge-std/Test.sol";
 import "../contracts/SafeKeep.sol";
-import "../contracts/MockERC20.sol";
+import "./MockERC20.sol";
 
 //import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -70,7 +70,7 @@ contract ContractTest is Test {
             weiAllocations
         );
 
-        //don't ping vault for 7 months
+        //don't ping vault for 100 seconds
         skip(block.timestamp + 100 seconds);
 
         //inheritor1 tries to claim
