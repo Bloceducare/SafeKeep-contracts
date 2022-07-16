@@ -6,7 +6,7 @@ import "../interfaces/IVaultFacet.sol";
 import "../libraries/LibDiamond.sol";
 import "../interfaces/IERC20.sol";
 
-contract VaultFacet is ModifiersAndGuards, IVaultFacet {
+contract VaultFacet is IVaultFacet, StorageStead {
     error NotInheritor();
     error AmountMismatch();
 
@@ -28,7 +28,7 @@ contract VaultFacet is ModifiersAndGuards, IVaultFacet {
         view
         returns (TokenAllocs[] memory tAllocs)
     {
-        if (!LibKeep._anInheritor(_inheritor)) revert NotInheritor();
+        if (!Guards._anInheritor(_inheritor)) revert NotInheritor();
         uint256 count = vs.inheritorAllocatedTokens[_inheritor].length;
         if (count == 0) revert("No allocated tokens");
         tAllocs = new TokenAllocs[](count);
@@ -61,7 +61,7 @@ contract VaultFacet is ModifiersAndGuards, IVaultFacet {
         view
         returns (uint256 _allocatedEther)
     {
-        if (!LibKeep._anInheritor(_inheritor)) revert NotInheritor();
+        if (!Guards._anInheritor(_inheritor)) revert NotInheritor();
         _allocatedEther = vs.inheritorWeishares[_inheritor];
     }
 
@@ -88,20 +88,50 @@ contract VaultFacet is ModifiersAndGuards, IVaultFacet {
     function addInheritors(
         address[] calldata _newInheritors,
         uint256[] calldata _weiShare
-    ) external onlyVaultOwner {
+    ) external {
+        Guards._onlyVaultOwner();
         LibKeep._addInheritors(_newInheritors, _weiShare);
     }
 
-    function removeInheritors(address[] calldata _inheritors)
-        external
-        onlyVaultOwner
-    {
+    function removeInheritors(address[] calldata _inheritors) external {
+        Guards._onlyVaultOwner();
         LibKeep._removeInheritors(_inheritors);
     }
 
     function depositEther(uint256 _amount) external payable {
         if (_amount != msg.value) revert AmountMismatch();
         emit EthDeposited(_amount);
+    }
+
+    function withdrawEther(uint256 _amount, address _to) external {
+        Guards._onlyVaultOwner();
+        LibKeep._withdrawEth(_amount, _to);
+    }
+
+    function withdrawTokens(
+        address[] calldata _tokenAdds,
+        uint256[] calldata _amounts,
+        address _to
+    ) external {
+        Guards._onlyVaultOwner();
+        LibKeep._withdrawTokens(_tokenAdds, _amounts, _to);
+    }
+
+    function allocateEther(
+        address[] calldata _inheritors,
+        uint256[] calldata _ethShares
+    ) external {
+        Guards._onlyVaultOwner();
+        LibKeep._allocateEther(_inheritors, _ethShares);
+    }
+
+    function allocateTokens(
+        address token,
+        address[] calldata _inheritors,
+        uint256[] calldata _shares
+    ) external {
+        Guards._onlyVaultOwner();
+        LibKeep._allocateTokens(token, _inheritors, _shares);
     }
 
     function depositTokens(

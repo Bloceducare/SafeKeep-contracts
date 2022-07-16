@@ -6,6 +6,9 @@ struct FacetAddressAndPosition {
     uint96 functionSelectorPosition; // position in facetFunctionSelectors.functionSelectors array
 }
 error NotBackupAddress();
+error NotOwnerOrBackupAddress();
+error NotExpired();
+    error HasExpired();
 
 struct FacetFunctionSelectors {
     bytes4[] functionSelectors;
@@ -48,15 +51,51 @@ struct VaultStorage {
     mapping(address => address[]) inheritorAllocatedTokens;
 }
 
-contract ModifiersAndGuards {
+abstract contract StorageStead {
     VaultStorage internal vs;
+}
 
-    modifier onlyVaultOwner() {
+library Guards {
+    function _onlyVaultOwner() internal view{
         LibDiamond.enforceIsContractOwner();
-        _;
+    }
+
+    function _onlyVaultOwnerOrBackup() internal view{
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (msg.sender != vs.backupAddress || msg.sender != vs.vaultOwner)
+            revert NotOwnerOrBackupAddress();
     }
 
     function _enforceIsBackupAddress() internal view {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
         if (msg.sender != vs.backupAddress) revert NotBackupAddress();
+    }
+
+    function _activeInheritor(address _inheritor)
+        internal
+        view
+        returns (bool active_)
+    {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        active_ = (vs.activeInheritors[_inheritor]);
+    }
+
+    function _anInheritor(address inheritor_) internal view returns (bool inh) {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        for (uint256 i; i < vs.inheritors.length; i++) {
+            if (inheritor_ == vs.inheritors[i]) {
+                inh = true;
+            }
+        }
+    }
+
+    function _expired() internal view {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (block.timestamp - vs.lastPing <= 24 weeks) revert NotExpired();
+    }
+
+    function _notExpired() internal view {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (block.timestamp - vs.lastPing > 24 weeks) revert HasExpired();
     }
 }
