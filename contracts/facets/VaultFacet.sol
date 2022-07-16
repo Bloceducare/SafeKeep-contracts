@@ -31,11 +31,11 @@ contract VaultFacet is IVaultFacet, StorageStead {
         returns (TokenAllocs[] memory tAllocs)
     {
         if (!Guards._anInheritor(_inheritor)) revert NotInheritor();
-        uint256 count = vs.inheritorAllocatedTokens[_inheritor].length;
+        uint256 count = vs.inheritorAllocatedERC20Tokens[_inheritor].length;
         if (count == 0) revert("No allocated tokens");
         tAllocs = new TokenAllocs[](count);
         for (uint256 i; i < count; i++) {
-            address _t = vs.inheritorAllocatedTokens[_inheritor][i];
+            address _t = vs.inheritorAllocatedERC20Tokens[_inheritor][i];
             tAllocs[i].amount = vs.inheritorTokenShares[_inheritor][_t];
             tAllocs[i].token = _t;
         }
@@ -133,7 +133,7 @@ contract VaultFacet is IVaultFacet, StorageStead {
         uint256[] calldata _shares
     ) external {
         Guards._onlyVaultOwner();
-        LibKeep._allocateTokens(token, _inheritors, _shares);
+        LibKeep._allocateERC20Tokens(token, _inheritors, _shares);
     }
 
     function depositTokens(

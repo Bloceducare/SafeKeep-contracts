@@ -37,16 +37,8 @@ interface IVaultFacet {
         address[] inheritors
     );
 
-    event TokensAllocated(
-        address indexed token,
-        address[] inheritors,
-        uint256[] amounts
-    );
+
     event EthDeposited(uint256 _amount);
-    event claimedTokens(
-        address indexed inheritor,
-        address indexed token,
-        uint256 amount
-    );
-    event ClaimedEth(address indexed inheritor, uint256 _amount);
+   
+    
 }

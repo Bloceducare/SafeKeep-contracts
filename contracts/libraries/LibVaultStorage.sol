@@ -8,7 +8,7 @@ struct FacetAddressAndPosition {
 error NotBackupAddress();
 error NotOwnerOrBackupAddress();
 error NotExpired();
-    error HasExpired();
+error HasExpired();
 
 struct FacetFunctionSelectors {
     bytes4[] functionSelectors;
@@ -43,13 +43,25 @@ struct VaultStorage {
     mapping(address => bool) activeInheritors;
     //inheritor WEI shares
     mapping(address => uint256) inheritorWeishares;
+    //ERC20
     //inheritor active tokens
     mapping(address => mapping(address => bool)) inheritorActiveTokens;
     //inheritor token shares
     mapping(address => mapping(address => uint256)) inheritorTokenShares;
     //address of tokens allocated
-    mapping(address => address[]) inheritorAllocatedTokens;
-    mapping(address=>mapping(uint256=>bool)) allocatedNFT;
+    mapping(address => address[]) inheritorAllocatedERC20Tokens;
+    //ERC721
+    mapping(address => mapping(address => bool)) whitelist;
+    mapping(address => mapping(address => uint256)) inheritorERC721Tokens;
+    mapping(address => mapping(uint256 => address)) ERC721ToInheritor;
+    mapping(address => mapping(uint256 => bool)) allocatedERC721Tokens;
+    mapping(address => address[]) inheritorAllocatedERC721TokenAddresses;
+   
+
+    //ERC1155
+    mapping(address=>mapping(address=>mapping(uint256=>uint256))) inheritorERC1155TokenAllocations;
+    mapping(address => address[]) inheritorAllocatedERC1155TokenAddresses;
+    mapping(address => mapping(address => uint256[])) inheritorAllocatedTokenIds;
 }
 
 abstract contract StorageStead {
@@ -57,11 +69,11 @@ abstract contract StorageStead {
 }
 
 library Guards {
-    function _onlyVaultOwner() internal view{
+    function _onlyVaultOwner() internal view {
         LibDiamond.enforceIsContractOwner();
     }
 
-    function _onlyVaultOwnerOrBackup() internal view{
+    function _onlyVaultOwnerOrBackup() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         if (msg.sender != vs.backupAddress || msg.sender != vs.vaultOwner)
             revert NotOwnerOrBackupAddress();
@@ -78,14 +90,22 @@ library Guards {
         returns (bool active_)
     {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        active_ = (vs.activeInheritors[_inheritor]);
+        if (_inheritor == address(0)) {
+            active_ == true;
+        } else {
+            active_ = (vs.activeInheritors[_inheritor]);
+        }
     }
 
-    function _anInheritor(address inheritor_) internal view returns (bool inh) {
+    function _anInheritor(address _inheritor) internal view returns (bool inh) {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        for (uint256 i; i < vs.inheritors.length; i++) {
-            if (inheritor_ == vs.inheritors[i]) {
-                inh = true;
+        if (_inheritor == address(0)) {
+            inh = true;
+        } else {
+            for (uint256 i; i < vs.inheritors.length; i++) {
+                if (_inheritor == vs.inheritors[i]) {
+                    inh = true;
+                }
             }
         }
     }

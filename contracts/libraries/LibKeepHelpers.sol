@@ -54,4 +54,24 @@ library LibKeepHelpers {
             _array.pop();
         }
     }
+
+    function _inUintArray(uint256[] memory _array,uint256 _targ) internal pure returns (bool exists_) {
+      if(_array.length>0){
+            for (uint256 i; i < _array.length; i++) {
+                if (_targ == _array[i]) {
+                    exists_ = true;
+                }
+            }
+        }
+    }
+
+    function _inAddressArray(address[] memory _array,address _targ) internal pure returns (bool exists_) {
+      if(_array.length>0){
+            for (uint256 i; i < _array.length; i++) {
+                if (_targ == _array[i]) {
+                    exists_ = true;
+                }
+            }
+        }
+    }
 }
