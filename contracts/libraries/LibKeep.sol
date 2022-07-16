@@ -6,6 +6,10 @@ import "./LibKeepHelpers.sol";
 import "../interfaces/IVaultFacet.sol";
 import "../interfaces/IERC20.sol";
 
+bytes4 constant ERC1155_ACCEPTED = 0xf23a6e61;
+bytes4 constant ERC1155_BATCH_ACCEPTED = 0xbc197c81;
+bytes4 constant ERC721WithoutCall = 0x42842e0e;
+bytes4 constant ERC721WithCall = 0xb88d4fde;
 library LibKeep {
     event VaultPinged(uint256 lastPing, uint256 vaultID);
     event InheritorsAdded(address[] newInheritors, uint256 vaultID);
@@ -15,12 +19,15 @@ library LibKeep {
         uint256[] amounts,
         uint256 vaultID
     );
+
     event TokenWithdrawal(
         address token,
         uint256 amount,
         address to,
         uint256 vaultID
     );
+
+    
     event ErrorHandled(string);
     event TokensAllocated(
         address indexed token,
@@ -56,16 +63,14 @@ library LibKeep {
     error NotEnoughEtherToAllocate();
     error EmptyArray();
     error NotInheritor();
-    error TokenDepositFailed(address token);
     error EtherAllocationOverflow(uint256 overflow);
     error TokenAllocationOverflow(address token, uint256 overflow);
     error InactiveInheritor();
     error InsufficientEth();
     error InsufficientTokens();
     error NoAllocatedTokens();
-
     //owner check is in external fn
-    function _ping() private {
+    function _ping() internal {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         vs.lastPing = block.timestamp;
         emit VaultPinged(block.timestamp, vs.vaultID);
@@ -78,6 +83,26 @@ library LibKeep {
             totalEthAllocated += vs.inheritorWeishares[vs.inheritors[x]];
         }
         return totalEthAllocated;
+    }
+
+     function getCurrentAllocatedTokens(address _token)
+        internal
+        view
+        returns (uint256)
+    {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        uint256 totalTokensAllocated;
+        for (uint256 x; x < vs.inheritors.length; x++) {
+            totalTokensAllocated += vs.inheritorTokenShares[vs.inheritors[x]][
+                _token
+            ];
+        }
+        return totalTokensAllocated;
+    }
+
+    function _vaultID() internal view returns(uint256 vaultID_){
+         VaultStorage storage vs = LibDiamond.vaultStorage();
+        vaultID_=vs.vaultID;
     }
 
     //only used for multiple address elemented arrays
@@ -103,20 +128,7 @@ library LibKeep {
         }
     }
 
-    function getCurrentAllocatedTokens(address _token)
-        internal
-        view
-        returns (uint256)
-    {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
-        uint256 totalTokensAllocated;
-        for (uint256 x; x < vs.inheritors.length; x++) {
-            totalTokensAllocated += vs.inheritorTokenShares[vs.inheritors[x]][
-                _token
-            ];
-        }
-        return totalTokensAllocated;
-    }
+   
 
     //INHERITOR MUTATING OPERATIONS
 
@@ -255,7 +267,7 @@ library LibKeep {
         }
     }
 
-    function _withdrawTokens(
+    function _withdrawERC20Tokens(
         address[] calldata _tokenAdds,
         uint256[] calldata _amounts,
         address _to
@@ -363,31 +375,11 @@ library LibKeep {
             emit EthClaimed(msg.sender, amountToClaim, vs.vaultID);
             //claim tokens..if any
             _claimTokens();
+           
             //cleanup
             LibKeepHelpers.removeAddress(vs.inheritors,msg.sender);
         }
     }
+    
 
-    ///ERC20
-    // function _inputTokens(
-    //     address[] calldata _tokenDeps,
-    //     uint256[] calldata _amounts
-    // ) internal {
-    //     Guards._notExpired();
-    //     if (_tokenDeps.length == 0 || _amounts.length == 0) revert EmptyArray();
-    //     if (_tokenDeps.length != _amounts.length) revert LengthMismatch();
-    //     //need some interfaces
-    // }
-
-    // function _outputTokens(
-    //     address[] calldata _tokenAdds,
-    //     uint256[] calldata _amounts
-    // ) internal {
-    //     Guards._notExpired();
-    //     if (_tokenAdds.length == 0 || _amounts.length == 0) revert EmptyArray();
-    //     if (_tokenAdds.length != _amounts.length) revert LengthMismatch();
-    //     //need some interfaces
-    // }
-    //ERC721
-    //ERC1155
 }

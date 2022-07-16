@@ -49,6 +49,7 @@ struct VaultStorage {
     mapping(address => mapping(address => uint256)) inheritorTokenShares;
     //address of tokens allocated
     mapping(address => address[]) inheritorAllocatedTokens;
+    mapping(address=>mapping(uint256=>bool)) allocatedNFT;
 }
 
 abstract contract StorageStead {

@@ -2,6 +2,8 @@ pragma solidity 0.8.4;
 
 import "../libraries/LibVaultStorage.sol";
 import "../libraries/LibKeep.sol";
+
+import "../libraries/LibTokens.sol";
 import "../interfaces/IVaultFacet.sol";
 import "../libraries/LibDiamond.sol";
 import "../interfaces/IERC20.sol";
@@ -114,7 +116,7 @@ contract VaultFacet is IVaultFacet, StorageStead {
         address _to
     ) external {
         Guards._onlyVaultOwner();
-        LibKeep._withdrawTokens(_tokenAdds, _amounts, _to);
+        LibKeep._withdrawERC20Tokens(_tokenAdds, _amounts, _to);
     }
 
     function allocateEther(
