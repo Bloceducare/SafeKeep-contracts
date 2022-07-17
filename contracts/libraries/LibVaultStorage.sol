@@ -9,6 +9,7 @@ error NotBackupAddress();
 error NotOwnerOrBackupAddress();
 error NotExpired();
 error HasExpired();
+error Claimed();
 
 struct FacetFunctionSelectors {
     bytes4[] functionSelectors;
@@ -61,7 +62,10 @@ struct VaultStorage {
     //ERC1155
     mapping(address=>mapping(address=>mapping(uint256=>uint256))) inheritorERC1155TokenAllocations;
     mapping(address => address[]) inheritorAllocatedERC1155TokenAddresses;
+
     mapping(address => mapping(address => uint256[])) inheritorAllocatedTokenIds;
+
+    mapping(address=>bool) claimed; 
 }
 
 abstract contract StorageStead {
@@ -118,5 +122,10 @@ library Guards {
     function _notExpired() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         if (block.timestamp - vs.lastPing > 24 weeks) revert HasExpired();
+    }
+
+    function _notClaimed(address _inheritor) internal view{
+       VaultStorage storage vs = LibDiamond.vaultStorage();
+       if (vs.claimed[_inheritor]) revert Claimed();
     }
 }

@@ -25,13 +25,26 @@ library LibKeep {
         uint256 vaultID
     );
 
-    event TokenWithdrawal(
+    event ERC20TokenWithdrawal(
         address token,
         uint256 amount,
         address to,
         uint256 vaultID
     );
 
+    event ERC721TokenWIthdrawal(
+        address token,
+        uint256 tokenID,
+        address to,
+        uint256 vaultID
+    );
+    event ERC1155TokenWithdrawal(
+        address token,
+        uint256 tokenID,
+        uint256 amount,
+        address to,
+        uint256 vaultID
+    );
     event ErrorHandled(string);
     event ERC20TokensAllocated(
         address indexed token,
@@ -68,9 +81,23 @@ library LibKeep {
         uint256 vaultID
     );
 
-    event TokensClaimed(
+    event ERC20TokensClaimed(
         address indexed inheritor,
         address indexed token,
+        uint256 amount,
+        uint256 vaultID
+    );
+
+    event ERC721TokenClaimed(
+        address indexed inheritor,
+        address indexed token,
+        uint256 tokenID,
+        uint256 vaultID
+    );
+    event ERC1155TokensClaimed(
+        address indexed inheritor,
+        address indexed token,
+        uint256 tokenID,
         uint256 amount,
         uint256 vaultID
     );
@@ -92,7 +119,7 @@ library LibKeep {
     function _ping() internal {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         vs.lastPing = block.timestamp;
-        emit VaultPinged(block.timestamp, vs.vaultID);
+        emit VaultPinged(block.timestamp, _vaultID());
     }
 
     function getCurrentAllocatedEth() internal view returns (uint256) {
@@ -154,6 +181,8 @@ library LibKeep {
                     vs.inheritorAllocatedERC20Tokens[_inheritor][x]
                 ] = false;
             }
+            //TO-DO Also reset for relevant ERC721 and ERC1155 Storage vars too 
+        //@Abims-Web3bridge //@Falilah
             //remove all token addresses
             delete vs.inheritorAllocatedERC20Tokens[_inheritor];
         }
@@ -189,8 +218,8 @@ library LibKeep {
             // userVaults[_newInheritors[k]].push(_vaultId);
         }
         _ping();
-        emit InheritorsAdded(_newInheritors, vs.vaultID);
-        emit EthAllocated(_newInheritors, _weiShare, vs.vaultID);
+        emit InheritorsAdded(_newInheritors, _vaultID());
+        emit EthAllocated(_newInheritors, _weiShare, _vaultID());
     }
 
     function _removeInheritors(address[] calldata _inheritors) internal {
@@ -206,11 +235,11 @@ library LibKeep {
 
             //should interact with master diamond to mutate record
             //remember to safeguard
-            //LibKeepHelpers.removeUint(userVaults[_inheritors[k]], vs.vaultID);
+            //LibKeepHelpers.removeUint(userVaults[_inheritors[k]], _vaultID());
             reset(_inheritors[k]);
         }
         _ping();
-        emit InheritorsRemoved(_inheritors, vs.vaultID);
+        emit InheritorsRemoved(_inheritors, _vaultID());
     }
 
     //ALLOCATION MUTATING OPERATIONS
@@ -236,7 +265,7 @@ library LibKeep {
                 );
         }
         _ping();
-        emit EthAllocated(_inheritors, _ethShares, vs.vaultID);
+        emit EthAllocated(_inheritors, _ethShares, _vaultID());
     }
 
     function _allocateERC20Tokens(
@@ -278,7 +307,7 @@ library LibKeep {
                 );
         }
         _ping();
-        emit ERC20TokensAllocated(token, _inheritors, _shares, vs.vaultID);
+        emit ERC20TokensAllocated(token, _inheritors, _shares, _vaultID());
     }
 
     function _allocateERC721Tokens(
@@ -294,6 +323,10 @@ library LibKeep {
             if (!Guards._anInheritor(_inheritors[k])) revert NotInheritor();
             if (!Guards._activeInheritor(_inheritors[k]))
                 revert InactiveInheritor();
+            //short-circuit
+            if (vs.ERC721ToInheritor[_token][_tokenIDs[k]] == _inheritors[k]) {
+                continue;
+            }
             //confirm ownership
             if (IERC721(_token).ownerOf(_tokenIDs[k]) == address(this)) {
                 if (vs.allocatedERC721Tokens[_token][_tokenIDs[k]]) {
@@ -301,10 +334,12 @@ library LibKeep {
                         _tokenIDs[k]
                     ];
                     if (current != _inheritors[k] && current != address(0)) {
-                        vs.inheritorERC721Tokens[current][_token] =
-                            type(uint256).max -
-                            2;
+                        //    vs.inheritorERC721Tokens[current][_token] = 0;
+                        // type(uint256).max -
+                        // 2;
+                        //TO-DO remove the id from current's allocatedID array..done??
                         vs.whitelist[_token][current] = false;
+                        LibKeepHelpers.removeUint(vs.inheritorAllocatedTokenIds[msg.sender][_token],_tokenIDs[k]);
                     }
                     if (_inheritors[k] == address(0)) {
                         vs.allocatedERC721Tokens[_token][_tokenIDs[k]] = false;
@@ -346,12 +381,12 @@ library LibKeep {
                 if (_tokenIDs[k] == 0) {
                     vs.whitelist[_token][_inheritors[k]] = true;
                 }
-                vs.inheritorERC721Tokens[_token][_inheritors[k]] = _tokenIDs[k];
+                //   vs.inheritorERC721Tokens[_inheritors[k]][_token] = _tokenIDs[k];
                 emit ERC721TokensAllocated(
                     _token,
                     _inheritors[k],
                     _tokenIDs[k],
-                    vs.vaultID
+                    _vaultID()
                 );
             }
         }
@@ -405,7 +440,7 @@ library LibKeep {
                     _tokenIDs[i]
                 );
             }
-            //if no tokens in token address remain
+            //if no tokens for the token address remain
             if (
                 vs.inheritorAllocatedTokenIds[_inheritors[i]][_token].length ==
                 0
@@ -476,7 +511,12 @@ library LibKeep {
                     //assumes all ERC20 errors have a revert string
                     string memory reason;
                     if (bytes(reason).length == 0) {
-                        emit TokenWithdrawal(token, amount, _to, vs.vaultID);
+                        emit ERC20TokenWithdrawal(
+                            token,
+                            amount,
+                            _to,
+                            _vaultID()
+                        );
                     } else {
                         emit ErrorHandled(reason);
                     }
@@ -488,20 +528,63 @@ library LibKeep {
         _ping();
     }
 
+    function _withdrawERC721Token(
+        address _token,
+        uint256 _tokenID,
+        address _to
+    ) internal {
+        if (IERC721(_token).ownerOf(_tokenID) != address(this))
+            revert NotERC721Owner();
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (vs.allocatedERC721Tokens[_token][_tokenID])
+            revert("UnAllocate Token First");
+        try
+            IERC721(_token).safeTransferFrom(address(this), _to, _tokenID)
+        {} catch {
+            string memory reason;
+            if (bytes(reason).length == 0) {
+                emit ERC721TokenWIthdrawal(_token, _tokenID, _to, _vaultID());
+            } else {
+                emit ErrorHandled(reason);
+            }
+        }
+    }
+
+    function _withdrawERC1155Token(
+        address _token,
+        uint256 _tokenID,
+        uint256 _amount,
+        address _to
+    ) internal {
+        uint256 allocated = getCurrentAllocated1155tokens(_token, _tokenID);
+        uint256 balance = IERC1155(_token).balanceOf(address(this), _tokenID);
+        if (balance < _amount) revert InsufficientTokens();
+
+        if (balance - allocated < _amount) revert("UnAllocate TokensFirst");
+        IERC1155(_token).safeTransferFrom(
+            address(this),
+            _to,
+            _tokenID,
+            _amount,
+            ""
+        );
+        emit ERC1155TokenWithdrawal(_token, _tokenID, _amount, _to, _vaultID());
+    }
+
     //ACCESS TRANSFER
 
     function _transferOwnerShip(address _newOwner) internal {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         address prevOwner = vs.vaultOwner;
         vs.vaultOwner = _newOwner;
-        emit OwnershipTransferred(prevOwner, _newOwner, vs.vaultID);
+        emit OwnershipTransferred(prevOwner, _newOwner, _vaultID());
     }
 
     function _transferBackup(address _newBackupAddress) internal {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         address prevBackup = vs.backupAddress;
         vs.backupAddress = _newBackupAddress;
-        emit BackupTransferred(prevBackup, _newBackupAddress, vs.vaultID);
+        emit BackupTransferred(prevBackup, _newBackupAddress, _vaultID());
     }
 
     ///CLAIMS
@@ -513,8 +596,8 @@ library LibKeep {
         address prevBackup = vs.backupAddress;
         vs.vaultOwner = msg.sender;
         vs.backupAddress = _newBackup;
-        emit OwnershipTransferred(prevOwner, msg.sender, vs.vaultID);
-        emit BackupTransferred(prevBackup, _newBackup, vs.vaultID);
+        emit OwnershipTransferred(prevOwner, msg.sender, _vaultID());
+        emit BackupTransferred(prevBackup, _newBackup, _vaultID());
     }
 
     function _claimERC20Tokens() internal {
@@ -523,34 +606,129 @@ library LibKeep {
         Guards._expired();
         VaultStorage storage vs = LibDiamond.vaultStorage();
         uint256 tokens = vs.inheritorAllocatedERC20Tokens[msg.sender].length;
-        if (tokens == 0) revert NoAllocatedTokens();
-
-        for (uint256 i; i < tokens; i++) {
-            address token = vs.inheritorAllocatedERC20Tokens[msg.sender][i];
-            uint256 amountToClaim = vs.inheritorTokenShares[msg.sender][token];
-            if (amountToClaim > 0) {
-                //reset storage
-                vs.inheritorActiveTokens[msg.sender][token] = false;
-                LibKeepHelpers.removeAddress(
-                    vs.inheritorAllocatedERC20Tokens[msg.sender],
+        if (tokens > 0) {
+            for (uint256 i; i < tokens; i++) {
+                address token = vs.inheritorAllocatedERC20Tokens[msg.sender][i];
+                uint256 amountToClaim = vs.inheritorTokenShares[msg.sender][
                     token
-                );
-                vs.inheritorTokenShares[msg.sender][token] = 0;
-                IERC20(token).transfer(msg.sender, amountToClaim);
-                emit TokensClaimed(
-                    msg.sender,
-                    token,
-                    amountToClaim,
-                    vs.vaultID
-                );
+                ];
+                if (amountToClaim > 0) {
+                    //reset storage
+                    //no need to reset storage but zero out some slots to prevent against reentrancy
+                    // vs.inheritorActiveTokens[msg.sender][token] = false;
+                    // LibKeepHelpers.removeAddress(
+                    //     vs.inheritorAllocatedERC20Tokens[msg.sender],
+                    //     token
+                    // );
+                    // vs.inheritorTokenShares[msg.sender][token] = 0;
+                    IERC20(token).transfer(msg.sender, amountToClaim);
+                    emit ERC20TokensClaimed(
+                        msg.sender,
+                        token,
+                        amountToClaim,
+                        _vaultID()
+                    );
+                }
             }
         }
     }
+
+    function _claimERC721Tokens() internal {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        uint256 tokens = vs
+            .inheritorAllocatedERC721TokenAddresses[msg.sender]
+            .length;
+        if (tokens > 0) {
+            for (uint256 i; i < tokens; i++) {
+                address token = vs.inheritorAllocatedERC721TokenAddresses[
+                    msg.sender
+                ][i];
+                uint256 tokensToClaim = vs
+                .inheritorAllocatedTokenIds[msg.sender][token].length;
+                if (tokensToClaim > 1) {
+                    for (uint256 j; j < tokensToClaim; j++) {
+                        uint256 tokenID = vs.inheritorAllocatedTokenIds[
+                            msg.sender
+                        ][token][j];
+                        if (tokenID == 0) {
+                            //check for whitelist
+                            if (vs.whitelist[msg.sender][token]) {
+                                IERC721(token).transferFrom(
+                                    address(this),
+                                    msg.sender,
+                                    0
+                                );
+                                vs.whitelist[msg.sender][token] = false;
+                                emit ERC721TokenClaimed(
+                                    msg.sender,
+                                    token,
+                                    0,
+                                    _vaultID()
+                                );
+                            } else {
+                                IERC721(token).transferFrom(
+                                    address(this),
+                                    msg.sender,
+                                    tokenID
+                                );
+                                emit ERC721TokenClaimed(
+                                    msg.sender,
+                                    token,
+                                    tokenID,
+                                    _vaultID()
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function _claimERC1155Tokens() internal {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        uint256 tokens = vs
+            .inheritorAllocatedERC1155TokenAddresses[msg.sender]
+            .length;
+        if (tokens > 0) {
+            for (uint256 i; i < tokens; i++) {
+                address token = vs.inheritorAllocatedERC1155TokenAddresses[
+                    msg.sender
+                ][i];
+                uint256 noOfTokenIds = vs
+                .inheritorAllocatedTokenIds[msg.sender][token].length;
+                if (noOfTokenIds > 0) {
+                    for (uint256 k; k < noOfTokenIds; k++){
+                        uint256 tokenID = vs
+                .inheritorAllocatedTokenIds[msg.sender][token][k];
+                    uint256 amount = vs.inheritorERC1155TokenAllocations[
+                        msg.sender
+                    ][token][tokenID];
+                    if (amount > 0) {
+                        IERC1155(token).safeTransferFrom(
+                            address(this),
+                            msg.sender,
+                            tokenID,
+                            amount,""
+                        );
+                        emit ERC1155TokensClaimed(
+                            msg.sender,
+                            token,
+                            1,
+                            amount,
+                            _vaultID()
+                        );
+                    }
+                }
+            }
+        }
+    }}
 
     function _claimAll() internal {
         Guards._anInheritor(msg.sender);
         Guards._activeInheritor(msg.sender);
         Guards._expired();
+        Guards._notClaimed(msg.sender);
         VaultStorage storage vs = LibDiamond.vaultStorage();
         if (vs.inheritorWeishares[msg.sender] > 0) {
             uint256 amountToClaim = vs.inheritorWeishares[msg.sender];
@@ -560,9 +738,13 @@ library LibKeep {
             assert(success);
             vs.activeInheritors[msg.sender] = false;
             //make call to global storage to remove vaultID
-            emit EthClaimed(msg.sender, amountToClaim, vs.vaultID);
-            //claim tokens..if any
+            emit EthClaimed(msg.sender, amountToClaim, _vaultID());
+            //claim ERC20 tokens..if any
             _claimERC20Tokens();
+            //claim ERC721 Tokens if any
+            _claimERC721Tokens();
+            //claim ERC1155 Tokens if any
+            _claimERC1155Tokens();
 
             //cleanup
             LibKeepHelpers.removeAddress(vs.inheritors, msg.sender);
