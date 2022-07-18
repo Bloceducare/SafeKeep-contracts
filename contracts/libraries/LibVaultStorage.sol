@@ -57,15 +57,12 @@ struct VaultStorage {
     mapping(address => mapping(uint256 => address)) ERC721ToInheritor;
     mapping(address => mapping(uint256 => bool)) allocatedERC721Tokens;
     mapping(address => address[]) inheritorAllocatedERC721TokenAddresses;
-   
-
     //ERC1155
-    mapping(address=>mapping(address=>mapping(uint256=>uint256))) inheritorERC1155TokenAllocations;
+    mapping(address => mapping(address => mapping(uint256 => uint256))) inheritorERC1155TokenAllocations;
     mapping(address => address[]) inheritorAllocatedERC1155TokenAddresses;
-
+    //GLOBAL
     mapping(address => mapping(address => uint256[])) inheritorAllocatedTokenIds;
-
-    mapping(address=>bool) claimed; 
+    mapping(address => bool) claimed;
 }
 
 abstract contract StorageStead {
@@ -124,8 +121,8 @@ library Guards {
         if (block.timestamp - vs.lastPing > 24 weeks) revert HasExpired();
     }
 
-    function _notClaimed(address _inheritor) internal view{
-       VaultStorage storage vs = LibDiamond.vaultStorage();
-       if (vs.claimed[_inheritor]) revert Claimed();
+    function _notClaimed(address _inheritor) internal view {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (vs.claimed[_inheritor]) revert Claimed();
     }
 }
