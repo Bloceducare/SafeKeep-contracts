@@ -74,7 +74,7 @@ contract VaultFacet is IVaultFacet, StorageStead {
 
   function depositEther(uint256 _amount) external payable {
     if (_amount != msg.value) revert AmountMismatch();
-    emit EthDeposited(_amount);
+    emit EthDeposited(_amount,vs.vaultID);
   }
 
   function withdrawEther(uint256 _amount, address _to) external {

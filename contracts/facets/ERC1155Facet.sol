@@ -85,4 +85,27 @@ contract ERC1155Facet is StorageStead {
     Guards._onlyVaultOwner();
     LibTokens._approveAllERC1155Token(_token, _to, _approved);
   }
+
+  //DEPOSIT COMPATIBILITY
+
+function onERC1155Received(
+        address,
+        address,
+        uint256,
+        uint256,
+        bytes memory
+    ) public pure returns (bytes4) {
+        return ERC1155_ACCEPTED;
+    }
+
+    function onERC1155BatchReceived(
+        address,
+        address,
+        uint256[] memory,
+        uint256[] memory,
+        bytes memory
+    ) public pure returns (bytes4) {
+        return ERC1155_BATCH_ACCEPTED;
+    }
+
 }

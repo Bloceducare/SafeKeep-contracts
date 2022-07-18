@@ -1,26 +1,11 @@
 pragma solidity 0.8.4;
 
 interface IVaultFacet {
-    struct TokenAllocs {
-        address token;
-        uint256 amount;
-    }
-    struct AllInheritorTokenAllocs {
-        address inheritor_;
-        address token;
-        uint256 amount;
-    }
-
+   
     struct AllInheritorEtherAllocs {
         address inheritor;
         uint256 weiAlloc;
     }
-
-    struct TokenBal {
-        address token;
-        uint256 bal;
-    }
-
     struct VaultInfo {
         address owner;
         uint256 weiBalance;
@@ -38,7 +23,7 @@ interface IVaultFacet {
     );
 
 
-    event EthDeposited(uint256 _amount);
+    event EthDeposited(uint256 _amount,uint256 _vaultID);
    
     
 }

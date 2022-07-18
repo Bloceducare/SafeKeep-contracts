@@ -79,4 +79,16 @@ function approveAllERC721Token(address _token,address _to,bool _approved) extern
     LibTokens._approveAllERC721Token(_token,_to,_approved);
 }
 
+//DEPOSIT COMPATIBILITY
+
+ function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes memory
+    ) public pure returns (bytes4) {
+        return ERC721WithCall;
+    }
+
+
 }

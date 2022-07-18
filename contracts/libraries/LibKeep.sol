@@ -12,7 +12,6 @@ import "../interfaces/IERC1155.sol";
 
 bytes4 constant ERC1155_ACCEPTED = 0xf23a6e61;
 bytes4 constant ERC1155_BATCH_ACCEPTED = 0xbc197c81;
-bytes4 constant ERC721WithoutCall = 0x42842e0e;
 bytes4 constant ERC721WithCall = 0xb88d4fde;
 
 library LibKeep {
@@ -137,7 +136,7 @@ library LibKeep {
   }
 
   function getCurrentAllocated1155tokens(address _token, uint256 _tokenID)
-    internal
+    internal view
     returns (uint256 alloc_)
   {
     VaultStorage storage vs = LibDiamond.vaultStorage();
