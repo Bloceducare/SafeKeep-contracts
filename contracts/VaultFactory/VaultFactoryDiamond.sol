@@ -9,12 +9,12 @@ pragma solidity ^0.8.0;
 /******************************************************************************/
 
 import {LibDiamond} from "./libraries/LibDiamond.sol";
-import {IDiamondCut} from "./interfaces/IDiamondCut.sol";
-import "./libraries/LibVaultStorage.sol";
+import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
-contract SafeKeep {
+
+contract FactoryDiamond {
     constructor(address _contractOwner, address _diamondCutFacet) payable {
-        LibDiamond.setVaultOwner(_contractOwner);
+        LibDiamond.setContractOwner(_contractOwner);
 
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
@@ -31,14 +31,14 @@ contract SafeKeep {
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable {
-        VaultStorage storage vs;
-        bytes32 position = LibDiamond.VAULT_STORAGE_POSITION;
+        LibDiamond.DiamondStorage storage ds;
+        bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage
         assembly {
-            vs.slot := position
+            ds.slot := position
         }
         // get facet from function selector
-        address facet = vs.selectorToFacetAndPosition[msg.sig].facetAddress;
+        address facet = ds.selectorToFacetAndPosition[msg.sig].facetAddress;
         require(facet != address(0), "Diamond: Function does not exist");
         // Execute external function from facet using delegatecall and return any value.
         assembly {
