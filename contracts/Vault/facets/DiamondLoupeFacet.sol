@@ -5,7 +5,7 @@ pragma solidity 0.8.4;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 
-import { VaultStorage } from  "../libraries/LibVaultStorage.sol";
+import  "../libraries/LibVaultStorage.sol";
 import "../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
@@ -44,7 +44,7 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
     /// @notice Get all the facet addresses used by a diamond.
     /// @return facetAddresses_
     function facetAddresses() external override view returns (address[] memory facetAddresses_) {
-        LibDiamond.VaultStorage storage vs = LibDiamond.vaultStorage();
+        VaultStorage storage vs = LibDiamond.vaultStorage();
         facetAddresses_ = vs.facetAddresses;
     }
 
@@ -53,13 +53,13 @@ contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
     /// @param _functionSelector The function selector.
     /// @return facetAddress_ The facet address.
     function facetAddress(bytes4 _functionSelector) external override view returns (address facetAddress_) {
-        LibDiamond.VaultStorage storage vs = LibDiamond.vaultStorage();
+        VaultStorage storage vs = LibDiamond.vaultStorage();
         facetAddress_ = vs.selectorToFacetAndPosition[_functionSelector].facetAddress;
     }
 
     // This implements ERC-165.
     function supportsInterface(bytes4 _interfaceId) external override view returns (bool) {
-        LibDiamond.VaultStorage storage vs = LibDiamond.vaultStorage();
+        VaultStorage storage vs = LibDiamond.vaultStorage();
         return vs.supportedInterfaces[_interfaceId];
     }
 }

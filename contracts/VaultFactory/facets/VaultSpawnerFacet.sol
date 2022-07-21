@@ -50,4 +50,5 @@ contract VaultSpawnerFacet is StorageLayout {
     fs.VAULTID++;
 
   }
+  
 }
