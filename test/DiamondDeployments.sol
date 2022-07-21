@@ -6,17 +6,19 @@ import "forge-std/Test.sol";
 import "../contracts/Vault/facets/ERC1155Facet.sol";
 import "../contracts/Vault/facets/ERC20Facet.sol";
 import "../contracts/Vault/facets/ERC721Facet.sol";
+import "../contracts/Vault/facets/DiamondCutFacet.sol";
+import "../contracts/Vault/facets/DiamondLoupeFacet.sol";
 import "../contracts/Vault/facets/VaultFacet.sol";
 import "../contracts/VaultFactory/facets/VaultSpawnerFacet.sol";
-import "../contracts/VaultFactory/facets/DiamondCutFacet.sol";
-import "../contracts/VaultFactory/facets/DiamondLoupeFacet.sol";
+import "../contracts/VaultFactory/facets/DiamondCutFactoryFacet.sol";
+import "../contracts/VaultFactory/facets/DiamondLoupeFactoryFacet.sol";
 import "../contracts/Vault/VaultDiamond.sol";
 import "../contracts/VaultFactory/VaultFactoryDiamond.sol";
 //import "../contracts/Vault/facets/DiamondCutFacet.sol";
 //import "../contracts/Vault/facets/DiamondLoupeFacet.sol";
 // import "./MockERC1155.sol";
 // import "./MockERC20.sol";
-// import "./MockERC721.sol";
+ //import "./MockERC721.sol";
 
 
 contract DDeployments is Test,IDiamondCut {
@@ -29,6 +31,12 @@ VaultSpawnerFacet spawner;
 VaultFacet vFacet;
 VaultDiamond VDiamond;
 VaultFactoryDiamond vFactoryDiamond;
+DiamondCutFacet dCutFacet;
+DiamondLoupeFacet dLoupeFacet;
+
+DiamondCutFactoryFacet dCutFactoryFacet;
+DiamondLoupeFactoryFacet dloupeFactoryFacet;
+
 
 
 function testdeployAllContracts() public{
@@ -54,6 +62,12 @@ function testdeployAllContracts() public{
         address _init,
         bytes calldata _calldata
     ) external override {}
+
+    function mkaddr(string memory name) public returns (address){
+        address addr=address(uint160(uint256(keccak256(abi.encodePacked(name)))));
+        vm.label(addr,name);
+        return addr;
+    }
 
 }
 

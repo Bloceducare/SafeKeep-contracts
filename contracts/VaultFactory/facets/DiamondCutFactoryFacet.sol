@@ -9,7 +9,7 @@ pragma solidity 0.8.4;
 import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
 import { LibFactoryDiamond } from "../libraries/LibFactoryDiamond.sol";
 
-contract DiamondCutFacet is IDiamondCut {
+contract DiamondCutFactoryFacet is IDiamondCut {
     /// @notice Add/replace/remove any number of functions and optionally execute
     ///         a function with delegatecall
     /// @param _diamondCut Contains the facet addresses and function selectors

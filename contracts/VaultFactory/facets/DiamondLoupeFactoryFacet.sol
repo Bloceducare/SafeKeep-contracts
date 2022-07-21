@@ -9,7 +9,7 @@ import { LibFactoryDiamond } from  "../libraries/LibFactoryDiamond.sol";
 import { IDiamondLoupe } from "../../interfaces/IDiamondLoupe.sol";
 import { IERC165 } from "../../interfaces/IERC165.sol";
 
-contract DiamondLoupeFacet is IDiamondLoupe, IERC165 {
+contract DiamondLoupeFactoryFacet is IDiamondLoupe, IERC165 {
     // Diamond Loupe Functions
     ////////////////////////////////////////////////////////////////////
     /// These functions are expected to be called frequently by tools.
