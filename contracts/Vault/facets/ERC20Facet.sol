@@ -60,7 +60,7 @@ contract ERC20Facet is StorageStead {
     LibKeep._withdrawERC20Token(_token, _amount, _to);
   }
 
-  function BatchWithdrawERC20Token(
+  function batchWithdrawERC20Token(
     address[] calldata _tokens,
     uint256[] calldata _amounts,
     address _to

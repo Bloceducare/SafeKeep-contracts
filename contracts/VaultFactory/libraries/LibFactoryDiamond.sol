@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 /******************************************************************************/
 import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";
 
-library LibDiamond {
+library LibFactoryDiamond {
     error InValidFacetCutAction();
     error NotDiamondOwner();
     error NoSelectorsInFacet();

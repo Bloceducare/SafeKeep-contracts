@@ -5,7 +5,7 @@ import "../libraries/LibVaultStorage.sol";
 
 import "../libraries/LibTokens.sol";
 
-contract ERC1155Facet is StorageStead {
+contract ERC721Facet is StorageStead {
 
 
  struct AllocatedERC721Tokens{

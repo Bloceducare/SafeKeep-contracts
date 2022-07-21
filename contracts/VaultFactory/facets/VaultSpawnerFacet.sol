@@ -6,7 +6,7 @@ import "../../Vault/libraries/LibKeep.sol";
 import "../../interfaces/IVaultDiamond.sol";
 
 contract VaultSpawnerFacet is StorageLayout {
-      event vaultCreated(
+      event VaultCreated(
         address indexed owner,
         address indexed backup,
         uint256 indexed startingBalance,
@@ -26,7 +26,7 @@ contract VaultSpawnerFacet is StorageLayout {
     }
     assert(_inheritors.length==_weiShare.length);
     //spawn contract
-    bytes memory code = type(SafeKeep).creationCode;
+    bytes memory code = type(VaultDiamond).creationCode;
     bytes32 entropy = keccak256(
       abi.encode(msg.sender, block.timestamp, fs.VAULTID)
     );
@@ -43,11 +43,10 @@ contract VaultSpawnerFacet is StorageLayout {
     assert(IVaultDiamond(addr).vaultOwner()==msg.sender);
 
     //add inheritors if any
-    //this will fail because only the owner can add inheritors
     if(_inheritors.length>0){
         LibKeep._addInheritors(_inheritors,_weiShare);
     }
-    emit vaultCreated(msg.sender,_backupAddress,_startingBal,fs.VAULTID);
+    emit VaultCreated(msg.sender,_backupAddress,_startingBal,fs.VAULTID);
     fs.VAULTID++;
 
   }

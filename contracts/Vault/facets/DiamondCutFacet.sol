@@ -7,7 +7,7 @@ pragma solidity 0.8.4;
 /******************************************************************************/
 
 import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
-import { LibFactoryDiamond } from "../libraries/LibFactoryDiamond.sol";
+import { LibDiamond } from "../VaultDiamond.sol";
 
 contract DiamondCutFacet is IDiamondCut {
     /// @notice Add/replace/remove any number of functions and optionally execute
@@ -21,7 +21,7 @@ contract DiamondCutFacet is IDiamondCut {
         address _init,
         bytes calldata _calldata
     ) external override {
-        LibFactoryDiamond.enforceIsContractOwner();
-        LibFactoryDiamond.diamondCut(_diamondCut, _init, _calldata);
+        LibDiamond.enforceIsContractOwner();
+        LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
 }

@@ -76,7 +76,7 @@ contract VaultFacet is  StorageStead {
     address[] calldata _newInheritors,
     uint256[] calldata _weiShare
   ) external {
-    Guards._onlyVaultOwner();
+    Guards._onlyVaultOwnerOrOrigin();
     LibKeep._addInheritors(_newInheritors, _weiShare);
   }
 

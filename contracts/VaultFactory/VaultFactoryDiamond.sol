@@ -8,13 +8,13 @@ pragma solidity ^0.8.0;
 * Implementation of a diamond.
 /******************************************************************************/
 
-import {LibDiamond} from "./libraries/LibDiamond.sol";
+import {LibFactoryDiamond} from "./libraries/LibFactoryDiamond.sol";
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
 
-contract FactoryDiamond {
+contract VaultFactoryDiamond {
     constructor(address _contractOwner, address _diamondCutFacet) payable {
-        LibDiamond.setContractOwner(_contractOwner);
+        LibFactoryDiamond.setContractOwner(_contractOwner);
 
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
@@ -25,14 +25,14 @@ contract FactoryDiamond {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: functionSelectors
         });
-        LibDiamond.diamondCut(cut, address(0), "");
+        LibFactoryDiamond.diamondCut(cut, address(0), "");
     }
 
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
     fallback() external payable {
-        LibDiamond.DiamondStorage storage ds;
-        bytes32 position = LibDiamond.DIAMOND_STORAGE_POSITION;
+        LibFactoryDiamond.DiamondStorage storage ds;
+        bytes32 position = LibFactoryDiamond.DIAMOND_STORAGE_POSITION;
         // get diamond storage
         assembly {
             ds.slot := position

@@ -12,7 +12,7 @@ import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import "./libraries/LibVaultStorage.sol";
 
-contract SafeKeep {
+contract VaultDiamond {
   bool _init;
 
   constructor() payable {
