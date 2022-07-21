@@ -16,9 +16,9 @@ import "../contracts/Vault/VaultDiamond.sol";
 import "../contracts/VaultFactory/VaultFactoryDiamond.sol";
 //import "../contracts/Vault/facets/DiamondCutFacet.sol";
 //import "../contracts/Vault/facets/DiamondLoupeFacet.sol";
-// import "./MockERC1155.sol";
-// import "./MockERC20.sol";
- //import "./MockERC721.sol";
+import "./MockERC1155.sol";
+ import "./MockERC20.sol";
+ import "./MockERC721.sol";
 
 
 contract DDeployments is Test,IDiamondCut {
@@ -36,6 +36,11 @@ DiamondLoupeFacet dLoupeFacet;
 
 DiamondCutFactoryFacet dCutFactoryFacet;
 DiamondLoupeFactoryFacet dloupeFactoryFacet;
+
+VaultERC1155Token erc1155t;
+VaultERC20Token erc20t;
+VaultERC721Token erc721t;
+
 
 
 
