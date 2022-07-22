@@ -4,3 +4,6 @@
 [submodule "lib/solmate.git"]
 	path = lib/solmate.git
 	url = https://github.com/transmissions11/solmate.git
+[submodule "lib/solmate"]
+	path = lib/solmate
+	url = https://github.com/transmissions11/solmate
