@@ -48,7 +48,7 @@ library LibDiamond {
         contractOwner_ = vaultStorage().vaultOwner;
     }
 
-    function enforceIsContractOwner() internal view {
+    function enforceIsContractOwner() internal  view{
         if (msg.sender != vaultStorage().vaultOwner) revert NotVaultOwner();
     }
 

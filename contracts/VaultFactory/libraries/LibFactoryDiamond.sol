@@ -21,6 +21,7 @@ library LibFactoryDiamond {
     error NonEmptyCalldata();
     error EmptyCalldata();
     error InitCallFailed();
+
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.factory.storage");
 
     struct FacetAddressAndPosition {

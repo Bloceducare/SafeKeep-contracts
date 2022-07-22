@@ -6,3 +6,4 @@ artifacts
 .env
 extensions.json
 settings.json
+out

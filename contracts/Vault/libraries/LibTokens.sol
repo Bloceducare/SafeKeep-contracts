@@ -6,11 +6,35 @@ import "../../interfaces/IERC1155.sol";
 
 library LibTokens {
   event ErrorHandled(string);
-  event TokenDeposit(
+
+  event ERC20TokenDeposit(
     address indexed token,
     address indexed from,
     uint256 amount,
     uint256 vaultID
+  );
+
+  event ERC721TokenDeposit(
+    address indexed token,
+    address indexed from,
+    uint256 tokenID,
+    uint256 vaultID
+  );
+
+  event ERC1155TokenDeposit(
+    address indexed token,
+    address indexed from,
+    uint256 tokenID,
+    uint256 amount,
+    uint256 vaultID
+  );
+
+  event BatchERC1155TokenDeposit(
+     address indexed token,
+    address indexed from,
+    uint256[] tokenIDs,
+    uint256[] amounts,
+    uint256 vaultID 
   );
 
   //ERC20
@@ -32,9 +56,10 @@ library LibTokens {
         //assumes all ERC20 errors have a revert string
         string memory reason;
         if (success) {
-          emit TokenDeposit(token, msg.sender, amount, LibKeep._vaultID());
+          emit ERC20TokenDeposit(token, msg.sender, amount, LibKeep._vaultID());
         } else {
           emit ErrorHandled(reason);
+          continue;
         }
       }
     }
@@ -43,19 +68,10 @@ library LibTokens {
 
   function _inputERC20Token(address _token, uint256 _amount) internal {
     Guards._notExpired();
-    bool success;
-    try IERC20(_token).transferFrom(msg.sender, address(this), _amount) {
-      success;
-    } catch {
-      //assumes all ERC20 errors have a revert string
-      string memory reason;
-      if (success) {
-        emit TokenDeposit(_token, msg.sender, _amount, LibKeep._vaultID());
-        LibKeep._ping();
-      } else {
-        emit ErrorHandled(reason);
-      }
-    }
+    //   bool success;
+    assert(IERC20(_token).transferFrom(msg.sender, address(this), _amount));
+    emit ERC20TokenDeposit(_token, msg.sender, _amount, LibKeep._vaultID());
+    LibKeep._ping();
   }
 
   function _approveERC20Token(
@@ -70,11 +86,13 @@ library LibTokens {
   function _inputERC721Token(address _token, uint256 _tokenID) internal {
     Guards._notExpired();
     IERC721(_token).transferFrom(msg.sender, address(this), _tokenID);
+    emit ERC721TokenDeposit(_token,msg.sender,_tokenID,LibKeep._vaultID());
   }
 
   function _safeInputERC721Token(address _token, uint256 _tokenID) internal {
     Guards._notExpired();
     IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenID);
+    emit ERC721TokenDeposit(_token,msg.sender,_tokenID,LibKeep._vaultID());
   }
 
   function _safeInputERC721TokenAndCall(
@@ -124,21 +142,23 @@ library LibTokens {
       _value,
       ""
     );
+      emit ERC1155TokenDeposit(_token,msg.sender,_tokenID,_value,LibKeep._vaultID());
   }
 
   function _safeBatchInputERC1155Tokens(
-    address token,
+    address _token,
     uint256[] calldata _tokenIDs,
     uint256[] calldata _values
   ) internal {
     Guards._notExpired();
-    IERC1155(token).safeBatchTransferFrom(
+    IERC1155(_token).safeBatchTransferFrom(
       msg.sender,
       address(this),
       _tokenIDs,
       _values,
       ""
     );
+     emit BatchERC1155TokenDeposit(_token,msg.sender,_tokenIDs,_values,LibKeep._vaultID());
   }
 
   function _approveAllERC1155Token(

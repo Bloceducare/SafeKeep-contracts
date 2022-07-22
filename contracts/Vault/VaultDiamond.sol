@@ -12,6 +12,8 @@ import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import "./libraries/LibVaultStorage.sol";
 
+import "../interfaces/IVaultDiamond.sol";
+
 contract VaultDiamond {
   bool _init;
 
@@ -28,13 +30,15 @@ contract VaultDiamond {
     );
     // Add the diamondCut external function from the diamondCutFacet
     IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
-    bytes4[] memory functionSelectors = new bytes4[](1);
+    bytes4[] memory functionSelectors = new bytes4[](2);
     functionSelectors[0] = IDiamondCut.diamondCut.selector;
+     functionSelectors[1] = IVaultDiamond.tempOwner.selector;
     cut[0] = IDiamondCut.FacetCut({
       facetAddress: _diamondCutFacet,
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: functionSelectors
     });
+   
     LibDiamond.diamondCut(cut, address(0), "");
     _init=true;
   }

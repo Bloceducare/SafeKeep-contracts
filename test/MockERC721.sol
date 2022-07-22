@@ -4,9 +4,9 @@ import "solmate.git/tokens/ERC721.sol";
 
 contract VaultERC721Token is ERC721("VAULTNFT", "VNFT") {
     constructor() {
-        _mint(msg.sender, 0);
-        _mint(msg.sender, 1);
-        _mint(msg.sender, 2);
-        _mint(msg.sender, 3);
+        _mint(tx.origin, 0);
+        _mint(tx.origin, 1);
+        _mint(tx.origin, 2);
+        _mint(tx.origin, 3);
     }
 }

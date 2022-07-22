@@ -5,6 +5,8 @@ import "../libraries/LibAppStorage.sol";
 import "../../Vault/libraries/LibKeep.sol";
 import "../../interfaces/IVaultDiamond.sol";
 
+import "../../interfaces/IDiamondCut.sol";
+
 contract VaultSpawnerFacet is StorageLayout {
       event VaultCreated(
         address indexed owner,
@@ -40,8 +42,38 @@ contract VaultSpawnerFacet is StorageLayout {
     //insert a constant cut facet...modular and reusable across diamonds
     IVaultDiamond(addr).init(fs.diamondCutFacet);
     //assert diamond owner
-    assert(IVaultDiamond(addr).vaultOwner()==msg.sender);
+    //confirm for EOA auth in same call frame
+    assert(IVaultDiamond(addr).tempOwner()==tx.origin);
 
+//proceed to upgrade new diamond with default facets
+IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](5);
+ cut[0] = IDiamondCut.FacetCut({
+      facetAddress: fs.erc20Facet,
+      action: IDiamondCut.FacetCutAction.Add,
+      functionSelectors: fs.ERC20SELECTORS
+    });
+     cut[1] = IDiamondCut.FacetCut({
+      facetAddress: fs.erc721Facet,
+      action: IDiamondCut.FacetCutAction.Add,
+      functionSelectors: fs.ERC721SELECTORS
+    });
+     cut[2] = IDiamondCut.FacetCut({
+      facetAddress: fs.erc1155Facet,
+      action: IDiamondCut.FacetCutAction.Add,
+      functionSelectors: fs.ERC1155SELECTORS
+    });
+     cut[3] = IDiamondCut.FacetCut({
+      facetAddress: fs.diamondLoupeFacet,
+      action: IDiamondCut.FacetCutAction.Add,
+      functionSelectors: fs.DIAMONDLOUPEFACETSELECTORS
+    });
+     cut[4] = IDiamondCut.FacetCut({
+      facetAddress: fs.vaultFacet,
+      action: IDiamondCut.FacetCutAction.Add,
+      functionSelectors: fs.VAULTFACETSELECTORS
+    });
+    //upgrade
+       IDiamondCut(addr).diamondCut(cut, address(0), "");
     //add inheritors if any
     if(_inheritors.length>0){
         LibKeep._addInheritors(_inheritors,_weiShare);
@@ -50,5 +82,4 @@ contract VaultSpawnerFacet is StorageLayout {
     fs.VAULTID++;
 
   }
-  
 }

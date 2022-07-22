@@ -25,5 +25,9 @@ interface IVaultFacet {
 
     event EthDeposited(uint256 _amount,uint256 _vaultID);
    
+    function addInheritors(
+    address[] calldata _newInheritors,
+    uint256[] calldata _weiShare
+  ) external;
     
 }

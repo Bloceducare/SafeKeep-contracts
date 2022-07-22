@@ -22,8 +22,8 @@ async function printSelectors(contractName) {
 
   const coder = ethers.utils.defaultAbiCoder
   const coded = coder.encode(['bytes4[]'], [selectors])
-
-  process.stdout.write(coded)
+//console.log(selectors);
+ process.stdout.write(coded)
 }
 
 // We recommend this pattern to be able to use async/await everywhere

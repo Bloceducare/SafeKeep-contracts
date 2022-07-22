@@ -7,8 +7,8 @@ import "../libraries/LibTokens.sol";
 import "../libraries/LibDiamond.sol";
 import "../../interfaces/IERC20.sol";
 
-contract VaultFacet is  StorageStead {
-  error NotInheritor();
+contract VaultFacet is StorageStead {
+  
   error AmountMismatch();
 
   ///////////////////
@@ -60,7 +60,7 @@ contract VaultFacet is  StorageStead {
     view
     returns (uint256 _allocatedEther)
   {
-    if (!Guards._anInheritor(_inheritor)) revert NotInheritor();
+    if (!Guards._anInheritor(_inheritor)) revert LibKeep.NotInheritor();
     _allocatedEther = vs.inheritorWeishares[_inheritor];
   }
 
@@ -76,7 +76,7 @@ contract VaultFacet is  StorageStead {
     address[] calldata _newInheritors,
     uint256[] calldata _weiShare
   ) external {
-    Guards._onlyVaultOwnerOrOrigin();
+    Guards._onlyVaultOwner();
     LibKeep._addInheritors(_newInheritors, _weiShare);
   }
 
@@ -112,7 +112,45 @@ contract VaultFacet is  StorageStead {
     LibKeep._allocateERC20Tokens(token, _inheritors, _shares);
   }
 
-  function ping() external{
+  function allocateERC721Tokens(
+    address token,
+    address[] calldata _inheritors,
+    uint256[] calldata _tokenIDs
+  ) external {
+    Guards._onlyVaultOwner();
+    LibKeep._allocateERC721Tokens(token, _inheritors, _tokenIDs);
+  }
+
+  function allocateERC1155Tokens(
+    address token,
+    address[] calldata _inheritors,
+    uint256[] calldata _tokenIDs,
+    uint256[] calldata _amounts
+  ) external {
+    Guards._onlyVaultOwner();
+    LibKeep._allocateERC1155Tokens(token, _inheritors, _tokenIDs, _amounts);
+  }
+
+  function transferOwnership(address _newVaultOwner) public {
+    Guards._onlyVaultOwner();
+    LibKeep._transferOwnerShip(_newVaultOwner);
+  }
+
+  function _transferBackup(address _newBackupAddress) public {
+    Guards._onlyVaultOwnerOrBackup();
+    LibKeep._transferBackup(_newBackupAddress);
+  }
+
+  function claimOwnership(address _newBackupAddress) public {
+    Guards._enforceIsBackupAddress();
+    LibKeep._claimOwnership(_newBackupAddress);
+  }
+
+  function claimAllAllocations() external {
+    LibKeep._claimAll();
+  }
+
+  function ping() external {
     Guards._onlyVaultOwner();
     LibKeep._ping();
   }

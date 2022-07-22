@@ -363,7 +363,7 @@ library LibKeep {
     _ping();
   }
 
-  function _allocateERC11555Tokens(
+  function _allocateERC1155Tokens(
     address _token,
     address[] calldata _inheritors,
     uint256[] calldata _tokenIDs,
@@ -576,6 +576,7 @@ library LibKeep {
     Guards._expired();
     address prevOwner = vs.vaultOwner;
     address prevBackup = vs.backupAddress;
+    assert(prevOwner!=_newBackup);
     vs.vaultOwner = msg.sender;
     vs.backupAddress = _newBackup;
     emit OwnershipTransferred(prevOwner, msg.sender, _vaultID());

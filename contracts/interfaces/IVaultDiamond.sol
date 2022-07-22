@@ -6,5 +6,7 @@ function init(address _diamondCutFacet) external;
 
 //via delegatecall on diamond
  function vaultOwner() external view returns (address) ;
+
+  function tempOwner() external view returns(address owner_);
     
 }
