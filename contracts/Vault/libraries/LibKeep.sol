@@ -94,7 +94,7 @@ library LibKeep {
 
   error LengthMismatch();
   error ActiveInheritor();
-  error NotEnoughEtherToAllocate();
+  error NotEnoughEtherToAllocate(uint256);
   error EmptyArray();
   error NotInheritor();
   error EtherAllocationOverflow(uint256 overflow);
@@ -239,7 +239,7 @@ library LibKeep {
       if (vs.activeInheritors[_newInheritors[k]]) revert ActiveInheritor();
 
       if (total + allocated > address(this).balance)
-        revert NotEnoughEtherToAllocate();
+        revert NotEnoughEtherToAllocate(address(this).balance);
       vs.inheritorWeishares[_newInheritors[k]] = _weiShare[k];
       //append the inheritors for a vault
       vs.inheritors.push(_newInheritors[k]);

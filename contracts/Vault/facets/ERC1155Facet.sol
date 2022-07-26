@@ -4,7 +4,7 @@ import "../libraries/LibKeep.sol";
 
 import "../libraries/LibTokens.sol";
 
-contract ERC1155Facet is StorageStead {
+contract ERC1155Facet {
   struct AllocatedERC1155Tokens {
     uint256 tokenID;
     uint256 amount;
@@ -17,6 +17,7 @@ contract ERC1155Facet is StorageStead {
     returns (AllocatedERC1155Tokens[] memory alloc_)
   {
     Guards._activeInheritor(_inheritor);
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     uint256 tokenCount = vs
     .inheritorAllocatedTokenIds[_inheritor][_token].length;
     if (tokenCount > 0) {

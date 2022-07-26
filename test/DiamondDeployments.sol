@@ -114,6 +114,7 @@ erc20t.approve(newVaault,10000000000000);
 erc20t.balanceOf(msg.sender);
 
 ERC20Facet(newVaault).depositERC20Token(address(erc20t),1000000);
+VaultFacet(newVaault).inspectVault();
 vm.stopPrank();
   }
   //mint tokens to tx.origin

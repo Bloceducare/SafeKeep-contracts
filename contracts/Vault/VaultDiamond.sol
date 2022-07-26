@@ -22,7 +22,8 @@ contract VaultDiamond {
     LibDiamond.setVaultOwner(_contractOwner);
   }
 
-  function init(address _diamondCutFacet) public {
+  function init(address _diamondCutFacet,address _backup) public {
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     assert(!_init);
     assert(
       msg.sender == LibDiamond.vaultOwner() ||
@@ -40,8 +41,11 @@ contract VaultDiamond {
     });
    
     LibDiamond.diamondCut(cut, address(0), "");
+    vs.backupAddress=_backup;
     _init=true;
   }
+
+  
 
   // Find facet for function that is called and execute the
   // function if a facet is found and return any value.

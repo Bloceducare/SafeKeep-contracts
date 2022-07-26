@@ -44,6 +44,8 @@ library LibDiamond {
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
+    
+
     function vaultOwner() internal view returns (address contractOwner_) {
         contractOwner_ = vaultStorage().vaultOwner;
     }

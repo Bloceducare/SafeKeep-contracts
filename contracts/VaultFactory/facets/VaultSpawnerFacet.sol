@@ -6,6 +6,7 @@ import "../../Vault/libraries/LibKeep.sol";
 import "../../interfaces/IVaultDiamond.sol";
 
 import "../../interfaces/IDiamondCut.sol";
+import "../../interfaces/IVaultFacet.sol";
 
 contract VaultSpawnerFacet is StorageLayout {
       event VaultCreated(
@@ -40,10 +41,13 @@ contract VaultSpawnerFacet is StorageLayout {
     }
     //init diamond with diamondCut facet
     //insert a constant cut facet...modular and reusable across diamonds
-    IVaultDiamond(addr).init(fs.diamondCutFacet);
+    IVaultDiamond(addr).init(fs.diamondCutFacet,_backupAddress);
     //assert diamond owner
     //confirm for EOA auth in same call frame
     assert(IVaultDiamond(addr).tempOwner()==tx.origin);
+    //deposit startingBal
+    (bool success,)=addr.call{value:_startingBal}("");
+    assert(success);
 
 //proceed to upgrade new diamond with default facets
 IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](5);
@@ -76,8 +80,9 @@ IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](5);
        IDiamondCut(addr).diamondCut(cut, address(0), "");
     //add inheritors if any
     if(_inheritors.length>0){
-        LibKeep._addInheritors(_inheritors,_weiShare);
+        IVaultFacet(addr).addInheritors(_inheritors,_weiShare);
     }
+ 
     emit VaultCreated(msg.sender,_backupAddress,_startingBal,fs.VAULTID);
     fs.VAULTID++;
 

@@ -30,4 +30,5 @@ interface IVaultFacet {
     uint256[] calldata _weiShare
   ) external;
     
+    function transferBackup(address _newBackupAddress)external;
 }

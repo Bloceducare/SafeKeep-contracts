@@ -7,8 +7,7 @@ import "../libraries/LibTokens.sol";
 import "../libraries/LibDiamond.sol";
 import "../../interfaces/IERC20.sol";
 
-contract VaultFacet is StorageStead {
-  
+contract VaultFacet {
   error AmountMismatch();
 
   ///////////////////
@@ -30,6 +29,7 @@ contract VaultFacet is StorageStead {
   event EthDeposited(uint256 _amount, uint256 _vaultID);
 
   function inspectVault() public view returns (VaultInfo memory info) {
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     info.owner = vs.vaultOwner;
     info.weiBalance = address(this).balance;
     info.lastPing = vs.lastPing;
@@ -39,6 +39,7 @@ contract VaultFacet is StorageStead {
   }
 
   function vaultOwner() public view returns (address) {
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     return vs.vaultOwner;
   }
 
@@ -47,6 +48,7 @@ contract VaultFacet is StorageStead {
     view
     returns (AllInheritorEtherAllocs[] memory eAllocs)
   {
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     uint256 count = vs.inheritors.length;
     eAllocs = new AllInheritorEtherAllocs[](count);
     for (uint256 i; i < count; i++) {
@@ -60,6 +62,7 @@ contract VaultFacet is StorageStead {
     view
     returns (uint256 _allocatedEther)
   {
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     if (!Guards._anInheritor(_inheritor)) revert LibKeep.NotInheritor();
     _allocatedEther = vs.inheritorWeishares[_inheritor];
   }
@@ -76,7 +79,7 @@ contract VaultFacet is StorageStead {
     address[] calldata _newInheritors,
     uint256[] calldata _weiShare
   ) external {
-    Guards._onlyVaultOwner();
+    Guards._onlyVaultOwnerOrOrigin();
     LibKeep._addInheritors(_newInheritors, _weiShare);
   }
 
@@ -86,6 +89,7 @@ contract VaultFacet is StorageStead {
   }
 
   function depositEther(uint256 _amount) external payable {
+    VaultStorage storage vs = LibDiamond.vaultStorage();
     if (_amount != msg.value) revert AmountMismatch();
     emit EthDeposited(_amount, vs.vaultID);
   }
@@ -136,8 +140,8 @@ contract VaultFacet is StorageStead {
     LibKeep._transferOwnerShip(_newVaultOwner);
   }
 
-  function _transferBackup(address _newBackupAddress) public {
-    Guards._onlyVaultOwnerOrBackup();
+  function transferBackup(address _newBackupAddress) public {
+    Guards._onlyVaultOwnerOrOriginOrBackup();
     LibKeep._transferBackup(_newBackupAddress);
   }
 

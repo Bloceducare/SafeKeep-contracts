@@ -77,11 +77,15 @@ library Guards {
 
 function _onlyVaultOwnerOrOrigin() internal view{
     VaultStorage storage vs = LibDiamond.vaultStorage();
-    if(tx.origin != vs.vaultOwner || msg.sender !=vs.vaultOwner )  revert NoPermissions();
+    if(tx.origin != vs.vaultOwner && msg.sender !=vs.vaultOwner )  revert NoPermissions();
+}
+function _onlyVaultOwnerOrOriginOrBackup() internal view{
+    VaultStorage storage vs = LibDiamond.vaultStorage();
+    if(tx.origin != vs.vaultOwner && msg.sender !=vs.vaultOwner && msg.sender != vs.backupAddress && tx.origin!= vs.backupAddress )  revert NoPermissions();
 }
     function _onlyVaultOwnerOrBackup() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (msg.sender != vs.backupAddress || msg.sender != vs.vaultOwner) 
+        if (msg.sender != vs.backupAddress && msg.sender != vs.vaultOwner) 
             revert NotOwnerOrBackupAddress();
     }
 
