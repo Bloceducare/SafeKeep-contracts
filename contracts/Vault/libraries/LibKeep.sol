@@ -623,10 +623,12 @@ library LibKeep {
             if (tokenID == 0) {
               //check for whitelist
               if (vs.whitelist[msg.sender][token]) {
-                IERC721(token).transferFrom(address(this), msg.sender, 0);
                 vs.whitelist[msg.sender][token] = false;
+                vs.inheritorAllocatedERC721TokenAddresses[msg.sender][i] = 0;
+                IERC721(token).transferFrom(address(this), msg.sender, 0);
                 emit ERC721TokenClaimed(msg.sender, token, 0, _vaultID());
               } else {
+                vs.inheritorAllocatedERC721TokenAddresses[msg.sender][i] = 0;
                 IERC721(token).transferFrom(address(this), msg.sender, tokenID);
                 emit ERC721TokenClaimed(msg.sender, token, tokenID, _vaultID());
               }
@@ -658,6 +660,7 @@ library LibKeep {
               token
             ][tokenID];
             if (amount > 0) {
+              vs.inheritorERC1155TokenAllocations[msg.sender][token][tokenID] = 0;
               IERC1155(token).safeTransferFrom(
                 address(this),
                 msg.sender,
