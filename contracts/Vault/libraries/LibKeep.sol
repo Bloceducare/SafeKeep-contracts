@@ -135,7 +135,8 @@ library LibKeep {
   }
 
   function getCurrentAllocated1155tokens(address _token, uint256 _tokenID)
-    internal view
+    internal
+    view
     returns (uint256 alloc_)
   {
     VaultStorage storage vs = LibDiamond.vaultStorage();
@@ -173,6 +174,49 @@ library LibKeep {
       //@Abims-Web3bridge //@Falilah
       //remove all token addresses
       delete vs.inheritorAllocatedERC20Tokens[_inheritor];
+    }
+
+    if (vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length > 0) {
+      for (
+        uint256 x;
+        x < vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
+        x++
+      ) {
+        uint256 tokenAllocated = vs.inheritorERC721Tokens[_inheritor][
+          vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]
+        ];
+        if (tokenAllocated == 0) {
+          vs.whitelist[_inheritor][
+            vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]
+          ] = false;
+        }
+        vs.inheritorERC721Tokens[_inheritor][
+          vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]
+        ] = 0;
+        vs.allocatedERC721Tokens[
+          vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]
+        ][tokenAllocated] = false;
+      }
+
+      delete vs.inheritorAllocatedERC721TokenAddresses[_inheritor];
+    }
+
+    if (vs.inheritorAllocatedERC1155TokenAddresses[_inheritor].length > 0) {
+      for (
+        uint256 x;
+        x < vs.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
+        x++
+      ) {
+        vs.inheritorERC1155TokenAllocations[_inheritor][
+          vs.inheritorAllocatedERC1155TokenAddresses[_inheritor][x]
+        ][
+            vs.inheritorAllocatedTokenIds[_inheritor][
+              vs.inheritorAllocatedERC1155TokenAddresses[_inheritor][x]
+            ][x]
+          ] = 0;
+      }
+
+      delete vs.inheritorAllocatedERC1155TokenAddresses[_inheritor];
     }
   }
 
@@ -595,7 +639,7 @@ library LibKeep {
         uint256 amountToClaim = vs.inheritorTokenShares[msg.sender][token];
         if (amountToClaim > 0) {
           //reset storage
-           vs.inheritorTokenShares[msg.sender][token] = 0;
+          vs.inheritorTokenShares[msg.sender][token] = 0;
           IERC20(token).transfer(msg.sender, amountToClaim);
           emit ERC20TokensClaimed(msg.sender, token, amountToClaim, _vaultID());
         }
