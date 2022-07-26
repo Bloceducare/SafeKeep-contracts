@@ -192,7 +192,7 @@ library LibKeep {
         }
         vs.inheritorERC721Tokens[_inheritor][
           vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]
-        ] = type(uint256).max - 2;
+        ] = 0;
         vs.allocatedERC721Tokens[
           vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]
         ][tokenAllocated] = false;
@@ -213,7 +213,7 @@ library LibKeep {
             vs.inheritorAllocatedTokenIds[_inheritor][
               vs.inheritorAllocatedERC1155TokenAddresses[_inheritor][x]
             ][x]
-          ] = type(uint256).max - 2;
+          ] = 0;
       }
 
       delete vs.inheritorAllocatedERC1155TokenAddresses[_inheritor];
