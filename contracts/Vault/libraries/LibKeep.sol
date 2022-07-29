@@ -361,7 +361,7 @@ library LibKeep {
             //TO-DO remove the id from current's allocatedID array..done??
             vs.whitelist[_token][current] = false;
             LibKeepHelpers.removeUint(
-              vs.inheritorAllocatedTokenIds[msg.sender][_token],
+              vs.inheritorAllocatedTokenIds[current][_token],
               _tokenIDs[k]
             );
           }
@@ -389,9 +389,11 @@ library LibKeep {
             _token
           );
         }
+      
         vs.inheritorAllocatedTokenIds[_inheritors[k]][_token].push(
-          _tokenIDs[k]
+         _tokenIDs[k]
         );
+   
         if (_tokenIDs[k] == 0) {
           vs.whitelist[_token][_inheritors[k]] = true;
         }

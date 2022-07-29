@@ -31,4 +31,8 @@ interface IVaultFacet {
   ) external;
     
     function transferBackup(address _newBackupAddress)external;
+    function allEtherAllocations()
+    external
+    view
+    returns (AllInheritorEtherAllocs[] memory eAllocs);
 }

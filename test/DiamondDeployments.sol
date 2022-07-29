@@ -40,11 +40,11 @@ DiamondLoupeFactoryFacet dloupeFactoryFacet;
 VaultERC1155Token erc1155t;
 VaultERC20Token erc20t;
 VaultERC721Token erc721t;
+address newVaault;
 
 
 
-
-function testdeployAllContracts() public{
+function setUp() public{
     vm.label(tx.origin,"VaultOwner1");
     //deploy Vault facets
 erc1155Facet=new ERC1155Facet();
@@ -104,8 +104,7 @@ vFactoryDiamond.setSelectors(_selectors);
 address s=mkaddr("ann");
 
 
-vm.startPrank(tx.origin);
-address newVaault=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(s),toSingletonUINT(10000),1e18,mkaddr("lucky guy"));
+newVaault=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(s),toSingletonUINT(10000),1e18,mkaddr("lucky guy"));
 
 
 erc20t.approve(newVaault,10000000000000);
@@ -115,9 +114,9 @@ erc20t.balanceOf(msg.sender);
 
 ERC20Facet(newVaault).depositERC20Token(address(erc20t),1000000);
 VaultFacet(newVaault).inspectVault();
-vm.stopPrank();
+VaultFacet(newVaault).allEtherAllocations();
   }
-  //mint tokens to tx.origin
+
 
 
 
@@ -176,7 +175,7 @@ vm.stopPrank();
 
 
     function toSingletonUINT(uint256 _no)
-        private
+        internal
         pure
         returns (uint256[] memory)
     {
@@ -186,7 +185,7 @@ vm.stopPrank();
     }
 
     function toSingletonAdd(address _no)
-        private
+        internal
         pure
         returns (address[] memory)
     {

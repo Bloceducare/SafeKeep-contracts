@@ -4,7 +4,7 @@ import "../libraries/LibKeep.sol";
 
 import "../libraries/LibTokens.sol";
 
-contract ERC20Facet is StorageStead {
+contract ERC20Facet {
   struct AllocatedERC20Tokens {
     address token;
     uint256 amount;
@@ -16,6 +16,7 @@ contract ERC20Facet is StorageStead {
     returns (AllocatedERC20Tokens[] memory tAllocs)
   {
     Guards._activeInheritor(_inheritor);
+     VaultStorage storage vs = LibDiamond.vaultStorage();
     uint256 count = vs.inheritorAllocatedERC20Tokens[_inheritor].length;
     if (count > 0) {
       tAllocs = new AllocatedERC20Tokens[](count);
@@ -26,18 +27,20 @@ contract ERC20Facet is StorageStead {
       }
     }
   }
+  
 
   function inheritorERC20TokenAllocation(address _inheritor, address _token)
     public
     view
     returns (uint256)
   {
+     VaultStorage storage vs = LibDiamond.vaultStorage();
     return vs.inheritorTokenShares[_inheritor][_token];
   }
 
   //DEPOSITS
   function depositERC20Token(address _token, uint256 _amount) external {
-    Guards._onlyVaultOwner();
+  //  Guards._onlyVaultOwner();
     LibTokens._inputERC20Token(_token, _amount);
   }
 

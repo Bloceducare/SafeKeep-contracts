@@ -38,7 +38,7 @@ contract ERC1155Facet {
     uint256 _tokenID,
     uint256 _amount
   ) external {
-    Guards._onlyVaultOwner();
+   // Guards._onlyVaultOwner();
     LibTokens._safeInputERC1155Token(_token, _tokenID, _amount);
   }
 
@@ -47,7 +47,7 @@ contract ERC1155Facet {
     uint256[] calldata _tokenIDs,
     uint256[] calldata _amounts
   ) external {
-    Guards._onlyVaultOwner();
+   // Guards._onlyVaultOwner();
     LibTokens._safeBatchInputERC1155Tokens(_token, _tokenIDs, _amounts);
   }
 

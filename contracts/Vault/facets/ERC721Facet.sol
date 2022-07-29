@@ -1,11 +1,10 @@
 pragma solidity 0.8.4;
 
 import "../libraries/LibKeep.sol";
-import "../libraries/LibVaultStorage.sol";
 
 import "../libraries/LibTokens.sol";
 
-contract ERC721Facet is StorageStead {
+contract ERC721Facet  {
 
 
  struct AllocatedERC721Tokens{
@@ -14,6 +13,7 @@ contract ERC721Facet is StorageStead {
  }
 
  function getAllocatedERC721Tokens(address _inheritor) public view returns(AllocatedERC721Tokens[] memory allocated){
+   VaultStorage storage vs = LibDiamond.vaultStorage();
     Guards._activeInheritor(_inheritor);
     uint256 tokenAddressCount=vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
     if(tokenAddressCount>0){
@@ -25,6 +25,11 @@ contract ERC721Facet is StorageStead {
         }
     }
  }  
+ function getAllocatedERC721TokenAddresses(address _inheritor) public view returns(address[] memory){
+   VaultStorage storage vs = LibDiamond.vaultStorage();
+   Guards._activeInheritor(_inheritor);
+   return vs.inheritorAllocatedERC721TokenAddresses[_inheritor];
+ }
 
   //DEPOSITS
 
@@ -32,7 +37,7 @@ contract ERC721Facet is StorageStead {
     address _token,
     uint256 _tokenID
   ) external {
-    Guards._onlyVaultOwner();
+   // Guards._onlyVaultOwner();
     LibTokens._inputERC721Token(_token, _tokenID);
   }
 
@@ -40,7 +45,7 @@ contract ERC721Facet is StorageStead {
     address _token,
     uint256 _tokenID
   ) external {
-    Guards._onlyVaultOwner();
+   // Guards._onlyVaultOwner();
     LibTokens._safeInputERC721Token(_token, _tokenID);
   }
 
@@ -48,7 +53,7 @@ contract ERC721Facet is StorageStead {
     address _token,
     uint256 _tokenID,bytes calldata data
   ) external {
-    Guards._onlyVaultOwner();
+    //Guards._onlyVaultOwner();
     LibTokens._safeInputERC721TokenAndCall(_token, _tokenID,data);
   }
 

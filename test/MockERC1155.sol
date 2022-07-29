@@ -3,8 +3,8 @@ import "solmate.git/tokens/ERC1155.sol";
 
 contract VaultERC1155Token is ERC1155{
     constructor() {
-        _mint(tx.origin, 0,10,"");
-          _mint(tx.origin, 1,10,"");
-           _mint(tx.origin, 2,10,"");
+        _mint(msg.sender, 0,10,"");
+          _mint(msg.sender, 1,10,"");
+           _mint(msg.sender, 2,10,"");
     }
 }

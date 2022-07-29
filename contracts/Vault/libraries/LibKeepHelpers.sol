@@ -27,7 +27,7 @@ library LibKeepHelpers {
     }
 
     function removeUint(uint[] storage _noArray, uint to) internal {
-        require(_noArray.length > 0, "Non-elemented array");
+        require(_noArray.length > 0, "Non-elemented number array");
         uint256 index = findUintIndex(to, _noArray);
         if (_noArray.length == 1) {
             _noArray.pop();
@@ -41,7 +41,7 @@ library LibKeepHelpers {
     }
 
     function removeAddress(address[] storage _array, address _add) internal {
-        require(_array.length > 0, "Non-elemented array");
+        require(_array.length > 0, "Non-elemented address array");
         uint256 index = findAddIndex(_add, _array);
         if (_array.length == 1) {
             _array.pop();
