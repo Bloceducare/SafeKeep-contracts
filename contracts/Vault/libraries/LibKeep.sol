@@ -263,10 +263,6 @@ library LibKeep {
       vs.activeInheritors[_inheritors[k]] = false;
       //pop out the address from the array
       LibKeepHelpers.removeAddress(vs.inheritors, _inheritors[k]);
-
-      //should interact with master diamond to mutate record
-      //remember to safeguard
-      //LibKeepHelpers.removeUint(userVaults[_inheritors[k]], _vaultID());
       reset(_inheritors[k]);
     }
     _ping();
@@ -638,6 +634,7 @@ library LibKeep {
     if (tokens > 0) {
       for (uint256 i; i < tokens; i++) {
         address token = vs.inheritorAllocatedERC20Tokens[msg.sender][i];
+        if(token==address(0)) continue;
         uint256 amountToClaim = vs.inheritorTokenShares[msg.sender][token];
         if (amountToClaim > 0) {
           //reset storage
@@ -659,6 +656,7 @@ library LibKeep {
         address token = vs.inheritorAllocatedERC721TokenAddresses[msg.sender][
           i
         ];
+        if(token==address(0)) continue;
         uint256 tokensToClaim = vs
         .inheritorAllocatedTokenIds[msg.sender][token].length;
         if (tokensToClaim > 1) {
@@ -672,11 +670,16 @@ library LibKeep {
                 IERC721(token).transferFrom(address(this), msg.sender, 0);
                 vs.whitelist[msg.sender][token] = false;
                 emit ERC721TokenClaimed(msg.sender, token, 0, _vaultID());
-              } else {
+              }
+            }
+             else {
+              //test thorougly for array overflows
+                 vs.inheritorAllocatedTokenIds[msg.sender][token][
+              j
+            ]= 0;
                 IERC721(token).transferFrom(address(this), msg.sender, tokenID);
                 emit ERC721TokenClaimed(msg.sender, token, tokenID, _vaultID());
               }
-            }
           }
         }
       }
@@ -693,6 +696,7 @@ library LibKeep {
         address token = vs.inheritorAllocatedERC1155TokenAddresses[msg.sender][
           i
         ];
+        if(token==address(0)) continue;
         uint256 noOfTokenIds = vs
         .inheritorAllocatedTokenIds[msg.sender][token].length;
         if (noOfTokenIds > 0) {
@@ -749,6 +753,9 @@ library LibKeep {
 
       //cleanup
       LibKeepHelpers.removeAddress(vs.inheritors, msg.sender);
+      //clear slate
+      //test thorougly
+      reset(msg.sender);
     }
   }
 }
