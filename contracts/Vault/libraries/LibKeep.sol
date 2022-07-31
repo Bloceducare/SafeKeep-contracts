@@ -626,9 +626,9 @@ library LibKeep {
   }
 
   function _claimERC20Tokens() internal {
-    Guards._anInheritor(msg.sender);
-    Guards._activeInheritor(msg.sender);
-    Guards._expired();
+    // Guards._anInheritor(msg.sender);
+    // Guards._activeInheritor(msg.sender);
+    // Guards._expired();
     VaultStorage storage vs = LibDiamond.vaultStorage();
     uint256 tokens = vs.inheritorAllocatedERC20Tokens[msg.sender].length;
     if (tokens > 0) {
@@ -659,7 +659,7 @@ library LibKeep {
         if(token==address(0)) continue;
         uint256 tokensToClaim = vs
         .inheritorAllocatedTokenIds[msg.sender][token].length;
-        if (tokensToClaim > 1) {
+        if (tokensToClaim > 0) {
           for (uint256 j; j < tokensToClaim; j++) {
             uint256 tokenID = vs.inheritorAllocatedTokenIds[msg.sender][token][
               j
@@ -667,8 +667,8 @@ library LibKeep {
             if (tokenID == 0) {
               //check for whitelist
               if (vs.whitelist[msg.sender][token]) {
-                IERC721(token).transferFrom(address(this), msg.sender, 0);
                 vs.whitelist[msg.sender][token] = false;
+                IERC721(token).transferFrom(address(this), msg.sender, 0);       
                 emit ERC721TokenClaimed(msg.sender, token, 0, _vaultID());
               }
             }
@@ -708,6 +708,9 @@ library LibKeep {
               token
             ][tokenID];
             if (amount > 0) {
+              vs.inheritorERC1155TokenAllocations[msg.sender][
+              token
+            ][tokenID]=0;
               IERC1155(token).safeTransferFrom(
                 address(this),
                 msg.sender,
@@ -741,21 +744,22 @@ library LibKeep {
       vs.inheritorWeishares[msg.sender] == 0;
       (bool success, ) = msg.sender.call{ value: amountToClaim }("");
       assert(success);
-      vs.activeInheritors[msg.sender] = false;
+    
       //make call to global storage to remove vaultID
       emit EthClaimed(msg.sender, amountToClaim, _vaultID());
-      //claim ERC20 tokens..if any
+    }
+         //claim ERC20 tokens..if any
       _claimERC20Tokens();
       //claim ERC721 Tokens if any
       _claimERC721Tokens();
       //claim ERC1155 Tokens if any
       _claimERC1155Tokens();
 
-      //cleanup
+       //cleanup
       LibKeepHelpers.removeAddress(vs.inheritors, msg.sender);
       //clear slate
       //test thorougly
       reset(msg.sender);
-    }
+
   }
 }
