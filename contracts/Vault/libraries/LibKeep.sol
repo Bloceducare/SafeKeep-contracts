@@ -152,6 +152,27 @@ library LibKeep {
     vaultID_ = vs.vaultID;
   }
 
+
+function _resetClaimed(address _inheritor) internal {
+
+  VaultStorage storage vs = LibDiamond.vaultStorage();
+    vs.inheritorWeishares[_inheritor] = 0;
+    //resetting all token allocations if he has any
+    if (vs.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
+     
+      //remove all token addresses
+      delete vs.inheritorAllocatedERC20Tokens[_inheritor];
+    }
+
+    if (vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length > 0) {    
+      delete vs.inheritorAllocatedERC721TokenAddresses[_inheritor];
+    }
+
+    if (vs.inheritorAllocatedERC1155TokenAddresses[_inheritor].length > 0) {
+      delete vs.inheritorAllocatedERC1155TokenAddresses[_inheritor];
+    }
+
+}
   //only used for multiple address elemented arrays
   function reset(address _inheritor) internal {
     VaultStorage storage vs = LibDiamond.vaultStorage();
@@ -361,6 +382,7 @@ library LibKeep {
               _tokenIDs[k]
             );
           }
+          //if it is being unallocated
           if (_inheritors[k] == address(0)) {
             vs.allocatedERC721Tokens[_token][_tokenIDs[k]] = false;
             LibKeepHelpers.removeUint(
@@ -745,7 +767,6 @@ library LibKeep {
       (bool success, ) = msg.sender.call{ value: amountToClaim }("");
       assert(success);
     
-      //make call to global storage to remove vaultID
       emit EthClaimed(msg.sender, amountToClaim, _vaultID());
     }
          //claim ERC20 tokens..if any
@@ -757,9 +778,9 @@ library LibKeep {
 
        //cleanup
       LibKeepHelpers.removeAddress(vs.inheritors, msg.sender);
-      //clear slate
+      //clear storage
       //test thorougly
-      reset(msg.sender);
+      _resetClaimed(msg.sender);
 
   }
 }
