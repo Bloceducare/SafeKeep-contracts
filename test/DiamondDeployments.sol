@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.4;
 
@@ -17,110 +16,124 @@ import "../contracts/VaultFactory/VaultFactoryDiamond.sol";
 //import "../contracts/Vault/facets/DiamondCutFacet.sol";
 //import "../contracts/Vault/facets/DiamondLoupeFacet.sol";
 import "./MockERC1155.sol";
- import "./MockERC20.sol";
- import "./MockERC721.sol";
+import "./MockERC20.sol";
+import "./MockERC721.sol";
 
+contract DDeployments is Test, IDiamondCut {
+    //separate script to deploy all diamonds and expose them for interaction
 
-contract DDeployments is Test,IDiamondCut {
-//separate script to deploy all diamonds and expose them for interaction
+    ERC1155Facet erc1155Facet;
+    ERC721Facet erc721Facet;
+    ERC20Facet erc20Facet;
+    VaultSpawnerFacet spawner;
+    VaultFacet vFacet;
+    //VaultDiamond VDiamond;
+    VaultFactoryDiamond vFactoryDiamond;
+    DiamondCutFacet dCutFacet;
+    DiamondLoupeFacet dLoupeFacet;
 
-ERC1155Facet erc1155Facet;
-ERC721Facet erc721Facet;
-ERC20Facet erc20Facet;
-VaultSpawnerFacet spawner;
-VaultFacet vFacet;
-//VaultDiamond VDiamond;
-VaultFactoryDiamond vFactoryDiamond;
-DiamondCutFacet dCutFacet;
-DiamondLoupeFacet dLoupeFacet;
+    DiamondCutFactoryFacet dCutFactoryFacet;
+    DiamondLoupeFactoryFacet dloupeFactoryFacet;
 
-DiamondCutFactoryFacet dCutFactoryFacet;
-DiamondLoupeFactoryFacet dloupeFactoryFacet;
+    VaultERC1155Token erc1155t;
+    VaultERC20Token erc20t;
+    VaultERC721Token erc721t;
+    address newVaault;
+    address Vault2;
 
-VaultERC1155Token erc1155t;
-VaultERC20Token erc20t;
-VaultERC721Token erc721t;
-address newVaault;
+    function setUp() public {
+        vm.label(tx.origin, "VaultOwner1");
+        //deploy Vault facets
+        erc1155Facet = new ERC1155Facet();
+        erc721Facet = new ERC721Facet();
+        erc20Facet = new ERC20Facet();
+        vFacet = new VaultFacet();
+        dCutFacet = new DiamondCutFacet();
+        dLoupeFacet = new DiamondLoupeFacet();
 
+        //deploy factory facets
+        spawner = new VaultSpawnerFacet();
+        dCutFactoryFacet = new DiamondCutFactoryFacet();
+        dloupeFactoryFacet = new DiamondLoupeFactoryFacet();
+        vm.label(address(this), "Factory Lord");
+        vFactoryDiamond = new VaultFactoryDiamond(
+            address(this),
+            address(dCutFactoryFacet)
+        );
 
+        //deploy mock tokens
+        erc1155t = new VaultERC1155Token();
+        erc20t = new VaultERC20Token();
+        erc721t = new VaultERC721Token();
 
-function setUp() public{
-    vm.label(tx.origin,"VaultOwner1");
-    //deploy Vault facets
-erc1155Facet=new ERC1155Facet();
-erc721Facet=new ERC721Facet();
-erc20Facet=new ERC20Facet();
-vFacet=new VaultFacet();
-dCutFacet=new DiamondCutFacet();
-dLoupeFacet=new DiamondLoupeFacet();
+        //upgrade factory diamond
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](2);
+        cut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(spawner),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: generateSelectors("VaultSpawnerFacet")
+        });
+        cut[1] = IDiamondCut.FacetCut({
+            facetAddress: address(dloupeFactoryFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: generateSelectors("DiamondLoupeFactoryFacet")
+        });
+        IDiamondCut(address(vFactoryDiamond)).diamondCut(cut, address(0), "");
 
-//deploy factory facets
-spawner=new VaultSpawnerFacet();
-dCutFactoryFacet=new DiamondCutFactoryFacet();
-dloupeFactoryFacet=new DiamondLoupeFactoryFacet();
-vm.label(address(this),"Factory Lord");
-vFactoryDiamond=new VaultFactoryDiamond(address(this),address(dCutFactoryFacet));
+        //add facet addresses and selectors to Appstorage
+        address[] memory vaultFacetAddresses = new address[](6);
+        vaultFacetAddresses[0] = address(dCutFacet);
+        vaultFacetAddresses[1] = address(erc20Facet);
+        vaultFacetAddresses[2] = address(erc721Facet);
+        vaultFacetAddresses[3] = address(erc1155Facet);
+        vaultFacetAddresses[4] = address(dLoupeFacet);
+        vaultFacetAddresses[5] = address(vFacet);
 
-//deploy mock tokens
-erc1155t=new VaultERC1155Token();
-erc20t=new VaultERC20Token();
-erc721t=new VaultERC721Token();
+        vFactoryDiamond.setAddresses(vaultFacetAddresses);
 
-//upgrade factory diamond
-IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](2);
-    cut[0] = IDiamondCut.FacetCut({
-      facetAddress: address(spawner),
-      action: IDiamondCut.FacetCutAction.Add,
-      functionSelectors: generateSelectors("VaultSpawnerFacet")
-    });
-     cut[1] = IDiamondCut.FacetCut({
-      facetAddress: address(dloupeFactoryFacet),
-      action: IDiamondCut.FacetCutAction.Add,
-      functionSelectors: generateSelectors("DiamondLoupeFactoryFacet")
-    });
-    IDiamondCut(address(vFactoryDiamond)).diamondCut(cut, address(0), "");
+        //set selectors
+        bytes4[][] memory _selectors = new bytes4[][](5);
+        _selectors[0] = generateSelectors("ERC20Facet");
+        _selectors[1] = generateSelectors("ERC721Facet");
+        _selectors[2] = generateSelectors("ERC1155Facet");
+        _selectors[3] = generateSelectors("DiamondLoupeFacet");
+        _selectors[4] = generateSelectors("VaultFacet");
+        vFactoryDiamond.setSelectors(_selectors);
 
-    //add facet addresses and selectors to Appstorage
-    address[] memory vaultFacetAddresses=new address[](6);
-    vaultFacetAddresses[0]=address(dCutFacet);
-     vaultFacetAddresses[1]=address(erc20Facet);
-      vaultFacetAddresses[2]=address(erc721Facet);
-       vaultFacetAddresses[3]=address(erc1155Facet);
-        vaultFacetAddresses[4]=address(dLoupeFacet);
-         vaultFacetAddresses[5]=address(vFacet);
+        //try to create a vault
+        address s = mkaddr("ann");
 
-    vFactoryDiamond.setAddresses(vaultFacetAddresses);
+        newVaault = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
+            value: 1 ether
+        }(toSingletonAdd(s), toSingletonUINT(10000), 1e18, mkaddr("lucky guy"));
 
-    //set selectors
-    bytes4[][] memory _selectors=new bytes4[][](5);
-_selectors[0]=generateSelectors("ERC20Facet");
-_selectors[1]=generateSelectors("ERC721Facet");
-_selectors[2]=generateSelectors("ERC1155Facet");
-_selectors[3]=generateSelectors("DiamondLoupeFacet");
-_selectors[4]=generateSelectors("VaultFacet");
-vFactoryDiamond.setSelectors(_selectors);
+        erc20t.approve(newVaault, 10000000000000);
+        //run a function on the new vault
 
-//try to create a vault
-address s=mkaddr("ann");
+        erc20t.balanceOf(msg.sender);
 
+        ERC20Facet(newVaault).depositERC20Token(address(erc20t), 1000000);
+        VaultFacet(newVaault).inspectVault();
+        VaultFacet(newVaault).allEtherAllocations();
 
-newVaault=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(s),toSingletonUINT(10000),1e18,mkaddr("lucky guy"));
+        ////create anotherVault
+        address Vault2Owner = mkaddr("vault22");
 
+        vm.startPrank(Vault2Owner);
+        vm.deal(Vault2Owner, 2 ether);
 
-erc20t.approve(newVaault,10000000000000);
-//run a function on the new vault
+        Vault2 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
+            value: 2 ether
+        }(
+            toSingletonAdd(s),
+            toSingletonUINT(10000),
+            2e18,
+            mkaddr("Vault2 BackUp")
+        );
+        vm.stopPrank();
+    }
 
-erc20t.balanceOf(msg.sender);
-
-ERC20Facet(newVaault).depositERC20Token(address(erc20t),1000000);
-VaultFacet(newVaault).inspectVault();
-VaultFacet(newVaault).allEtherAllocations();
-  }
-
-
-
-
-   function generateSelectors(string memory _facetName)
+    function generateSelectors(string memory _facetName)
         internal
         returns (bytes4[] memory selectors)
     {
@@ -138,13 +151,15 @@ VaultFacet(newVaault).allEtherAllocations();
         bytes calldata _calldata
     ) external override {}
 
-    function mkaddr(string memory name) public returns (address){
-        address addr=address(uint160(uint256(keccak256(abi.encodePacked(name)))));
-        vm.label(addr,name);
+    function mkaddr(string memory name) public returns (address) {
+        address addr = address(
+            uint160(uint256(keccak256(abi.encodePacked(name))))
+        );
+        vm.label(addr, name);
         return addr;
     }
 
-      function onERC1155Received(
+    function onERC1155Received(
         address,
         address,
         uint256,
@@ -164,7 +179,7 @@ VaultFacet(newVaault).allEtherAllocations();
         return ERC1155TokenReceiver.onERC1155BatchReceived.selector;
     }
 
-      function onERC721Received(
+    function onERC721Received(
         address,
         address,
         uint256,
@@ -172,7 +187,6 @@ VaultFacet(newVaault).allEtherAllocations();
     ) external virtual returns (bytes4) {
         return ERC721TokenReceiver.onERC721Received.selector;
     }
-
 
     function toSingletonUINT(uint256 _no)
         internal
@@ -193,6 +207,4 @@ VaultFacet(newVaault).allEtherAllocations();
         arr[0] = _no;
         return arr;
     }
-
 }
-
