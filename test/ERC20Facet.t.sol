@@ -117,10 +117,10 @@ contract ERC20FacetTest is DDeployments {
         VaultFacet(address(newVaault)).claimAllAllocations();
         vm.stopPrank();
 
-        address vaultB = VaultFacet(Vault2).vaultOwner();
-        assertEq(vaultB, 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
+        address vault2OwnerOnchain = VaultFacet(Vault2).vaultOwner();
+        assertEq(vault2OwnerOnchain, Vault2Owner);
 
-        vm.startPrank(0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38);
+        vm.startPrank(vault2OwnerOnchain);
 
         VaultFacet(Vault2).ping();
 
@@ -142,9 +142,10 @@ contract ERC20FacetTest is DDeployments {
     function testAllocatedERC20Token() public {
         address vaultOwner = 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
         erc20t.approve(newVaault, 1000000e18);
-        ERC20Facet(newVaault).depositERC20Token(address(erc20t), 1e18);
-        uint256 vaultBal = erc20t.balanceOf(newVaault);
-        assertEq(vaultBal, 1000000000001000000);
+        ERC20Facet(newVaault).depositERC20Token(
+            address(erc20t), 1e18);
+        uint256 vault2Owneral = erc20t.balanceOf(newVaault);
+        assertEq(vault2Owneral, 1000000000001000000);
 
         vm.startPrank(vaultOwner);
         vm.deal(vaultOwner, 19 ether);

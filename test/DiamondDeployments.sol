@@ -41,6 +41,7 @@ contract DDeployments is Test, IDiamondCut {
     address newVaault;
     address Vault2;
 
+address Vault2Owner ;
     function setUp() public {
         vm.label(tx.origin, "VaultOwner1");
         //deploy Vault facets
@@ -117,9 +118,9 @@ contract DDeployments is Test, IDiamondCut {
         VaultFacet(newVaault).allEtherAllocations();
 
         ////create anotherVault
-        address Vault2Owner = mkaddr("vault22");
+         Vault2Owner = mkaddr("vault2");
 
-        vm.startPrank(Vault2Owner);
+        vm.startPrank(Vault2Owner,Vault2Owner);
         vm.deal(Vault2Owner, 2 ether);
 
         Vault2 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{

@@ -66,10 +66,6 @@ struct VaultStorage {
     mapping(address => bool) claimed;
 }
 
-abstract contract StorageStead {
-    VaultStorage internal vs;
-}
-
 library Guards {
     function _onlyVaultOwner() internal view {
         LibDiamond.enforceIsContractOwner();
