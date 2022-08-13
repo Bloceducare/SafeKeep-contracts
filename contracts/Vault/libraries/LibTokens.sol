@@ -30,11 +30,11 @@ library LibTokens {
   );
 
   event BatchERC1155TokenDeposit(
-     address indexed token,
+    address indexed token,
     address indexed from,
     uint256[] tokenIDs,
     uint256[] amounts,
-    uint256 vaultID 
+    uint256 vaultID
   );
 
   //ERC20
@@ -86,13 +86,13 @@ library LibTokens {
   function _inputERC721Token(address _token, uint256 _tokenID) internal {
     Guards._notExpired();
     IERC721(_token).transferFrom(msg.sender, address(this), _tokenID);
-    emit ERC721TokenDeposit(_token,msg.sender,_tokenID,LibKeep._vaultID());
+    emit ERC721TokenDeposit(_token, msg.sender, _tokenID, LibKeep._vaultID());
   }
 
   function _safeInputERC721Token(address _token, uint256 _tokenID) internal {
     Guards._notExpired();
     IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenID);
-    emit ERC721TokenDeposit(_token,msg.sender,_tokenID,LibKeep._vaultID());
+    emit ERC721TokenDeposit(_token, msg.sender, _tokenID, LibKeep._vaultID());
   }
 
   function _safeInputERC721TokenAndCall(
@@ -142,7 +142,13 @@ library LibTokens {
       _value,
       ""
     );
-      emit ERC1155TokenDeposit(_token,msg.sender,_tokenID,_value,LibKeep._vaultID());
+    emit ERC1155TokenDeposit(
+      _token,
+      msg.sender,
+      _tokenID,
+      _value,
+      LibKeep._vaultID()
+    );
   }
 
   function _safeBatchInputERC1155Tokens(
@@ -158,7 +164,13 @@ library LibTokens {
       _values,
       ""
     );
-     emit BatchERC1155TokenDeposit(_token,msg.sender,_tokenIDs,_values,LibKeep._vaultID());
+    emit BatchERC1155TokenDeposit(
+      _token,
+      msg.sender,
+      _tokenIDs,
+      _values,
+      LibKeep._vaultID()
+    );
   }
 
   function _approveAllERC1155Token(

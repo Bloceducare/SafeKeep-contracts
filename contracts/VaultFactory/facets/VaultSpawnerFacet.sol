@@ -9,12 +9,12 @@ import "../../interfaces/IDiamondCut.sol";
 import "../../interfaces/IVaultFacet.sol";
 
 contract VaultSpawnerFacet is StorageLayout {
-      event VaultCreated(
-        address indexed owner,
-        address indexed backup,
-        uint256 indexed startingBalance,
-        uint256 vaultID
-    );
+  event VaultCreated(
+    address indexed owner,
+    address indexed backup,
+    uint256 indexed startingBalance,
+    uint256 vaultID
+  );
   error BackupAddressError();
 
   function createVault(
@@ -27,7 +27,7 @@ contract VaultSpawnerFacet is StorageLayout {
     if (_startingBal > 0) {
       assert(_startingBal == msg.value);
     }
-    assert(_inheritors.length==_weiShare.length);
+    assert(_inheritors.length == _weiShare.length);
     //spawn contract
     bytes memory code = type(VaultDiamond).creationCode;
     bytes32 entropy = keccak256(
@@ -41,50 +41,50 @@ contract VaultSpawnerFacet is StorageLayout {
     }
     //init diamond with diamondCut facet
     //insert a constant cut facet...modular and reusable across diamonds
-    IVaultDiamond(addr).init(fs.diamondCutFacet,_backupAddress);
+    IVaultDiamond(addr).init(fs.diamondCutFacet, _backupAddress);
     //assert diamond owner
     //confirm for EOA auth in same call frame
-    assert(IVaultDiamond(addr).tempOwner()==tx.origin);
+    assert(IVaultDiamond(addr).tempOwner() == tx.origin);
     //deposit startingBal
-    (bool success,)=addr.call{value:_startingBal}("");
+    (bool success, ) = addr.call{ value: _startingBal }("");
     assert(success);
 
-//proceed to upgrade new diamond with default facets
-IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](5);
- cut[0] = IDiamondCut.FacetCut({
+    //proceed to upgrade new diamond with default facets
+    IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](5);
+    cut[0] = IDiamondCut.FacetCut({
       facetAddress: fs.erc20Facet,
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: fs.ERC20SELECTORS
     });
-     cut[1] = IDiamondCut.FacetCut({
+    cut[1] = IDiamondCut.FacetCut({
       facetAddress: fs.erc721Facet,
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: fs.ERC721SELECTORS
     });
-     cut[2] = IDiamondCut.FacetCut({
+    cut[2] = IDiamondCut.FacetCut({
       facetAddress: fs.erc1155Facet,
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: fs.ERC1155SELECTORS
     });
-     cut[3] = IDiamondCut.FacetCut({
+    cut[3] = IDiamondCut.FacetCut({
       facetAddress: fs.diamondLoupeFacet,
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: fs.DIAMONDLOUPEFACETSELECTORS
     });
-     cut[4] = IDiamondCut.FacetCut({
+    cut[4] = IDiamondCut.FacetCut({
       facetAddress: fs.vaultFacet,
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: fs.VAULTFACETSELECTORS
     });
     //upgrade
-       IDiamondCut(addr).diamondCut(cut, address(0), "");
+    IDiamondCut(addr).diamondCut(cut, address(0), "");
     //add inheritors if any
-    if(_inheritors.length>0){
-        IVaultFacet(addr).addInheritors(_inheritors,_weiShare);
+    if (_inheritors.length > 0) {
+      IVaultFacet(addr).addInheritors(_inheritors, _weiShare);
     }
- 
-    emit VaultCreated(msg.sender,_backupAddress,_startingBal,fs.VAULTID);
-    fs.VAULTID++;
 
+    emit VaultCreated(msg.sender, _backupAddress, _startingBal, fs.VAULTID);
+
+    fs.VAULTID++;
   }
 }
