@@ -41,7 +41,7 @@ contract VaultSpawnerFacet is StorageLayout {
     }
     //init diamond with diamondCut facet
     //insert a constant cut facet...modular and reusable across diamonds
-    IVaultDiamond(addr).init(fs.diamondCutFacet, _backupAddress);
+    IVaultDiamond(addr).init(fs.diamondCutFacet, _backupAddress,fs.VAULTID);
     //assert diamond owner
     //confirm for EOA auth in same call frame
     assert(IVaultDiamond(addr).tempOwner() == tx.origin);

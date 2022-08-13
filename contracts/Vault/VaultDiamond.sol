@@ -22,7 +22,7 @@ contract VaultDiamond {
     LibDiamond.setVaultOwner(_contractOwner);
   }
 
-  function init(address _diamondCutFacet,address _backup) public {
+  function init(address _diamondCutFacet,address _backup,uint256 _id) public {
     VaultStorage storage vs = LibDiamond.vaultStorage();
     assert(!_init);
     assert(
@@ -42,6 +42,7 @@ contract VaultDiamond {
    
     LibDiamond.diamondCut(cut, address(0), "");
     vs.backupAddress=_backup;
+    vs.vaultID=_id;
     _init=true;
   }
 
