@@ -1,3 +1,3 @@
 # SafeKeep
 
-Repo for safekeep finance containing allcontract components
+Repo for safekeep finance containing all contract components
