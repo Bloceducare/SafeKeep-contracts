@@ -37,15 +37,26 @@ DiamondLoupeFacet dLoupeFacet;
 DiamondCutFactoryFacet dCutFactoryFacet;
 DiamondLoupeFactoryFacet dloupeFactoryFacet;
 
+//2 instances of eachMocktoken
 VaultERC1155Token erc1155t;
 VaultERC20Token erc20t;
 VaultERC721Token erc721t;
-address newVaault;
 
+VaultERC1155Token erc1155t2;
+VaultERC20Token erc20t2;
+VaultERC721Token erc721t2;
 
+address vault1;
+address vault1Inheritor1;
+address vault1Owner;
+
+//Facet types tied to vaultAddresses
+ERC20Facet v1ERC20Facet;
+ERC721Facet v1ERC721Facet;
+ERC1155Facet v1ERC1155Facet;
+VaultFacet v1VaultFacet;
 
 function setUp() public{
-    vm.label(tx.origin,"VaultOwner1");
     //deploy Vault facets
 erc1155Facet=new ERC1155Facet();
 erc721Facet=new ERC721Facet();
@@ -65,6 +76,11 @@ vFactoryDiamond=new VaultFactoryDiamond(address(this),address(dCutFactoryFacet))
 erc1155t=new VaultERC1155Token();
 erc20t=new VaultERC20Token();
 erc721t=new VaultERC721Token();
+
+erc1155t2=new VaultERC1155Token();
+erc20t2=new VaultERC20Token();
+erc721t2=new VaultERC721Token();
+
 
 //upgrade factory diamond
 IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](2);
@@ -100,21 +116,29 @@ _selectors[3]=generateSelectors("DiamondLoupeFacet");
 _selectors[4]=generateSelectors("VaultFacet");
 vFactoryDiamond.setSelectors(_selectors);
 
-//try to create a vault
-address s=mkaddr("ann");
+//create a vault
+vault1Inheritor1=mkaddr("inheritor1");
+vault1Owner=mkaddr("vault1Owner");
+//make sure vault1Owner is tx.origin
+vm.prank(address(this),vault1Owner);
+vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(vault1Inheritor1),toSingletonUINT(10000),1e18,mkaddr("lucky guy"));
+
+//export contract types
+ v1ERC20Facet=ERC20Facet(vault1);
+ v1ERC721Facet=ERC721Facet(vault1);
+ v1ERC1155Facet=ERC1155Facet(vault1);
+ v1VaultFacet=VaultFacet(vault1);
 
 
-newVaault=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(s),toSingletonUINT(10000),1e18,mkaddr("lucky guy"));
 
+//erc20t.approve(vault1,10000000000000);
+// //run a function on the new vault
 
-erc20t.approve(newVaault,10000000000000);
-//run a function on the new vault
+// erc20t.balanceOf(msg.sender);
 
-erc20t.balanceOf(msg.sender);
-
-ERC20Facet(newVaault).depositERC20Token(address(erc20t),1000000);
-VaultFacet(newVaault).inspectVault();
-VaultFacet(newVaault).allEtherAllocations();
+// ERC20Facet(vault1).depositERC20Token(address(erc20t),1000000);
+// VaultFacet(vault1).inspectVault();
+// VaultFacet(vault1).allEtherAllocations();
   }
 
 
@@ -173,9 +197,12 @@ VaultFacet(newVaault).allEtherAllocations();
         return ERC721TokenReceiver.onERC721Received.selector;
     }
 
+}
 
-    function toSingletonUINT(uint256 _no)
-        internal
+//free functions
+
+   function toSingletonUINT(uint256 _no)
+        
         pure
         returns (uint256[] memory)
     {
@@ -185,7 +212,7 @@ VaultFacet(newVaault).allEtherAllocations();
     }
 
     function toSingletonAdd(address _no)
-        internal
+        
         pure
         returns (address[] memory)
     {
@@ -194,5 +221,24 @@ VaultFacet(newVaault).allEtherAllocations();
         return arr;
     }
 
-}
+       function toDualUINT(uint256 _no,uint256 _no2)
+        
+        pure
+        returns (uint256[] memory)
+    {
+        uint256[] memory arr = new uint256[](2);
+        arr[0] = _no;
+        arr[1]=_no2;
+        return arr;
+    }
 
+    function toDualAdd(address _no,address _no2)
+        
+        pure
+        returns (address[] memory)
+    {
+        address[] memory arr = new address[](2);
+        arr[0] = _no;
+        arr[1]=_no2;
+        return arr;
+    }

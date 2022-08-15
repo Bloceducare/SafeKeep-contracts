@@ -38,6 +38,15 @@ contract ERC20Facet {
     return vs.inheritorTokenShares[_inheritor][_token];
   }
 
+  function getUnallocatedTokens(address _token) public view returns(uint256 unallocated_){
+    VaultStorage storage vs = LibDiamond.vaultStorage();
+    uint256 bal=IERC20(_token).balanceOf(address(this));
+    uint256 allocated=LibKeep.getCurrentAllocatedTokens(_token);
+    if(bal>allocated){
+      unallocated_=bal-allocated; 
+    }
+  }
+
   //DEPOSITS
   function depositERC20Token(address _token, uint256 _amount) external {
   //  Guards._onlyVaultOwner();
@@ -48,7 +57,7 @@ contract ERC20Facet {
     address[] calldata _tokens,
     uint256[] calldata _amounts
   ) external {
-    Guards._onlyVaultOwner();
+    //Guards._onlyVaultOwner();
     LibTokens._inputERC20Tokens(_tokens, _amounts);
   }
 

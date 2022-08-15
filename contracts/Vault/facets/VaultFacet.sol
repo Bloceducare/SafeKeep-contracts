@@ -67,6 +67,17 @@ contract VaultFacet {
     _allocatedEther = vs.inheritorWeishares[_inheritor];
   }
 
+  function getAllocatedEther() public view returns (uint256) {
+    LibKeep.getCurrentAllocatedEth();
+  }
+
+  function getUnallocatedEther() public view returns (uint256) {
+    uint256 currentBalance = address(this).balance;
+    if (currentBalance > 0) {
+      return currentBalance - LibKeep.getCurrentAllocatedEth();
+    }
+  }
+
   function etherBalance() public view returns (uint256) {
     return address(this).balance;
   }
