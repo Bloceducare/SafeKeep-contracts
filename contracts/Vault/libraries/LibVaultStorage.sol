@@ -1,10 +1,12 @@
 pragma solidity 0.8.4;
 
 import "./LibDiamond.sol";
+
 struct FacetAddressAndPosition {
     address facetAddress;
     uint96 functionSelectorPosition; // position in facetFunctionSelectors.functionSelectors array
 }
+
 error NotBackupAddress();
 error NotOwnerOrBackupAddress();
 error NotExpired();
@@ -75,33 +77,41 @@ library Guards {
         LibDiamond.enforceIsContractOwner();
     }
 
-function _onlyVaultOwnerOrOrigin() internal view{
-    VaultStorage storage vs = LibDiamond.vaultStorage();
-    if(tx.origin != vs.vaultOwner && msg.sender !=vs.vaultOwner )  revert NoPermissions();
-}
-function _onlyVaultOwnerOrOriginOrBackup() internal view{
-    VaultStorage storage vs = LibDiamond.vaultStorage();
-    if(tx.origin != vs.vaultOwner && msg.sender !=vs.vaultOwner && msg.sender != vs.backupAddress && tx.origin!= vs.backupAddress )  revert NoPermissions();
-}
+    function _onlyVaultOwnerOrOrigin() internal view {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (tx.origin != vs.vaultOwner && msg.sender != vs.vaultOwner) {
+            revert NoPermissions();
+        }
+    }
+
+    function _onlyVaultOwnerOrOriginOrBackup() internal view {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (
+            tx.origin != vs.vaultOwner && msg.sender != vs.vaultOwner && msg.sender != vs.backupAddress
+                && tx.origin != vs.backupAddress
+        ) {
+            revert NoPermissions();
+        }
+    }
+
     function _onlyVaultOwnerOrBackup() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (msg.sender != vs.backupAddress && msg.sender != vs.vaultOwner) 
+        if (msg.sender != vs.backupAddress && msg.sender != vs.vaultOwner) {
             revert NotOwnerOrBackupAddress();
+        }
     }
 
     function _enforceIsBackupAddress() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (msg.sender != vs.backupAddress) revert NotBackupAddress();
+        if (msg.sender != vs.backupAddress) {
+            revert NotBackupAddress();
+        }
     }
 
-    function _activeInheritor(address _inheritor)
-        internal
-        view
-        returns (bool active_)
-    {
+    function _activeInheritor(address _inheritor) internal view returns (bool active_) {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         if (_inheritor == address(0)) {
-            active_ == true;
+            active_ = true;
         } else {
             active_ = (vs.activeInheritors[_inheritor]);
         }
@@ -120,18 +130,37 @@ function _onlyVaultOwnerOrOriginOrBackup() internal view{
         }
     }
 
+    function _anInheritorOrZero(address _inheritor) internal view returns (bool inh) {
+        VaultStorage storage vs = LibDiamond.vaultStorage();
+        if (_inheritor == address(0) || _inheritor == address(0)) {
+            inh = true;
+        } else {
+            for (uint256 i; i < vs.inheritors.length; i++) {
+                if (_inheritor == vs.inheritors[i]) {
+                    inh = true;
+                }
+            }
+        }
+    }
+
     function _expired() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (block.timestamp - vs.lastPing <= 24 weeks) revert NotExpired();
+        if (block.timestamp - vs.lastPing <= 24 weeks) {
+            revert NotExpired();
+        }
     }
 
     function _notExpired() internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (block.timestamp - vs.lastPing > 24 weeks) revert HasExpired();
+        if (block.timestamp - vs.lastPing > 24 weeks) {
+            revert HasExpired();
+        }
     }
 
     function _notClaimed(address _inheritor) internal view {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (vs.claimed[_inheritor]) revert Claimed();
+        if (vs.claimed[_inheritor]) {
+            revert Claimed();
+        }
     }
 }

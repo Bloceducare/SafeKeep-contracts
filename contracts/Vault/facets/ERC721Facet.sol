@@ -25,6 +25,12 @@ contract ERC721Facet  {
         }
     }
  }  
+
+ function getAllocatedERC721TokenIds(address _inheritor,address _token) external view returns(uint256[] memory){
+     VaultStorage storage vs = LibDiamond.vaultStorage();
+    Guards._activeInheritor(_inheritor);
+    return vs.inheritorAllocatedTokenIds[_inheritor][_token];
+ }
  function getAllocatedERC721TokenAddresses(address _inheritor) public view returns(address[] memory){
    VaultStorage storage vs = LibDiamond.vaultStorage();
    Guards._activeInheritor(_inheritor);
@@ -41,6 +47,12 @@ contract ERC721Facet  {
     LibTokens._inputERC721Token(_token, _tokenID);
   }
 
+  function depositERC721Tokens(address _token,uint256[] calldata _tokenIDs) external{
+    for(uint256 i;i<_tokenIDs.length;i++){
+      LibTokens._inputERC721Token(_token,_tokenIDs[i]);
+    }
+  }
+
    function safeDepositERC721Token(
     address _token,
     uint256 _tokenID
@@ -48,6 +60,8 @@ contract ERC721Facet  {
    // Guards._onlyVaultOwner();
     LibTokens._safeInputERC721Token(_token, _tokenID);
   }
+
+
 
    function safeDepositERC721TokenAndCall(
     address _token,

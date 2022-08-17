@@ -10,11 +10,10 @@ contract EtherOpsTest is DDeployments{
 //     uint256 weiAlloc;
 //   }
 
-address vault1Inheritor2;
 
-function testAllEtherOperations() public{
+function testAllVaultEtherOperations() public{
 vm.startPrank(vault1Owner);
-uint256 currentVaultbalance= v1VaultFacet.etherBalance();
+
 
 //get ether allocation data for all inheritors
 //only one inheritor currently present
@@ -32,7 +31,6 @@ assertEq(freeEther,onchainFreeEther);
 
 //add another inheritor and allocate some ether
 uint256 v1Inheritor2eAlloc=freeEther - 10000000;
-vault1Inheritor2=mkaddr("vault1Inheritor2");
 
 //try to allocate more thn available ether
 vm.expectRevert(abi.encodeWithSelector(LibKeep.EtherAllocationOverflow.selector,2 ether -freeEther));
@@ -43,13 +41,13 @@ v1VaultFacet.addInheritors(toSingletonAdd(vault1Inheritor2),toSingletonUINT(v1In
 uint256 v1Inheritor2EtherAlloc= v1VaultFacet.inheritorEtherAllocation(vault1Inheritor2);
 assertEq(v1Inheritor2EtherAlloc,freeEther - 10000000);
 
-//try to withdraw more than avaialable
+//try to withdraw more than available
 freeEther=v1VaultFacet.getUnallocatedEther();
 vm.expectRevert(LibKeep.InsufficientEth.selector);
 v1VaultFacet.withdrawEther(freeEther+1000,vault1Owner);
 
 //unallocate from both inheritors
-//ORDER matters
+//ORDER matters(not really anymore)
 v1VaultFacet.allocateEther(toDualAdd(vault1Inheritor2,vault1Inheritor1),toDualUINT(v1Inheritor2eAlloc-500,10000-500));
 v1VaultFacet.withdrawEther(freeEther+1000,vault1Owner);
 

@@ -48,6 +48,7 @@ VaultERC721Token erc721t2;
 
 address vault1;
 address vault1Inheritor1;
+address vault1Inheritor2;
 address vault1Owner;
 
 //Facet types tied to vaultAddresses
@@ -118,6 +119,7 @@ vFactoryDiamond.setSelectors(_selectors);
 
 //create a vault
 vault1Inheritor1=mkaddr("inheritor1");
+vault1Inheritor2=mkaddr("vault1Inheritor2");
 vault1Owner=mkaddr("vault1Owner");
 //make sure vault1Owner is tx.origin
 vm.prank(address(this),vault1Owner);
@@ -242,3 +244,29 @@ vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(t
         arr[1]=_no2;
         return arr;
     }
+
+     function toTriUINT(uint256 _no,uint256 _no2,uint256 _no3)
+        
+        pure
+        returns (uint256[] memory)
+    {
+        uint256[] memory arr = new uint256[](3);
+        arr[0] = _no;
+        arr[1]=_no2;
+        arr[2]=_no3;
+        return arr;
+    }
+
+     function toTriAddress(address _add,address _add2,address _add3)
+        
+        pure
+        returns (address[] memory)
+    {
+        address[] memory arr = new address[](3);
+        arr[0] = _add;
+        arr[1]=_add2;
+        arr[2]=_add3;
+        return arr;
+    }
+
+

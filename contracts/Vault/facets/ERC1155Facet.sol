@@ -10,6 +10,12 @@ contract ERC1155Facet {
     uint256 amount;
   }
 
+    struct AllAllocatedERC1155Tokens {
+    address token;
+    uint256 tokenID;
+    uint256 amount;
+  }
+
   //VIEW FUNCTIONS
   function getAllocatedERC1155Tokens(address _token, address _inheritor)
     public
@@ -32,6 +38,43 @@ contract ERC1155Facet {
     }
   }
 
+   function getAllAllocatedERC1155Tokens(address _inheritor)
+    public
+    view
+    returns (AllAllocatedERC1155Tokens[] memory alloc_)
+  {
+    Guards._activeInheritor(_inheritor);
+    VaultStorage storage vs = LibDiamond.vaultStorage();
+    uint256 tokenAddressCount=vs.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
+    for (uint256 j=0;j<tokenAddressCount;j++){
+      address _token=vs.inheritorAllocatedERC1155TokenAddresses[_inheritor][j];
+    uint256 tokenCount = vs
+    .inheritorAllocatedTokenIds[_inheritor][_token].length;
+      alloc_ = new AllAllocatedERC1155Tokens[](tokenCount);
+      for (uint256 i; i < tokenCount; i++) {
+       
+        uint256 _tid = vs.inheritorAllocatedTokenIds[_inheritor][_token][i];
+        alloc_[i].tokenID = _tid;
+        alloc_[i].amount = vs.inheritorERC1155TokenAllocations[_inheritor][
+          _token
+        ][_tid];
+        alloc_[i].token=_token;
+      }
+    }
+    
+  }
+
+
+
+  function getUnallocatedERC115Tokens(address _token,uint256 _tokenId) public view returns(uint256 remaining_){
+    VaultStorage storage vs = LibDiamond.vaultStorage();
+uint256 allocated=LibKeep.getCurrentAllocated1155tokens(_token,_tokenId);
+uint256 available=IERC1155(_token).balanceOf(address(this), _tokenId);
+if(allocated<available){
+  remaining_=available-allocated;
+}
+  }
+
   //DEPOSITS
   function depositERC1155Token(
     address _token,
@@ -42,7 +85,7 @@ contract ERC1155Facet {
     LibTokens._safeInputERC1155Token(_token, _tokenID, _amount);
   }
 
-  function BatchDepositERC1155Tokens(
+  function batchDepositERC1155Tokens(
     address _token,
     uint256[] calldata _tokenIDs,
     uint256[] calldata _amounts
@@ -63,7 +106,7 @@ contract ERC1155Facet {
     LibKeep._withdrawERC1155Token(_token, _tokenID, _amount, _to);
   }
 
-  function BatchWithdrawERC1155Token(
+  function batchWithdrawERC1155Token(
     address _token,
     uint256[] calldata _tokenIDs,
     uint256[] calldata _amount,
