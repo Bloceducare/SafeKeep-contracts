@@ -132,7 +132,7 @@ library Guards {
 
     function _anInheritorOrZero(address _inheritor) internal view returns (bool inh) {
         VaultStorage storage vs = LibDiamond.vaultStorage();
-        if (_inheritor == address(0) || _inheritor == address(0)) {
+        if (_inheritor == address(0)) {
             inh = true;
         } else {
             for (uint256 i; i < vs.inheritors.length; i++) {
