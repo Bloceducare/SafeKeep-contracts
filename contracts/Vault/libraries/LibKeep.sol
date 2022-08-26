@@ -126,16 +126,18 @@ library LibKeep {
 
         if (vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length > 0) {
             for (uint256 x; x < vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length; x++) {
-                uint256 tokenAllocated =
-                    vs.inheritorERC721Tokens[_inheritor][vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]];
+                address tokenAddress = vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x];
+                uint256 tokenAllocated = vs.inheritorERC721Tokens[_inheritor][tokenAddress];
                 if (tokenAllocated == 0) {
-                    vs.whitelist[_inheritor][vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]] = false;
+                    vs.whitelist[tokenAddress][_inheritor] = false;
                 }
-                vs.inheritorERC721Tokens[_inheritor][vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]] = 0;
-                vs.allocatedERC721Tokens[vs.inheritorAllocatedERC721TokenAddresses[_inheritor][x]][tokenAllocated] =
-                    false;
+                vs.inheritorERC721Tokens[_inheritor][tokenAddress] = 0;
+                vs.allocatedERC721Tokens[tokenAddress][tokenAllocated] = false;
+                //also reset reverse allocation mapping
+                vs.ERC721ToInheritor[tokenAddress][tokenAllocated] = address(0);
+                delete vs.inheritorAllocatedTokenIds[_inheritor][tokenAddress];
             }
-
+            //remove all token addresses
             delete vs.inheritorAllocatedERC721TokenAddresses[_inheritor];
         }
 
@@ -264,8 +266,6 @@ library LibKeep {
         _ping();
         emit ERC20TokensAllocated(token, _inheritors, _shares, _vaultID());
     }
-
-    event add(address);
 
     function _allocateERC721Tokens(address _token, address[] calldata _inheritors, uint256[] calldata _tokenIDs)
         internal
@@ -557,6 +557,8 @@ library LibKeep {
         }
     }
 
+    event ww(bool);
+
     function _claimERC721Tokens() internal {
         VaultStorage storage vs = LibDiamond.vaultStorage();
         uint256 tokens = vs.inheritorAllocatedERC721TokenAddresses[msg.sender].length;
@@ -572,8 +574,8 @@ library LibKeep {
                         uint256 tokenID = vs.inheritorAllocatedTokenIds[msg.sender][token][j];
                         if (tokenID == 0) {
                             //check for whitelist
-                            if (vs.whitelist[msg.sender][token]) {
-                                vs.whitelist[msg.sender][token] = false;
+                            if (vs.whitelist[token][msg.sender]) {
+                                vs.whitelist[token][msg.sender] = false;
                                 IERC721(token).transferFrom(address(this), msg.sender, 0);
                                 emit ERC721TokenClaimed(msg.sender, token, 0, _vaultID());
                             }

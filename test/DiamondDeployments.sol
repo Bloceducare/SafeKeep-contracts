@@ -50,6 +50,7 @@ address vault1;
 address vault1Inheritor1;
 address vault1Inheritor2;
 address vault1Owner;
+address vault1Backup;
 
 //Facet types tied to vaultAddresses
 ERC20Facet v1ERC20Facet;
@@ -123,7 +124,8 @@ vault1Inheritor2=mkaddr("vault1Inheritor2");
 vault1Owner=mkaddr("vault1Owner");
 //make sure vault1Owner is tx.origin
 vm.prank(address(this),vault1Owner);
-vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(vault1Inheritor1),toSingletonUINT(10000),1e18,mkaddr("lucky guy"));
+vault1Backup=mkaddr("lucky guy");
+vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(vault1Inheritor1),toSingletonUINT(10000),1e18,vault1Backup);
 
 //export contract types
  v1ERC20Facet=ERC20Facet(vault1);

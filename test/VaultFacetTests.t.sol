@@ -97,8 +97,15 @@ contract VaultFacetTest is DDeployments {
         vInfo = v1VaultFacet.inspectVault();
         assertEq(vInfo.inheritors.length, 1);
 
-//TO-DO
-        //TESTS FOR OWNERSHIP TRANSFER AND BACKUP 
+
+//TESTS FOR OWNERSHIP TRANSFER AND BACKUP 
+address newVault1Owner=mkaddr('NewVault1Owner');
+//transfer ownership to another address
+v1VaultFacet.transferOwnership(newVault1Owner);
+address newOwner=v1VaultFacet.vaultOwner();
+assertEq(newOwner,newVault1Owner);
+vm.stopPrank();
+vm.startPrank(newVault1Owner);
 
 
         //add inheritor1 again and allocate
@@ -132,15 +139,12 @@ contract VaultFacetTest is DDeployments {
         vm.stopPrank();
 
         //attempt to claim
-        //TO-DO
-        ///erc721 is not being claimed....figure out why
         vm.warp(block.timestamp+190 days);
         vm.prank(vault1Inheritor1);
         v1VaultFacet.claimAllAllocations();
-
-//TO-DO
         //ALSO TEST BACKUP-OWNER RECLAMATION HERE
-
-
+vm.prank(vault1Backup);
+v1VaultFacet.claimOwnership(mkaddr('newBackup'));
+//There should be a timelock after reclamation before a backup can make vault changes
     }
 }
