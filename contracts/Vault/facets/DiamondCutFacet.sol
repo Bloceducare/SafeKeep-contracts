@@ -8,8 +8,10 @@ pragma solidity 0.8.4;
 
 import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
 
-import { VaultStorage, NoPermissions } from "../libraries/LibVaultStorage.sol";
-import { LibDiamond } from "../VaultDiamond.sol";
+import { NoPermissions } from "../libraries/LibVaultStorage.sol";
+import { LibDiamond } from "../libraries/LibDiamond.sol";
+import "../libraries/LibLayoutSilo.sol";
+import "../libraries/LibStorageBinder.sol";
 
 contract DiamondCutFacet is IDiamondCut {
   /// @notice Add/replace/remove any number of functions and optionally execute
@@ -23,14 +25,14 @@ contract DiamondCutFacet is IDiamondCut {
     address _init,
     bytes calldata _calldata
   ) external override {
-    VaultStorage storage vs = LibDiamond.vaultStorage();
-    if (tx.origin != vs.vaultOwner) revert NoPermissions();
+VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+    if (tx.origin != vaultData.vaultOwner) revert NoPermissions();
     LibDiamond.diamondCut(_diamondCut, _init, _calldata);
   }
 
   //temp call made from factory to confirm ownership
   function tempOwner() public view returns (address owner_) {
-    VaultStorage storage vs = LibDiamond.vaultStorage();
-    owner_ = vs.vaultOwner;
+    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+    owner_ = vaultData.vaultOwner;
   }
 }

@@ -6,7 +6,9 @@ pragma solidity 0.8.4;
 * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
 /******************************************************************************/
 import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";
-import "./LibVaultStorage.sol";
+
+import "../libraries/LibLayoutSilo.sol";
+import "../libraries/LibStorageBinder.sol";
 
 library LibDiamond {
     error InValidFacetCutAction();
@@ -22,15 +24,15 @@ library LibDiamond {
     error NonEmptyCalldata();
     error EmptyCalldata();
     error InitCallFailed();
-    bytes32 constant VAULT_STORAGE_POSITION =
-        keccak256("diamond.standard.keep.storage");
+    // bytes32 constant VAULT_STORAGE_POSITION =
+    //     keccak256("diamond.standard.keep.storage");
 
-    function vaultStorage() internal pure returns (VaultStorage storage vs) {
-        bytes32 position = VAULT_STORAGE_POSITION;
-        assembly {
-            vs.slot := position
-        }
-    }
+    // function vaultStorage() internal pure returns (VaultStorage storage vaultData) {
+    //     bytes32 position = VAULT_STORAGE_POSITION;
+    //     assembly {
+    //         vaultData.slot := position
+    //     }
+    // }
 
     event OwnershipTransferred(
         address indexed previousOwner,
@@ -38,20 +40,20 @@ library LibDiamond {
     );
 
     function setVaultOwner(address _newOwner) internal {
-        VaultStorage storage vs = vaultStorage();
-        address previousOwner = vs.vaultOwner;
-        vs.vaultOwner = _newOwner;
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+        address previousOwner = vaultData.vaultOwner;
+        vaultData.vaultOwner = _newOwner;
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
     
 
     function vaultOwner() internal view returns (address contractOwner_) {
-        contractOwner_ = vaultStorage().vaultOwner;
+        contractOwner_ = LibStorageBinder._bindAndReturnVaultStorage().vaultOwner;
     }
 
     function enforceIsContractOwner() internal  view{
-        if (msg.sender != vaultStorage().vaultOwner) revert NotVaultOwner();
+        if (msg.sender != LibStorageBinder._bindAndReturnVaultStorage().vaultOwner) revert NotVaultOwner();
     }
 
     event DiamondCut(
@@ -100,14 +102,14 @@ library LibDiamond {
         bytes4[] memory _functionSelectors
     ) internal {
         if (_functionSelectors.length <= 0) revert NoSelectorsInFacet();
-        VaultStorage storage vs = vaultStorage();
+        FacetAndSelectorData storage fsData=LibStorageBinder._bindAndReturnFacetStorage();
         if (_facetAddress == address(0)) revert NoZeroAddress();
         uint96 selectorPosition = uint96(
-            vs.facetFunctionSelectors[_facetAddress].functionSelectors.length
+            fsData.facetFunctionSelectors[_facetAddress].functionSelectors.length
         );
         // add new facet address if it does not exist
         if (selectorPosition == 0) {
-            addFacet(vs, _facetAddress);
+            addFacet(fsData, _facetAddress);
         }
         for (
             uint256 selectorIndex;
@@ -115,11 +117,11 @@ library LibDiamond {
             selectorIndex++
         ) {
             bytes4 selector = _functionSelectors[selectorIndex];
-            address oldFacetAddress = vs
+            address oldFacetAddress = fsData
                 .selectorToFacetAndPosition[selector]
                 .facetAddress;
             if (oldFacetAddress != address(0)) revert SelectorExists(selector);
-            addFunction(vs, selector, selectorPosition, _facetAddress);
+            addFunction(fsData, selector, selectorPosition, _facetAddress);
             selectorPosition++;
         }
     }
@@ -129,14 +131,14 @@ library LibDiamond {
         bytes4[] memory _functionSelectors
     ) internal {
         if (_functionSelectors.length <= 0) revert NoSelectorsInFacet();
-        VaultStorage storage vs = vaultStorage();
+        FacetAndSelectorData storage fsData=LibStorageBinder._bindAndReturnFacetStorage();
         if (_facetAddress == address(0)) revert NoZeroAddress();
         uint96 selectorPosition = uint96(
-            vs.facetFunctionSelectors[_facetAddress].functionSelectors.length
+            fsData.facetFunctionSelectors[_facetAddress].functionSelectors.length
         );
         // add new facet address if it does not exist
         if (selectorPosition == 0) {
-            addFacet(vs, _facetAddress);
+            addFacet(fsData, _facetAddress);
         }
         for (
             uint256 selectorIndex;
@@ -144,13 +146,13 @@ library LibDiamond {
             selectorIndex++
         ) {
             bytes4 selector = _functionSelectors[selectorIndex];
-            address oldFacetAddress = vs
+            address oldFacetAddress = fsData
                 .selectorToFacetAndPosition[selector]
                 .facetAddress;
             if (oldFacetAddress == _facetAddress)
                 revert SameSelectorReplacement(selector);
-            removeFunction(vs, oldFacetAddress, selector);
-            addFunction(vs, selector, selectorPosition, _facetAddress);
+            removeFunction(fsData, oldFacetAddress, selector);
+            addFunction(fsData, selector, selectorPosition, _facetAddress);
             selectorPosition++;
         }
     }
@@ -160,7 +162,7 @@ library LibDiamond {
         bytes4[] memory _functionSelectors
     ) internal {
         if (_functionSelectors.length <= 0) revert NoSelectorsInFacet();
-        VaultStorage storage vs = vaultStorage();
+       FacetAndSelectorData storage fsData=LibStorageBinder._bindAndReturnFacetStorage();
         // if function does not exist then do nothing and return
         if (_facetAddress != address(0)) revert MustBeZeroAddress();
         for (
@@ -169,38 +171,38 @@ library LibDiamond {
             selectorIndex++
         ) {
             bytes4 selector = _functionSelectors[selectorIndex];
-            address oldFacetAddress = vs
+            address oldFacetAddress = fsData
                 .selectorToFacetAndPosition[selector]
                 .facetAddress;
-            removeFunction(vs, oldFacetAddress, selector);
+            removeFunction(fsData, oldFacetAddress, selector);
         }
     }
 
-    function addFacet(VaultStorage storage vs, address _facetAddress) internal {
+    function addFacet(FacetAndSelectorData storage fsData, address _facetAddress) internal {
         enforceHasContractCode(_facetAddress);
-        vs.facetFunctionSelectors[_facetAddress].facetAddressPosition = vs
+        fsData.facetFunctionSelectors[_facetAddress].facetAddressPosition = fsData
             .facetAddresses
             .length;
-        vs.facetAddresses.push(_facetAddress);
+        fsData.facetAddresses.push(_facetAddress);
     }
 
     function addFunction(
-        VaultStorage storage vs,
+        FacetAndSelectorData storage fsData,
         bytes4 _selector,
         uint96 _selectorPosition,
         address _facetAddress
     ) internal {
-        vs
+        fsData
             .selectorToFacetAndPosition[_selector]
             .functionSelectorPosition = _selectorPosition;
-        vs.facetFunctionSelectors[_facetAddress].functionSelectors.push(
+        fsData.facetFunctionSelectors[_facetAddress].functionSelectors.push(
             _selector
         );
-        vs.selectorToFacetAndPosition[_selector].facetAddress = _facetAddress;
+        fsData.selectorToFacetAndPosition[_selector].facetAddress = _facetAddress;
     }
 
     function removeFunction(
-        VaultStorage storage vs,
+        FacetAndSelectorData storage fsData,
         address _facetAddress,
         bytes4 _selector
     ) internal {
@@ -208,47 +210,47 @@ library LibDiamond {
         // an immutable function is a function defined directly in a diamond
         if (_facetAddress == address(this)) revert ImmutableFunction(_selector);
         // replace selector with last selector, then delete last selector
-        uint256 selectorPosition = vs
+        uint256 selectorPosition = fsData
             .selectorToFacetAndPosition[_selector]
             .functionSelectorPosition;
-        uint256 lastSelectorPosition = vs
+        uint256 lastSelectorPosition = fsData
             .facetFunctionSelectors[_facetAddress]
             .functionSelectors
             .length - 1;
         // if not the same then replace _selector with lastSelector
         if (selectorPosition != lastSelectorPosition) {
-            bytes4 lastSelector = vs
+            bytes4 lastSelector = fsData
                 .facetFunctionSelectors[_facetAddress]
                 .functionSelectors[lastSelectorPosition];
-            vs.facetFunctionSelectors[_facetAddress].functionSelectors[
+            fsData.facetFunctionSelectors[_facetAddress].functionSelectors[
                     selectorPosition
                 ] = lastSelector;
-            vs
+            fsData
                 .selectorToFacetAndPosition[lastSelector]
                 .functionSelectorPosition = uint96(selectorPosition);
         }
         // delete the last selector
-        vs.facetFunctionSelectors[_facetAddress].functionSelectors.pop();
-        delete vs.selectorToFacetAndPosition[_selector];
+        fsData.facetFunctionSelectors[_facetAddress].functionSelectors.pop();
+        delete fsData.selectorToFacetAndPosition[_selector];
 
         // if no more selectors for facet address then delete the facet address
         if (lastSelectorPosition == 0) {
             // replace facet address with last facet address and delete last facet address
-            uint256 lastFacetAddressPosition = vs.facetAddresses.length - 1;
-            uint256 facetAddressPosition = vs
+            uint256 lastFacetAddressPosition = fsData.facetAddresses.length - 1;
+            uint256 facetAddressPosition = fsData
                 .facetFunctionSelectors[_facetAddress]
                 .facetAddressPosition;
             if (facetAddressPosition != lastFacetAddressPosition) {
-                address lastFacetAddress = vs.facetAddresses[
+                address lastFacetAddress = fsData.facetAddresses[
                     lastFacetAddressPosition
                 ];
-                vs.facetAddresses[facetAddressPosition] = lastFacetAddress;
-                vs
+                fsData.facetAddresses[facetAddressPosition] = lastFacetAddress;
+                fsData
                     .facetFunctionSelectors[lastFacetAddress]
                     .facetAddressPosition = facetAddressPosition;
             }
-            vs.facetAddresses.pop();
-            delete vs
+            fsData.facetAddresses.pop();
+            delete fsData
                 .facetFunctionSelectors[_facetAddress]
                 .facetAddressPosition;
         }

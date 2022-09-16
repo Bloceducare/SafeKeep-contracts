@@ -4,6 +4,9 @@ import "../libraries/LibKeep.sol";
 
 import "../libraries/LibTokens.sol";
 
+import "../libraries/LibLayoutSilo.sol";
+import "../libraries/LibStorageBinder.sol";
+
 contract ERC1155Facet {
   struct AllocatedERC1155Tokens {
     uint256 tokenID;
@@ -23,15 +26,15 @@ contract ERC1155Facet {
     returns (AllocatedERC1155Tokens[] memory alloc_)
   {
     Guards._activeInheritor(_inheritor);
-    VaultStorage storage vs = LibDiamond.vaultStorage();
-    uint256 tokenCount = vs
+    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+    uint256 tokenCount = vaultData
     .inheritorAllocatedTokenIds[_inheritor][_token].length;
     if (tokenCount > 0) {
       alloc_ = new AllocatedERC1155Tokens[](tokenCount);
       for (uint256 i; i < tokenCount; i++) {
-        uint256 _tid = vs.inheritorAllocatedTokenIds[_inheritor][_token][i];
+        uint256 _tid = vaultData.inheritorAllocatedTokenIds[_inheritor][_token][i];
         alloc_[i].tokenID = _tid;
-        alloc_[i].amount = vs.inheritorERC1155TokenAllocations[_inheritor][
+        alloc_[i].amount = vaultData.inheritorERC1155TokenAllocations[_inheritor][
           _token
         ][_tid];
       }
@@ -44,18 +47,18 @@ contract ERC1155Facet {
     returns (AllAllocatedERC1155Tokens[] memory alloc_)
   {
     Guards._activeInheritor(_inheritor);
-    VaultStorage storage vs = LibDiamond.vaultStorage();
-    uint256 tokenAddressCount=vs.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
+    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+    uint256 tokenAddressCount=vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
     for (uint256 j=0;j<tokenAddressCount;j++){
-      address _token=vs.inheritorAllocatedERC1155TokenAddresses[_inheritor][j];
-    uint256 tokenCount = vs
+      address _token=vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor][j];
+    uint256 tokenCount = vaultData
     .inheritorAllocatedTokenIds[_inheritor][_token].length;
       alloc_ = new AllAllocatedERC1155Tokens[](tokenCount);
       for (uint256 i; i < tokenCount; i++) {
        
-        uint256 _tid = vs.inheritorAllocatedTokenIds[_inheritor][_token][i];
+        uint256 _tid = vaultData.inheritorAllocatedTokenIds[_inheritor][_token][i];
         alloc_[i].tokenID = _tid;
-        alloc_[i].amount = vs.inheritorERC1155TokenAllocations[_inheritor][
+        alloc_[i].amount = vaultData.inheritorERC1155TokenAllocations[_inheritor][
           _token
         ][_tid];
         alloc_[i].token=_token;
@@ -67,7 +70,7 @@ contract ERC1155Facet {
 
 
   function getUnallocatedERC115Tokens(address _token,uint256 _tokenId) public view returns(uint256 remaining_){
-    VaultStorage storage vs = LibDiamond.vaultStorage();
+   // VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
 uint256 allocated=LibKeep.getCurrentAllocated1155tokens(_token,_tokenId);
 uint256 available=IERC1155(_token).balanceOf(address(this), _tokenId);
 if(allocated<available){

@@ -4,6 +4,8 @@ import "../libraries/LibKeep.sol";
 
 import "../libraries/LibTokens.sol";
 
+import "../libraries/LibLayoutSilo.sol";
+import "../libraries/LibStorageBinder.sol";
 contract ERC20Facet {
     struct AllocatedERC20Tokens {
         address token;
@@ -12,21 +14,21 @@ contract ERC20Facet {
 
     function getAllocatedERC20Tokens(address _inheritor) public view returns (AllocatedERC20Tokens[] memory tAllocs) {
         Guards._activeInheritor(_inheritor);
-        VaultStorage storage vs = LibDiamond.vaultStorage();
-        uint256 count = vs.inheritorAllocatedERC20Tokens[_inheritor].length;
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+        uint256 count = vaultData.inheritorAllocatedERC20Tokens[_inheritor].length;
         if (count > 0) {
             tAllocs = new AllocatedERC20Tokens[](count);
             for (uint256 i; i < count; i++) {
-                address _t = vs.inheritorAllocatedERC20Tokens[_inheritor][i];
-                tAllocs[i].amount = vs.inheritorTokenShares[_inheritor][_t];
+                address _t = vaultData.inheritorAllocatedERC20Tokens[_inheritor][i];
+                tAllocs[i].amount = vaultData.inheritorTokenShares[_inheritor][_t];
                 tAllocs[i].token = _t;
             }
         }
     }
 
     function inheritorERC20TokenAllocation(address _inheritor, address _token) public view returns (uint256) {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
-        return vs.inheritorTokenShares[_inheritor][_token];
+    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+        return vaultData.inheritorTokenShares[_inheritor][_token];
     }
 
     function getUnallocatedTokens(address _token) public view returns (uint256 unallocated_) {

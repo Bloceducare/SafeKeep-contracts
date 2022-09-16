@@ -4,6 +4,9 @@ import "../libraries/LibKeep.sol";
 
 import "../libraries/LibTokens.sol";
 
+import "../libraries/LibLayoutSilo.sol";
+import "../libraries/LibStorageBinder.sol";
+
 contract ERC721Facet  {
 
 
@@ -13,28 +16,28 @@ contract ERC721Facet  {
  }
 
  function getAllocatedERC721Tokens(address _inheritor) public view returns(AllocatedERC721Tokens[] memory allocated){
-   VaultStorage storage vs = LibDiamond.vaultStorage();
+   VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
     Guards._activeInheritor(_inheritor);
-    uint256 tokenAddressCount=vs.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
+    uint256 tokenAddressCount=vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
     if(tokenAddressCount>0){
         allocated=new AllocatedERC721Tokens[](tokenAddressCount);
         for(uint256 i; i < tokenAddressCount; i++){
-            address _token=vs.inheritorAllocatedERC721TokenAddresses[_inheritor][i];
+            address _token=vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor][i];
             allocated[i].token=_token;
-            allocated[i].tokenIDs=vs.inheritorAllocatedTokenIds[_inheritor][_token];
+            allocated[i].tokenIDs=vaultData.inheritorAllocatedTokenIds[_inheritor][_token];
         }
     }
  }  
 
  function getAllocatedERC721TokenIds(address _inheritor,address _token) external view returns(uint256[] memory){
-     VaultStorage storage vs = LibDiamond.vaultStorage();
+     VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
     Guards._activeInheritor(_inheritor);
-    return vs.inheritorAllocatedTokenIds[_inheritor][_token];
+    return vaultData.inheritorAllocatedTokenIds[_inheritor][_token];
  }
  function getAllocatedERC721TokenAddresses(address _inheritor) public view returns(address[] memory){
-   VaultStorage storage vs = LibDiamond.vaultStorage();
+   VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
    Guards._activeInheritor(_inheritor);
-   return vs.inheritorAllocatedERC721TokenAddresses[_inheritor];
+   return vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor];
  }
 
   //DEPOSITS

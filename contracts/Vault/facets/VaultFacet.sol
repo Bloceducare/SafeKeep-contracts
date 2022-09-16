@@ -1,11 +1,13 @@
 pragma solidity 0.8.4;
 
-import "../libraries/LibVaultStorage.sol";
 import "../libraries/LibKeep.sol";
 
 import "../libraries/LibTokens.sol";
 import "../libraries/LibDiamond.sol";
 import "../../interfaces/IERC20.sol";
+
+import "../libraries/LibLayoutSilo.sol";
+import "../libraries/LibStorageBinder.sol";
 
 contract VaultFacet {
     error AmountMismatch();
@@ -30,36 +32,36 @@ contract VaultFacet {
     event EthDeposited(uint256 _amount, uint256 _vaultID);
 
     function inspectVault() public view returns (VaultInfo memory info) {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
-        info.owner = vs.vaultOwner;
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+        info.owner = vaultData.vaultOwner;
         info.weiBalance = address(this).balance;
-        info.lastPing = vs.lastPing;
-        info.id = vs.vaultID;
-        info.backup = vs.backupAddress;
-        info.inheritors = vs.inheritors;
+        info.lastPing = vaultData.lastPing;
+        info.id = vaultData.vaultID;
+        info.backup = vaultData.backupAddress;
+        info.inheritors = vaultData.inheritors;
     }
 
     function vaultOwner() public view returns (address) {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
-        return vs.vaultOwner;
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+        return vaultData.vaultOwner;
     }
 
     function allEtherAllocations() public view returns (AllInheritorEtherAllocs[] memory eAllocs) {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
-        uint256 count = vs.inheritors.length;
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
+        uint256 count = vaultData.inheritors.length;
         eAllocs = new AllInheritorEtherAllocs[](count);
         for (uint256 i; i < count; i++) {
-            eAllocs[i].inheritor = vs.inheritors[i];
-            eAllocs[i].weiAlloc = vs.inheritorWeishares[vs.inheritors[i]];
+            eAllocs[i].inheritor = vaultData.inheritors[i];
+            eAllocs[i].weiAlloc = vaultData.inheritorWeishares[vaultData.inheritors[i]];
         }
     }
 
     function inheritorEtherAllocation(address _inheritor) public view returns (uint256 _allocatedEther) {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         if (!Guards._anInheritor(_inheritor)) {
             revert LibKeep.NotInheritor();
         }
-        _allocatedEther = vs.inheritorWeishares[_inheritor];
+        _allocatedEther = vaultData.inheritorWeishares[_inheritor];
     }
 
     function getAllocatedEther() public view returns (uint256) {
@@ -92,11 +94,11 @@ contract VaultFacet {
     }
 
     function depositEther(uint256 _amount) external payable {
-        VaultStorage storage vs = LibDiamond.vaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         if (_amount != msg.value) {
             revert AmountMismatch();
         }
-        emit EthDeposited(_amount, vs.vaultID);
+        emit EthDeposited(_amount, vaultData.vaultID);
     }
 
     function withdrawEther(uint256 _amount, address _to) external {
