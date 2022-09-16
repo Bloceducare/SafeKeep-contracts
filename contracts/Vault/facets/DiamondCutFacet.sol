@@ -14,6 +14,7 @@ import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
 
 contract DiamondCutFacet is IDiamondCut {
+  event SlotWrittenTo(bytes32 indexed slott);
   /// @notice Add/replace/remove any number of functions and optionally execute
   ///         a function with delegatecall
   /// @param _diamondCut Contains the facet addresses and function selectors
@@ -28,6 +29,12 @@ contract DiamondCutFacet is IDiamondCut {
 VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
     if (tx.origin != vaultData.vaultOwner) revert NoPermissions();
     LibDiamond.diamondCut(_diamondCut, _init, _calldata);
+     bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
   }
 
   //temp call made from factory to confirm ownership

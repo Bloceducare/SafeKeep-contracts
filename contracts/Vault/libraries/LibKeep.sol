@@ -44,6 +44,7 @@ library LibKeep {
     event ERC1155TokensClaimed(
         address indexed inheritor, address indexed token, uint256 tokenID, uint256 amount, uint256 vaultID
     );
+   event SlotWrittenTo(bytes32 indexed slott);
 
     error LengthMismatch();
     error ActiveInheritor();
@@ -183,6 +184,12 @@ library LibKeep {
         _allocateEther(_newInheritors, _weiShare);
 
         _ping();
+        bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
         emit InheritorsAdded(_newInheritors, _vaultID());
         emit EthAllocated(_newInheritors, _weiShare, _vaultID());
     }
@@ -204,6 +211,12 @@ library LibKeep {
             reset(_inheritors[k]);
         }
         _ping();
+        bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
         emit InheritorsRemoved(_inheritors, _vaultID());
     }
 
@@ -230,6 +243,12 @@ library LibKeep {
             }
         }
         _ping();
+        bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
         emit EthAllocated(_inheritors, _ethShares, _vaultID());
     }
 
@@ -267,6 +286,12 @@ library LibKeep {
             }
         }
         _ping();
+        bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
         emit ERC20TokensAllocated(token, _inheritors, _shares, _vaultID());
     }
 
@@ -342,6 +367,12 @@ library LibKeep {
             }
         }
         _ping();
+        bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
     }
 
     function _allocateERC1155Tokens(

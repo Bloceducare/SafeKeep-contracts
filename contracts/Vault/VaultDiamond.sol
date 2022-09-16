@@ -19,6 +19,7 @@ import "../interfaces/IVaultDiamond.sol";
 
 contract VaultDiamond {
     bool _init;
+   event SlotWrittenTo(bytes32 slot);
 
     constructor() payable {
         address _contractOwner = tx.origin;
@@ -47,6 +48,12 @@ contract VaultDiamond {
         LibDiamond.diamondCut(cut, address(0), "");
         vaultData.backupAddress = _backup;
         _init = true;
+        bytes32 _slott;
+        assembly {
+            _slott := vaultData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
     }
 
     // Find facet for function that is called and execute the
@@ -75,6 +82,13 @@ contract VaultDiamond {
                 return(0, returndatasize())
             }
         }
+
+ bytes32 _slott;
+        assembly {
+            _slott := fsData.slot
+        }
+
+        emit SlotWrittenTo(_slott);
     }
 
     receive() external payable {}
