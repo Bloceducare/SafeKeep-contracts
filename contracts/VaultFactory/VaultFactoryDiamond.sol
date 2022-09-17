@@ -40,17 +40,19 @@ contract VaultFactoryDiamond {
         s.erc1155Facet = _addresses[3];
         s.diamondLoupeFacet = _addresses[4];
         s.vaultFacet = _addresses[5];
+        s.slotChecker=_addresses[6];
     }
 
     function setSelectors(bytes4[][] calldata _selectors) external {
         LibFactoryDiamond.enforceIsContractOwner();
         FactoryAppStorage storage fs = LibAppStorage.factoryAppStorage();
-        assert(_selectors.length == 5);
+        assert(_selectors.length == 6);
         fs.ERC20SELECTORS = _selectors[0];
         fs.ERC721SELECTORS = _selectors[1];
         fs.ERC1155SELECTORS = _selectors[2];
         fs.DIAMONDLOUPEFACETSELECTORS = _selectors[3];
         fs.VAULTFACETSELECTORS = _selectors[4];
+        fs.SLOTCHECKERSELECTORS = _selectors[5];
     }
 
     function owner() public view returns (address owner_) {

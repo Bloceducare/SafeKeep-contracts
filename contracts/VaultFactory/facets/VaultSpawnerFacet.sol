@@ -48,7 +48,7 @@ contract VaultSpawnerFacet is StorageLayout {
         assert(success);
 
         //proceed to upgrade new diamond with default facets
-        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](5);
+        IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](6);
         cut[0] = IDiamondCut.FacetCut({
             facetAddress: fs.erc20Facet,
             action: IDiamondCut.FacetCutAction.Add,
@@ -73,6 +73,12 @@ contract VaultSpawnerFacet is StorageLayout {
             facetAddress: fs.vaultFacet,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: fs.VAULTFACETSELECTORS
+        });
+
+          cut[5] = IDiamondCut.FacetCut({
+            facetAddress: fs.slotChecker,
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: fs.SLOTCHECKERSELECTORS
         });
         //upgrade
         IDiamondCut(addr).diamondCut(cut, address(0), "");

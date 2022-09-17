@@ -15,12 +15,16 @@ struct FactoryAppStorage {
     address erc1155Facet;
     address diamondLoupeFacet;
     address vaultFacet;
+    address slotChecker;
+
     //facet selector data for spawned vaults
+    
     bytes4[] ERC20SELECTORS;
     bytes4[] ERC721SELECTORS;
     bytes4[] ERC1155SELECTORS;
     bytes4[] DIAMONDLOUPEFACETSELECTORS;
     bytes4[] VAULTFACETSELECTORS;
+    bytes4[] SLOTCHECKERSELECTORS;
 }
 
 library LibAppStorage {

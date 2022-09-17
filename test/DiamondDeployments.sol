@@ -14,6 +14,8 @@ import "../contracts/VaultFactory/facets/DiamondCutFactoryFacet.sol";
 import "../contracts/VaultFactory/facets/DiamondLoupeFactoryFacet.sol";
 import "../contracts/Vault/VaultDiamond.sol";
 import "../contracts/VaultFactory/VaultFactoryDiamond.sol";
+
+import "../contracts/Vault/facets/SlotChecker.sol";
 //import "../contracts/Vault/facets/DiamondCutFacet.sol";
 //import "../contracts/Vault/facets/DiamondLoupeFacet.sol";
 import "./MockERC1155.sol";
@@ -24,6 +26,8 @@ import "./MockERC1155.sol";
 contract DDeployments is Test,IDiamondCut {
 //separate script to deploy all diamonds and expose them for interaction
 
+
+
 ERC1155Facet erc1155Facet;
 ERC721Facet erc721Facet;
 ERC20Facet erc20Facet;
@@ -33,6 +37,7 @@ VaultFacet vFacet;
 VaultFactoryDiamond vFactoryDiamond;
 DiamondCutFacet dCutFacet;
 DiamondLoupeFacet dLoupeFacet;
+SlotChecker sChecker;
 
 DiamondCutFactoryFacet dCutFactoryFacet;
 DiamondLoupeFactoryFacet dloupeFactoryFacet;
@@ -67,6 +72,9 @@ vFacet=new VaultFacet();
 dCutFacet=new DiamondCutFacet();
 dLoupeFacet=new DiamondLoupeFacet();
 
+//just a periphery
+sChecker=new SlotChecker();
+
 //deploy factory facets
 spawner=new VaultSpawnerFacet();
 dCutFactoryFacet=new DiamondCutFactoryFacet();
@@ -99,23 +107,25 @@ IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](2);
     IDiamondCut(address(vFactoryDiamond)).diamondCut(cut, address(0), "");
 
     //add facet addresses and selectors to Appstorage
-    address[] memory vaultFacetAddresses=new address[](6);
+    address[] memory vaultFacetAddresses=new address[](7);
     vaultFacetAddresses[0]=address(dCutFacet);
      vaultFacetAddresses[1]=address(erc20Facet);
       vaultFacetAddresses[2]=address(erc721Facet);
        vaultFacetAddresses[3]=address(erc1155Facet);
         vaultFacetAddresses[4]=address(dLoupeFacet);
          vaultFacetAddresses[5]=address(vFacet);
+         vaultFacetAddresses[6]=address(sChecker);
 
     vFactoryDiamond.setAddresses(vaultFacetAddresses);
 
     //set selectors
-    bytes4[][] memory _selectors=new bytes4[][](5);
+    bytes4[][] memory _selectors=new bytes4[][](6);
 _selectors[0]=generateSelectors("ERC20Facet");
 _selectors[1]=generateSelectors("ERC721Facet");
 _selectors[2]=generateSelectors("ERC1155Facet");
 _selectors[3]=generateSelectors("DiamondLoupeFacet");
 _selectors[4]=generateSelectors("VaultFacet");
+_selectors[5]=generateSelectors("SlotChecker");
 vFactoryDiamond.setSelectors(_selectors);
 
 //create a vault
@@ -132,6 +142,27 @@ vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(t
  v1ERC721Facet=ERC721Facet(vault1);
  v1ERC1155Facet=ERC1155Facet(vault1);
  v1VaultFacet=VaultFacet(vault1);
+
+
+//do slot checks
+bytes32 i=SlotChecker(vault1).getFacetStorageSlot();
+bytes32 j=SlotChecker(vault1).InterFaceStorageSlot();
+bytes32 k=SlotChecker(vault1).vaultStorageSlot();
+assert(uint256(i)!=uint256(j));
+assert(uint256(k)!=uint256(j));
+assert(uint256(i)!=uint256(k));
+
+//check ranges
+
+unchecked {
+assert(stdMath.delta(uint256(i),uint256(j))>100_000);
+assert(stdMath.delta(uint256(i),uint256(k))>100_000);
+assert(stdMath.delta(uint256(j),uint256(k))>100_000);
+//log them out
+console.log(stdMath.delta(uint256(i),uint256(j)));
+console.log(stdMath.delta(uint256(i),uint256(k)));
+console.log(stdMath.delta(uint256(j),uint256(k)));
+}
 
 
 
@@ -270,5 +301,9 @@ vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(t
         arr[2]=_add3;
         return arr;
     }
+
+    
+
+    
 
 
