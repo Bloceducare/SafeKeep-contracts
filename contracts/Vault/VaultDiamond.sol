@@ -18,14 +18,13 @@ import "./libraries/LibStorageBinder.sol";
 import "../interfaces/IVaultDiamond.sol";
 
 contract VaultDiamond {
-  constructor(
-    address _diamondCutFacet,
-    address _backup,
-    address _vaultOwner
-  ) {
+  constructor(address _diamondCutFacet, address _backup) {
     VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
-    assert(tx.origin == _vaultOwner);
-    LibDiamond.setVaultOwner(_vaultOwner);
+
+    //Set contract Owner
+    address _contractOwner = tx.origin;
+    LibDiamond.setVaultOwner(_contractOwner);
+
     // Add the diamondCut external function from the diamondCutFacet
     IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
     bytes4[] memory functionSelectors = new bytes4[](2);

@@ -22,8 +22,7 @@ contract VaultSpawnerFacet is StorageLayout {
     address[] calldata _inheritors,
     uint256[] calldata _weiShare,
     uint256 _startingBal,
-    address _backupAddress,
-    address _vaultOwner
+    address _backupAddress
   ) external payable returns (address addr) {
     if (_backupAddress == msg.sender) {
       revert BackupAddressError();
@@ -38,8 +37,7 @@ contract VaultSpawnerFacet is StorageLayout {
     );
     VaultDiamond vaultAddr = new VaultDiamond{ salt: entropy }(
       fs.diamondCutFacet,
-      _backupAddress,
-      _vaultOwner
+      _backupAddress
     );
     addr = address(vaultAddr);
 

@@ -131,7 +131,7 @@ contract DDeployments is Test, IDiamondCut {
     vault1Inheritor2 = mkaddr("vault1Inheritor2");
     vault1Owner = mkaddr("vault1Owner");
     //make sure vault1Owner is tx.origin
-    vm.prank(address(this), vault1Owner);
+    vm.prank(msg.sender, vault1Owner);
     vault1Backup = mkaddr("lucky guy");
     vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
       value: 1 ether
@@ -139,8 +139,7 @@ contract DDeployments is Test, IDiamondCut {
       toSingletonAdd(vault1Inheritor1),
       toSingletonUINT(10000),
       1e18,
-      vault1Backup,
-      vault1Owner
+      vault1Backup
     );
 
     //export contract types
