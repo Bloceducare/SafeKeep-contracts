@@ -18,15 +18,12 @@ import "./libraries/LibStorageBinder.sol";
 import "../interfaces/IVaultDiamond.sol";
 
 contract VaultDiamond {
-  bool _init;
-
-  function init(
+  constructor(
     address _diamondCutFacet,
     address _backup,
     address _vaultOwner
-  ) public {
+  ) {
     VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
-    assert(!_init);
     assert(tx.origin == _vaultOwner);
     LibDiamond.setVaultOwner(_vaultOwner);
     // Add the diamondCut external function from the diamondCutFacet
@@ -39,10 +36,8 @@ contract VaultDiamond {
       action: IDiamondCut.FacetCutAction.Add,
       functionSelectors: functionSelectors
     });
-
     LibDiamond.diamondCut(cut, address(0), "");
     vaultData.backupAddress = _backup;
-    _init = true;
   }
 
   // Find facet for function that is called and execute the

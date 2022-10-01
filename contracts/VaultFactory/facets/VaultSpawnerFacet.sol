@@ -33,19 +33,16 @@ contract VaultSpawnerFacet is StorageLayout {
     }
     assert(_inheritors.length == _weiShare.length);
     //spawn contract
-    bytes memory code = type(VaultDiamond).creationCode;
     bytes32 entropy = keccak256(
       abi.encode(msg.sender, block.timestamp, fs.VAULTID)
     );
-    assembly {
-      addr := create2(0, add(code, 0x20), mload(code), entropy)
-      if iszero(extcodesize(addr)) {
-        revert(0, 0)
-      }
-    }
-    //init diamond with diamondCut facet
-    //insert a constant cut facet...modular and reusable across diamonds
-    IVaultDiamond(addr).init(fs.diamondCutFacet, _backupAddress, _vaultOwner);
+    VaultDiamond vaultAddr = new VaultDiamond{ salt: entropy }(
+      fs.diamondCutFacet,
+      _backupAddress,
+      _vaultOwner
+    );
+    addr = address(vaultAddr);
+
     //assert diamond owner
     //confirm for EOA auth in same call frame
     assert(IVaultDiamond(addr).tempOwner() == tx.origin);
@@ -97,3 +94,15 @@ contract VaultSpawnerFacet is StorageLayout {
     fs.VAULTID++;
   }
 }
+
+// bytes memory code = type(VaultDiamond).creationCode;
+// assembly {
+//   addr := create2(0, add(code, 0x20), mload(code), entropy)
+//   if iszero(extcodesize(addr)) {
+//     revert(0, 0)
+//   }
+// }
+
+//init diamond with diamondCut facet
+//insert a constant cut facet...modular and reusable across diamonds
+// IVaultDiamond(addr).init(fs.diamondCutFacet, _backupAddress, _vaultOwner);
