@@ -131,7 +131,7 @@ contract DDeployments is Test, IDiamondCut {
     vault1Inheritor2 = mkaddr("vault1Inheritor2");
     vault1Owner = mkaddr("vault1Owner");
     //make sure vault1Owner is tx.origin
-    vm.prank(msg.sender, vault1Owner);
+    vm.prank(address(this), vault1Owner);
     vault1Backup = mkaddr("lucky guy");
     vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
       value: 1 ether
