@@ -1,7 +1,7 @@
 pragma solidity 0.8.4;
 
 interface IVaultDiamond {
-    function vaultFactoryDiamond() external view returns(address);
+    function init(address _diamondCutFacet, address _backupAddress) external;
 
     //via delegatecall on diamond
     function vaultOwner() external view returns (address);

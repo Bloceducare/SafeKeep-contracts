@@ -48,9 +48,7 @@ contract ERC20FacetTest is DDeployments {
         vm.startPrank(vault1Owner);
         vm.expectRevert(LibKeep.InsufficientTokens.selector);
         v1ERC20Facet.batchWithdrawERC20Token(
-            toDualAdd(address(erc20t), address(erc20t2)),
-            toDualUINT(v1erc20BalanceT1, v1erc20BalanceT2 + 10),
-            depositor1
+            toDualAdd(address(erc20t), address(erc20t2)), toDualUINT(v1erc20BalanceT1, v1erc20BalanceT2 + 10), depositor1
         );
 
         //withdraw normally

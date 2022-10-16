@@ -9,8 +9,6 @@ import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";
 
 import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
-import {IERC173} from "../../interfaces/IERC173.sol";
-import {IERC165} from "../../interfaces/IERC165.sol";
 
 library LibDiamond {
     error InValidFacetCutAction();
@@ -26,6 +24,15 @@ library LibDiamond {
     error NonEmptyCalldata();
     error EmptyCalldata();
     error InitCallFailed();
+    // bytes32 constant VAULT_STORAGE_POSITION =
+    //     keccak256("diamond.standard.keep.storage");
+
+    // function vaultStorage() internal pure returns (VaultStorage storage vaultData) {
+    //     bytes32 position = VAULT_STORAGE_POSITION;
+    //     assembly {
+    //         vaultData.slot := position
+    //     }
+    // }
 
     event OwnershipTransferred(
         address indexed previousOwner,

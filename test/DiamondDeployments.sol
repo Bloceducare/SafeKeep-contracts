@@ -132,12 +132,11 @@ vFactoryDiamond.setSelectors(_selectors);
 vault1Inheritor1=mkaddr("inheritor1");
 vault1Inheritor2=mkaddr("vault1Inheritor2");
 vault1Owner=mkaddr("vault1Owner");
-vm.deal(vault1Owner,1e20);
 //make sure vault1Owner is tx.origin
-vm.startPrank(vault1Owner);
+vm.prank(address(this),vault1Owner);
 vault1Backup=mkaddr("lucky guy");
-vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(vault1Owner,toSingletonAdd(vault1Inheritor1),toSingletonUINT(10000),1e18,vault1Backup);
-vm.stopPrank();
+vault1=VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(toSingletonAdd(vault1Inheritor1),toSingletonUINT(10000),1e18,vault1Backup);
+
 //export contract types
  v1ERC20Facet=ERC20Facet(vault1);
  v1ERC721Facet=ERC721Facet(vault1);

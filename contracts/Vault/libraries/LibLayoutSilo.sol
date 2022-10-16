@@ -1,8 +1,6 @@
 pragma solidity 0.8.4;
 
 //A record of data layouts...these are immutable and cannot be extended
-//all data layouts are explicitly defined here
-
 
 
 ///DIAMOND_FACET_SELECTOR
@@ -11,12 +9,10 @@ struct FacetAddressAndPosition {
     address facetAddress;
     uint96 functionSelectorPosition; // position in facetFunctionSelectors.functionSelectors array
 }
-
 struct FacetFunctionSelectors {
     bytes4[] functionSelectors;
     uint256 facetAddressPosition; // position of facetAddress in facetAddresses array
 }
-
 struct FacetAndSelectorData {
     // maps function selector to the facet address and
     // the position of the selector in the facetFunctionSelectors.selectors array
@@ -25,11 +21,9 @@ struct FacetAndSelectorData {
     mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
     // facet addresses
     address[] facetAddresses;
-    //Modules
-    mapping(string => bool) activeModule;
-    string[] activeModules;
 }
 /////STOP/////
+
 
 ///INTERFACE_SUPPORTED
 /////START////
@@ -39,6 +33,7 @@ struct InterFaceData {
     mapping(bytes4 => bool) supportedInterfaces;
 }
 ////STOP////
+
 
 //VAULT_GLOB_DATA
 ////START////
@@ -78,3 +73,4 @@ struct VaultData {
     mapping(address => bool) claimed;
 }
 ////STOP////
+

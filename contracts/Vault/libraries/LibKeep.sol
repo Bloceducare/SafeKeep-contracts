@@ -60,13 +60,13 @@ library LibKeep {
 
     //owner check is in external fn
     function _ping() internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         vaultData.lastPing = block.timestamp;
         emit VaultPinged(block.timestamp, _vaultID());
     }
 
     function getCurrentAllocatedEth() internal view returns (uint256) {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         uint256 totalEthAllocated;
         for (uint256 x; x < vaultData.inheritors.length; x++) {
             totalEthAllocated += vaultData.inheritorWeishares[vaultData.inheritors[x]];
@@ -75,7 +75,7 @@ library LibKeep {
     }
 
     function getCurrentAllocatedTokens(address _token) internal view returns (uint256) {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         uint256 totalTokensAllocated;
         for (uint256 x; x < vaultData.inheritors.length; x++) {
             totalTokensAllocated += vaultData.inheritorTokenShares[vaultData.inheritors[x]][_token];
@@ -84,19 +84,19 @@ library LibKeep {
     }
 
     function getCurrentAllocated1155tokens(address _token, uint256 _tokenID) internal view returns (uint256 alloc_) {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 x; x < vaultData.inheritors.length; x++) {
             alloc_ += vaultData.inheritorERC1155TokenAllocations[vaultData.inheritors[x]][_token][_tokenID];
         }
     }
 
     function _vaultID() internal view returns (uint256 vaultID_) {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         vaultID_ = vaultData.vaultID;
     }
 
     function _resetClaimed(address _inheritor) internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         vaultData.inheritorWeishares[_inheritor] = 0;
         //resetting all token allocations if he has any
         if (vaultData.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
@@ -115,14 +115,13 @@ library LibKeep {
 
     //only used for multiple address elemented arrays
     function reset(address _inheritor) internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         vaultData.inheritorWeishares[_inheritor] = 0;
         //resetting all token allocations if he has any
         if (vaultData.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
             for (uint256 x; x < vaultData.inheritorAllocatedERC20Tokens[_inheritor].length; x++) {
                 vaultData.inheritorTokenShares[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] = 0;
-                vaultData.inheritorActiveTokens[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] =
-                    false;
+                vaultData.inheritorActiveTokens[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] = false;
             }
             //remove all token addresses
             delete vaultData.inheritorAllocatedERC20Tokens[_inheritor];
@@ -156,7 +155,6 @@ library LibKeep {
         }
     }
 
-
     //INHERITOR MUTATING OPERATIONS
 
     function _addInheritors(address[] calldata _newInheritors, uint256[] calldata _weiShare) internal {
@@ -168,7 +166,7 @@ library LibKeep {
         }
         Guards._notExpired();
         uint256 total;
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 k; k < _newInheritors.length; k++) {
             total += _weiShare[k];
 
@@ -195,7 +193,7 @@ library LibKeep {
         }
         Guards._notExpired();
 
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!vaultData.activeInheritors[_inheritors[k]]) {
                 revert NotInheritor();
@@ -219,7 +217,7 @@ library LibKeep {
             revert LengthMismatch();
         }
 
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!Guards._activeInheritor(_inheritors[k])) {
                 revert InactiveInheritor();
@@ -242,7 +240,7 @@ library LibKeep {
         if (_inheritors.length != _shares.length) {
             revert LengthMismatch();
         }
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!Guards._anInheritor(_inheritors[k])) {
                 revert NotInheritor();
@@ -281,7 +279,7 @@ library LibKeep {
         if (_inheritors.length != _tokenIDs.length) {
             revert LengthMismatch();
         }
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!Guards._anInheritorOrZero(_inheritors[k])) {
                 revert NotInheritor();
@@ -302,28 +300,20 @@ library LibKeep {
                         if (current != _inheritors[k] && current != address(0) && _inheritors[k] != address(0)) {
                             //Might add an Unallocation event
                             vaultData.whitelist[_token][current] = false;
-                            LibKeepHelpers.removeUint(
-                                vaultData.inheritorAllocatedTokenIds[current][_token], _tokenIDs[k]
-                            );
+                            LibKeepHelpers.removeUint(vaultData.inheritorAllocatedTokenIds[current][_token], _tokenIDs[k]);
                             //if no tokens remain for that address
                             if (vaultData.inheritorAllocatedTokenIds[current][_token].length == 0) {
                                 //remove the address
-                                LibKeepHelpers.removeAddress(
-                                    vaultData.inheritorAllocatedERC721TokenAddresses[current], _token
-                                );
+                                LibKeepHelpers.removeAddress(vaultData.inheritorAllocatedERC721TokenAddresses[current], _token);
                             }
                         }
                         //if it is being unallocated
                         if (_inheritors[k] == address(0)) {
                             vaultData.allocatedERC721Tokens[_token][_tokenIDs[k]] = false;
-                            LibKeepHelpers.removeUint(
-                                vaultData.inheritorAllocatedTokenIds[current][_token], _tokenIDs[k]
-                            );
+                            LibKeepHelpers.removeUint(vaultData.inheritorAllocatedTokenIds[current][_token], _tokenIDs[k]);
 
                             if (vaultData.inheritorAllocatedTokenIds[_inheritors[k]][_token].length == 0) {
-                                LibKeepHelpers.removeAddress(
-                                    vaultData.inheritorAllocatedERC721TokenAddresses[current], _token
-                                );
+                                LibKeepHelpers.removeAddress(vaultData.inheritorAllocatedERC721TokenAddresses[current], _token);
                             }
                         }
                     } else {
@@ -359,7 +349,9 @@ library LibKeep {
         address[] calldata _inheritors,
         uint256[] calldata _tokenIDs,
         uint256[] calldata _amounts
-    ) internal {
+    )
+        internal
+    {
         if (_inheritors.length == 0 || _tokenIDs.length == 0) {
             revert EmptyArray();
         }
@@ -369,7 +361,7 @@ library LibKeep {
         if (_inheritors.length != _amounts.length) {
             revert LengthMismatch();
         }
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         for (uint256 i; i < _inheritors.length; i++) {
             if (!Guards._anInheritor(_inheritors[i])) {
                 revert NotInheritor();
@@ -379,17 +371,11 @@ library LibKeep {
             }
             vaultData.inheritorERC1155TokenAllocations[_inheritors[i]][_token][_tokenIDs[i]] = _amounts[i];
             //if id is just being added
-            if (
-                !LibKeepHelpers._inUintArray(vaultData.inheritorAllocatedTokenIds[_inheritors[i]][_token], _tokenIDs[i])
-            ) {
+            if (!LibKeepHelpers._inUintArray(vaultData.inheritorAllocatedTokenIds[_inheritors[i]][_token], _tokenIDs[i])) {
                 vaultData.inheritorAllocatedTokenIds[_inheritors[i]][_token].push(_tokenIDs[i]);
             }
             //if address is just being added
-            if (
-                !LibKeepHelpers._inAddressArray(
-                    vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritors[i]], _token
-                )
-            ) {
+            if (!LibKeepHelpers._inAddressArray(vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritors[i]], _token)) {
                 vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritors[i]].push(_token);
             }
             //if tokens are being unallocated
@@ -492,7 +478,7 @@ library LibKeep {
         if (IERC721(_token).ownerOf(_tokenID) != address(this)) {
             revert NotERC721Owner();
         }
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         if (vaultData.allocatedERC721Tokens[_token][_tokenID]) {
             revert("UnAllocate Token First");
         }
@@ -524,14 +510,14 @@ library LibKeep {
     //ACCESS TRANSFER
 
     function _transferOwnerShip(address _newOwner) internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         address prevOwner = vaultData.vaultOwner;
         vaultData.vaultOwner = _newOwner;
         emit OwnershipTransferred(prevOwner, _newOwner, _vaultID());
     }
 
     function _transferBackup(address _newBackupAddress) internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         address prevBackup = vaultData.backupAddress;
         vaultData.backupAddress = _newBackupAddress;
         emit BackupTransferred(prevBackup, _newBackupAddress, _vaultID());
@@ -540,7 +526,7 @@ library LibKeep {
     ///CLAIMS
 
     function _claimOwnership(address _newBackup) internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         Guards._expired();
         address prevOwner = vaultData.vaultOwner;
         address prevBackup = vaultData.backupAddress;
@@ -555,7 +541,7 @@ library LibKeep {
         // Guards._anInheritor(msg.sender);
         // Guards._activeInheritor(msg.sender);
         // Guards._expired();
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC20Tokens[msg.sender].length;
         if (tokens > 0) {
             for (uint256 i; i < tokens; i++) {
@@ -577,7 +563,7 @@ library LibKeep {
     event ww(bool);
 
     function _claimERC721Tokens() internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC721TokenAddresses[msg.sender].length;
         if (tokens > 0) {
             for (uint256 i; i < tokens; i++) {
@@ -609,7 +595,7 @@ library LibKeep {
     }
 
     function _claimERC1155Tokens() internal {
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC1155TokenAddresses[msg.sender].length;
         if (tokens > 0) {
             for (uint256 i; i < tokens; i++) {
@@ -638,7 +624,7 @@ library LibKeep {
         Guards._activeInheritor(msg.sender);
         Guards._expired();
         Guards._notClaimed(msg.sender);
-        VaultData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
         if (vaultData.inheritorWeishares[msg.sender] > 0) {
             uint256 amountToClaim = vaultData.inheritorWeishares[msg.sender];
             //reset storage

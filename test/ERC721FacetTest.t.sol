@@ -11,7 +11,7 @@ address depositor1;
 
 function testERC721VaultOperations() public{
 depositor1=mkaddr('depositor1');
- vm.record();
+
 //mint some tokens to depositor1
 vm.startPrank(depositor1);
 //NFT 1
@@ -94,7 +94,5 @@ v1VaultFacet.allocateERC721Tokens(address(erc721t2),toTriAddress(vault1Inheritor
 //double check storage
 vault1Inheritor2Alloc= v1ERC721Facet.getAllocatedERC721Tokens(vault1Inheritor2);
 assertEq(vault1Inheritor2Alloc[0].tokenIDs.length,3);
-vm.accesses(vault1);
-bytes32 slot=hex"345eb7e3dd5fb40c9d6d7bf8ea094687f71bdab01a3bff5fa9df10a7eea1fbca";
-vm.load(vault1,slot);
+
 }}
