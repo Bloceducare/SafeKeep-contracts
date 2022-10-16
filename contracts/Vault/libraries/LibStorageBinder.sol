@@ -1,7 +1,7 @@
 pragma solidity 0.8.4;
 
-import "../VaultDiamond.sol";
-import "../libraries/LibLayoutSilo.sol";
+//import "../VaultDiamond.sol";
+import {FacetAndSelectorData,InterFaceData,VaultData} from "../libraries/LibLayoutSilo.sol";
 import "../facets/DiamondCutFacet.sol";
 import "../facets/DiamondLoupeFacet.sol";
 import "../facets/ERC1155Facet.sol";
@@ -12,7 +12,7 @@ import "../facets/VaultFacet.sol";
 
 
 library LibStorageBinder {
-    bytes32 constant SLOT_SALT = keccak256(type(LibKeep).creationCode);
+    bytes32 constant SLOT_SALT = keccak256('storage_offset_salt');
 
     function _getStorageSlot(string memory _facetName1)
         internal
@@ -28,15 +28,15 @@ library LibStorageBinder {
     ) internal pure returns (bytes32 slot) {
         slot = keccak256(bytes(abi.encode(_facetName1, _facetName2)));
     }
-      function _getStorageSlot(
-        string memory _facetName1,
-        string memory _facetName2,
-        string memory _facetName3,
-        string memory _facetName4,
-        string memory _facetName5
-    ) internal pure returns (bytes32 slot) {
-        slot = keccak256(bytes(abi.encode(_facetName1, _facetName2,_facetName3,_facetName4,_facetName5)));
-    }
+    //   function _getStorageSlot(
+    //     string memory _facetName1,
+    //     string memory _facetName2,
+    //     string memory _facetName3,
+    //     string memory _facetName4,
+    //     string memory _facetName5
+    // ) internal pure returns (bytes32 slot) {
+    //     slot = keccak256(bytes(abi.encode(_facetName1, _facetName2,_facetName3,_facetName4,_facetName5)));
+    // }
 
     function _bindAndReturnFacetStorage()
         internal
@@ -55,7 +55,7 @@ library LibStorageBinder {
 
 function _bindAndReturnInterfaceStorage()
         internal
-        view
+        pure
         returns (InterFaceData storage interFaceData)
     {
         bytes32 _slot = _getStorageSlot(
@@ -74,9 +74,9 @@ function _bindAndReturnVaultStorage()
     {
         bytes32 _slot = _getStorageSlot(
                     type(DiamondCutFacet).name,
-                    type(ERC20Facet).name,
-                    type(ERC721Facet).name,
-                    type(ERC1155Facet).name,
+                    // type(ERC20Facet).name,
+                    // type(ERC721Facet).name,
+                    // type(ERC1155Facet).name,
                     type(VaultFacet).name
 
         );

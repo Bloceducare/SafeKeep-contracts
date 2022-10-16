@@ -13,6 +13,8 @@ import { LibDiamond } from "../libraries/LibDiamond.sol";
 import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
 
+import {IVaultDiamond} from "../../interfaces/IVaultDiamond.sol";
+
 contract DiamondCutFacet is IDiamondCut {
   /// @notice Add/replace/remove any number of functions and optionally execute
   ///         a function with delegatecall
@@ -25,14 +27,8 @@ contract DiamondCutFacet is IDiamondCut {
     address _init,
     bytes calldata _calldata
   ) external override {
-VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    if (tx.origin != vaultData.vaultOwner) revert NoPermissions();
+// restrict upgrades to VaultFactoryDiamond only
+    if (msg.sender !=IVaultDiamond(address(this)).vaultFactoryDiamond()) revert NoPermissions();
     LibDiamond.diamondCut(_diamondCut, _init, _calldata);
-  }
-
-  //temp call made from factory to confirm ownership
-  function tempOwner() public view returns (address owner_) {
-    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    owner_ = vaultData.vaultOwner;
   }
 }

@@ -22,7 +22,7 @@ library LibFactoryDiamond {
     error EmptyCalldata();
     error InitCallFailed();
 
-    bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.factory.storage");
+    bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("keep.master.storage");
 
     struct FacetAddressAndPosition {
         address facetAddress;
