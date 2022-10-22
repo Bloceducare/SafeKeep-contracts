@@ -13,7 +13,7 @@ interface IModuleData {
         bytes32 slot;
         //keccak hash of facets involved
         bytes32 fileHash;
-        //human readable names of facets involved
+        //human readable names of facets involved in alphabetical order
         string[] facetNames;
     }
 

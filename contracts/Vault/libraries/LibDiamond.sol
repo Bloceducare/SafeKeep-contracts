@@ -7,7 +7,7 @@ pragma solidity 0.8.4;
 /******************************************************************************/
 import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";
 
-import "../libraries/LibLayoutSilo.sol";
+import {FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
 import {IERC173} from "../../interfaces/IERC173.sol";
 import {IERC165} from "../../interfaces/IERC165.sol";
@@ -33,20 +33,24 @@ library LibDiamond {
     );
 
     function setVaultOwner(address _newOwner) internal {
-        VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-        address previousOwner = vaultData.vaultOwner;
-        vaultData.vaultOwner = _newOwner;
+        FacetAndSelectorData storage fsData=LibStorageBinder._bindAndReturnFacetStorage();
+        address previousOwner = fsData.vaultOwner;
+        fsData.vaultOwner = _newOwner;
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
     
 
     function vaultOwner() internal view returns (address contractOwner_) {
-        contractOwner_ = LibStorageBinder._bindAndReturnVaultStorage().vaultOwner;
+        contractOwner_ = LibStorageBinder._bindAndReturnFacetStorage().vaultOwner;
+    }
+
+    function vaultID() internal view returns(uint256 vaultID_){
+        vaultID_=LibStorageBinder._bindAndReturnFacetStorage().vaultID;
     }
 
     function enforceIsContractOwner() internal  view{
-        if (msg.sender != LibStorageBinder._bindAndReturnVaultStorage().vaultOwner) revert NotVaultOwner();
+        if (msg.sender != LibStorageBinder._bindAndReturnFacetStorage().vaultOwner) revert NotVaultOwner();
     }
 
     event DiamondCut(

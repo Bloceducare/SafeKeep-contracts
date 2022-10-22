@@ -6,7 +6,7 @@ import "../libraries/LibLayoutSilo.sol";
 import "./ERC1155Facet.sol";
 import "./ERC721Facet.sol";
 import "./ERC20Facet.sol";
-import "./VaultFacet.sol";
+// import "./VaultFacet.sol";
 
 contract SlotChecker {
     //This is a disposable facet that checks for uniqueness of Master Storage Slots
@@ -28,7 +28,7 @@ contract SlotChecker {
     }
 
     function vaultStorageSlot() public returns (bytes32 _slot) {
-        VaultData storage vd = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vd = LibStorageBinder._bindAndReturnVaultStorage();
         assembly {
             _slot := vd.slot
         }

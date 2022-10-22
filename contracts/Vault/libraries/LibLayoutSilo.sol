@@ -25,6 +25,10 @@ struct FacetAndSelectorData {
     mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
     // facet addresses
     address[] facetAddresses;
+    //Vault ID
+    uint256 vaultID;
+    // owner of the vault
+    address vaultOwner;
     //Modules
     mapping(string => bool) activeModule;
     string[] activeModules;
@@ -40,13 +44,9 @@ struct InterFaceData {
 }
 ////STOP////
 
-//VAULT_GLOB_DATA
+//DMS_GLOB_DATA
 ////START////
-struct VaultData {
-    //Vault ID
-    uint256 vaultID;
-    // owner of the vault
-    address vaultOwner;
+struct DMSData {
     //last time pinged
     uint256 lastPing;
     //backup address

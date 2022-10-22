@@ -1,90 +1,21 @@
 pragma solidity 0.8.4;
 
-import "../libraries/LibKeep.sol";
+import "../libraries/LibDMS.sol";
 
-import "../libraries/LibTokens.sol";
+import {LibTokens,ERC1155_ACCEPTED,ERC1155_BATCH_ACCEPTED} from "../libraries/LibTokens.sol";
 
 import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
+import "../libraries/LibGuards.sol";
 
 contract ERC1155Facet {
-  struct AllocatedERC1155Tokens {
-    uint256 tokenID;
-    uint256 amount;
-  }
-
-    struct AllAllocatedERC1155Tokens {
-    address token;
-    uint256 tokenID;
-    uint256 amount;
-  }
-
-  //VIEW FUNCTIONS
-  function getAllocatedERC1155Tokens(address _token, address _inheritor)
-    public
-    view
-    returns (AllocatedERC1155Tokens[] memory alloc_)
-  {
-    Guards._activeInheritor(_inheritor);
-    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    uint256 tokenCount = vaultData
-    .inheritorAllocatedTokenIds[_inheritor][_token].length;
-    if (tokenCount > 0) {
-      alloc_ = new AllocatedERC1155Tokens[](tokenCount);
-      for (uint256 i; i < tokenCount; i++) {
-        uint256 _tid = vaultData.inheritorAllocatedTokenIds[_inheritor][_token][i];
-        alloc_[i].tokenID = _tid;
-        alloc_[i].amount = vaultData.inheritorERC1155TokenAllocations[_inheritor][
-          _token
-        ][_tid];
-      }
-    }
-  }
-
-   function getAllAllocatedERC1155Tokens(address _inheritor)
-    public
-    view
-    returns (AllAllocatedERC1155Tokens[] memory alloc_)
-  {
-    Guards._activeInheritor(_inheritor);
-    VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    uint256 tokenAddressCount=vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
-    for (uint256 j=0;j<tokenAddressCount;j++){
-      address _token=vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor][j];
-    uint256 tokenCount = vaultData
-    .inheritorAllocatedTokenIds[_inheritor][_token].length;
-      alloc_ = new AllAllocatedERC1155Tokens[](tokenCount);
-      for (uint256 i; i < tokenCount; i++) {
-       
-        uint256 _tid = vaultData.inheritorAllocatedTokenIds[_inheritor][_token][i];
-        alloc_[i].tokenID = _tid;
-        alloc_[i].amount = vaultData.inheritorERC1155TokenAllocations[_inheritor][
-          _token
-        ][_tid];
-        alloc_[i].token=_token;
-      }
-    }
-    
-  }
-
-
-
-  function getUnallocatedERC115Tokens(address _token,uint256 _tokenId) public view returns(uint256 remaining_){
-   // VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-uint256 allocated=LibKeep.getCurrentAllocated1155tokens(_token,_tokenId);
-uint256 available=IERC1155(_token).balanceOf(address(this), _tokenId);
-if(allocated<available){
-  remaining_=available-allocated;
-}
-  }
-
   //DEPOSITS
   function depositERC1155Token(
     address _token,
     uint256 _tokenID,
     uint256 _amount
   ) external {
-   // Guards._onlyVaultOwner();
+   // LibGuards._onlyVaultOwner();
     LibTokens._safeInputERC1155Token(_token, _tokenID, _amount);
   }
 
@@ -93,7 +24,7 @@ if(allocated<available){
     uint256[] calldata _tokenIDs,
     uint256[] calldata _amounts
   ) external {
-   // Guards._onlyVaultOwner();
+   // LibGuards._onlyVaultOwner();
     LibTokens._safeBatchInputERC1155Tokens(_token, _tokenIDs, _amounts);
   }
 
@@ -105,8 +36,8 @@ if(allocated<available){
     uint256 _amount,
     address _to
   ) public {
-    Guards._onlyVaultOwner();
-    LibKeep._withdrawERC1155Token(_token, _tokenID, _amount, _to);
+    LibGuards._onlyVaultOwner();
+    LibTokens._withdrawERC1155Token(_token, _tokenID, _amount, _to);
   }
 
   function batchWithdrawERC1155Token(
@@ -115,7 +46,7 @@ if(allocated<available){
     uint256[] calldata _amount,
     address _to
   ) public {
-    Guards._onlyVaultOwner();
+    LibGuards._onlyVaultOwner();
     if (_tokenIDs.length > 0) {
       for (uint256 i; i < _tokenIDs.length; i++) {
         withdrawERC1155Token(_token, _tokenIDs[i], _amount[i], _to);
@@ -129,7 +60,7 @@ if(allocated<available){
     address _to,
     bool _approved
   ) external {
-    Guards._onlyVaultOwner();
+    LibGuards._onlyVaultOwner();
     LibTokens._approveAllERC1155Token(_token, _to, _approved);
   }
 

@@ -1,7 +1,7 @@
 pragma solidity 0.8.4;
 
 import "../../Vault/VaultDiamond.sol";
-import "../../Vault/libraries/LibKeep.sol";
+import "../../Vault/libraries/LibDMS.sol";
 import "../../interfaces/IVaultDiamond.sol";
 
 import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";

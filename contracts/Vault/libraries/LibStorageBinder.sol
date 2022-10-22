@@ -1,13 +1,13 @@
 pragma solidity 0.8.4;
 
 //import "../VaultDiamond.sol";
-import {FacetAndSelectorData,InterFaceData,VaultData} from "../libraries/LibLayoutSilo.sol";
+import {FacetAndSelectorData,InterFaceData,DMSData} from "../libraries/LibLayoutSilo.sol";
 import "../facets/DiamondCutFacet.sol";
 import "../facets/DiamondLoupeFacet.sol";
 import "../facets/ERC1155Facet.sol";
 import "../facets/ERC721Facet.sol";
 import "../facets/ERC20Facet.sol";
-import "../facets/VaultFacet.sol";
+import "../facets/DMSFacet.sol";
 
 
 
@@ -70,14 +70,14 @@ function _bindAndReturnInterfaceStorage()
 function _bindAndReturnVaultStorage()
         internal
         pure
-        returns (VaultData storage vaultData)
+        returns (DMSData storage vaultData)
     {
         bytes32 _slot = _getStorageSlot(
                     type(DiamondCutFacet).name,
                     // type(ERC20Facet).name,
                     // type(ERC721Facet).name,
                     // type(ERC1155Facet).name,
-                    type(VaultFacet).name
+                    type(DMSFacet).name
 
         );
         bytes32 saltedOffset = _slot ^ SLOT_SALT;

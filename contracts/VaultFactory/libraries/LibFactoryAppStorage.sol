@@ -1,6 +1,6 @@
 pragma solidity 0.8.4;
 
-import "../../Vault/libraries/LibKeepHelpers.sol";
+import "../../Vault/libraries/LibArrayHelpers.sol";
 import {IModuleData} from "../../interfaces/IModuleData.sol";
 struct FactoryAppStorage {
     //master vaultID

@@ -7,3 +7,4 @@ artifacts
 extensions.json
 settings.json
 out
+yarn.lock

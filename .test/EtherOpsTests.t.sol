@@ -2,7 +2,7 @@ pragma solidity 0.8.4;
 
 import "./DiamondDeployments.sol";
 import "../contracts/Vault/libraries/LibDiamond.sol";
-import "../contracts/Vault/libraries/LibKeep.sol";
+import "../contracts/Vault/libraries/LibDMS.sol";
 
 contract EtherOpsTest is DDeployments{
 //   struct VaultFacet.AllInheritorEtherAllocs {
@@ -33,7 +33,7 @@ assertEq(freeEther,onchainFreeEther);
 uint256 v1Inheritor2eAlloc=freeEther - 10000000;
 
 //try to allocate more thn available ether
-vm.expectRevert(abi.encodeWithSelector(LibKeep.EtherAllocationOverflow.selector,2 ether -freeEther));
+vm.expectRevert(abi.encodeWithSelector(LibDMS.EtherAllocationOverflow.selector,2 ether -freeEther));
 v1VaultFacet.addInheritors(toSingletonAdd(vault1Inheritor2),toSingletonUINT(2 ether));
 
 //allocate normally
@@ -43,7 +43,7 @@ assertEq(v1Inheritor2EtherAlloc,freeEther - 10000000);
 
 //try to withdraw more than available
 freeEther=v1VaultFacet.getUnallocatedEther();
-vm.expectRevert(LibKeep.InsufficientEth.selector);
+vm.expectRevert(LibDMS.InsufficientEth.selector);
 v1VaultFacet.withdrawEther(freeEther+1000,vault1Owner);
 
 //unallocate from both inheritors

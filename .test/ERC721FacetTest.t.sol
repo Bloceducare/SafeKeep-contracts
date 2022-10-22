@@ -2,7 +2,7 @@ pragma solidity 0.8.4;
 
 import "./DiamondDeployments.sol";
 
-import "../contracts/Vault/libraries/LibKeep.sol";
+import "../contracts/Vault/libraries/LibDMS.sol";
 import "../contracts/Vault/facets/ERC721Facet.sol";
 
 
@@ -85,7 +85,7 @@ v1ERC721Facet.withdrawERC721Token(address(erc721t),0,vault1Owner);
 assertEq(erc721t.ownerOf(0),vault1Owner);
 
 //cannot allocate to non existent inheritor
-vm.expectRevert(LibKeep.NotInheritor.selector);
+vm.expectRevert(LibDMS.NotInheritor.selector);
 v1VaultFacet.allocateERC721Tokens(address(erc721t2),toSingletonAdd(mkaddr('noninheritor')),toSingletonUINT(1));
 
 //mass allocate tokens

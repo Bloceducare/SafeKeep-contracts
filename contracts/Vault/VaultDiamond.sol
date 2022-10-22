@@ -9,9 +9,8 @@ pragma solidity 0.8.4;
 import {LibDiamond} from "./libraries/LibDiamond.sol";
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
-import {FacetAndSelectorData,VaultData} from "./libraries/LibLayoutSilo.sol";
+import {FacetAndSelectorData,DMSData} from "./libraries/LibLayoutSilo.sol";
 
-import {LibKeepHelpers} from "./libraries/LibKeepHelpers.sol";
 import {LibStorageBinder} from "./libraries/LibStorageBinder.sol";
 
 //import "./libraries/LibVaultStorage.sol";
