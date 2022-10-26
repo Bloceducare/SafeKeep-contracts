@@ -10,7 +10,7 @@ import {IModuleData} from "../../interfaces/IModuleData.sol";
 error ModuleExists(string moduleName);
 
    
-library LibModules {
+library LibModuleRegistry {
      event ModuleAdded(string indexed _name,IModuleData.ModuleData _module);
     //allow Proxy Factory admin(multisig) to add modules to Module Registry
     function _addModules(IModuleData.ModuleData[] calldata _modules, string[] calldata _names) internal {
