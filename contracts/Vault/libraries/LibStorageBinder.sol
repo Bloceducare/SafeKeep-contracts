@@ -1,7 +1,7 @@
 pragma solidity 0.8.4;
 
 //import "../VaultDiamond.sol";
-import {FacetAndSelectorData,InterFaceData,DMSData} from "../libraries/LibLayoutSilo.sol";
+import {FacetAndSelectorData,DMSData} from "../libraries/LibLayoutSilo.sol";
 import "../facets/DiamondCutFacet.sol";
 import "../facets/DiamondLoupeFacet.sol";
 import "../facets/ERC1155Facet.sol";
@@ -53,21 +53,7 @@ library LibStorageBinder {
         }
     }
 
-function _bindAndReturnInterfaceStorage()
-        internal
-        pure
-        returns (InterFaceData storage interFaceData)
-    {
-        bytes32 _slot = _getStorageSlot(
-                    type(DiamondLoupeFacet).name
-        );
-        bytes32 saltedOffset = _slot ^ SLOT_SALT;
-        assembly {
-            interFaceData.slot := saltedOffset
-        }
-    }
-
-function _bindAndReturnVaultStorage()
+function _bindAndReturnDMSStorage()
         internal
         pure
         returns (DMSData storage vaultData)

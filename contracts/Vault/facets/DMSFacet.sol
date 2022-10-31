@@ -53,7 +53,7 @@ contract DMSFacet {
    
 
     function inspectVault() public view returns (VaultInfo memory info) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
         info.owner = fsData.vaultOwner;
         info.weiBalance = address(this).balance;
@@ -64,7 +64,7 @@ contract DMSFacet {
     }
 
     function allEtherAllocations() public view returns (AllInheritorEtherAllocs[] memory eAllocs) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 count = vaultData.inheritors.length;
         eAllocs = new AllInheritorEtherAllocs[](count);
         for (uint256 i; i < count; i++) {
@@ -74,7 +74,7 @@ contract DMSFacet {
     }
 
     function inheritorEtherAllocation(address _inheritor) public view returns (uint256 _allocatedEther) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (!LibDMSGuards._anInheritor(_inheritor)) {
             revert LibDMS.NotInheritor();
         }
@@ -98,7 +98,7 @@ contract DMSFacet {
 
     function getAllocatedERC20Tokens(address _inheritor) public view returns (AllocatedERC20Tokens[] memory tAllocs) {
         LibDMSGuards._activeInheritor(_inheritor);
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 count = vaultData.inheritorAllocatedERC20Tokens[_inheritor].length;
         if (count > 0) {
             tAllocs = new AllocatedERC20Tokens[](count);
@@ -111,7 +111,7 @@ contract DMSFacet {
     }
 
     function inheritorERC20TokenAllocation(address _inheritor, address _token) public view returns (uint256) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         return vaultData.inheritorTokenShares[_inheritor][_token];
     }
 
@@ -128,7 +128,7 @@ contract DMSFacet {
         view
         returns (AllocatedERC721Tokens[] memory allocated)
     {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         LibDMSGuards._activeInheritor(_inheritor);
         uint256 tokenAddressCount = vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
         if (tokenAddressCount > 0) {
@@ -142,13 +142,13 @@ contract DMSFacet {
     }
 
     function getAllocatedERC721TokenIds(address _inheritor, address _token) external view returns (uint256[] memory) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         LibDMSGuards._activeInheritor(_inheritor);
         return vaultData.inheritorAllocatedTokenIds[_inheritor][_token];
     }
 
     function getAllocatedERC721TokenAddresses(address _inheritor) public view returns (address[] memory) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         LibDMSGuards._activeInheritor(_inheritor);
         return vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor];
     }
@@ -159,7 +159,7 @@ contract DMSFacet {
         returns (AllocatedERC1155Tokens[] memory alloc_)
     {
         LibDMSGuards._activeInheritor(_inheritor);
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokenCount = vaultData.inheritorAllocatedTokenIds[_inheritor][_token].length;
         if (tokenCount > 0) {
             alloc_ = new AllocatedERC1155Tokens[](tokenCount);
@@ -177,7 +177,7 @@ contract DMSFacet {
         returns (AllAllocatedERC1155Tokens[] memory alloc_)
     {
         LibDMSGuards._activeInheritor(_inheritor);
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokenAddressCount = vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
         for (uint256 j = 0; j < tokenAddressCount; j++) {
             address _token = vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor][j];

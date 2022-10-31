@@ -46,13 +46,13 @@ library LibDMS {
 
     //owner check is in external fn
     function _ping() internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         vaultData.lastPing = block.timestamp;
         emit VaultPinged(block.timestamp, LibDiamond.vaultID());
     }
 
     function getCurrentAllocatedEth() internal view returns (uint256) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 totalEthAllocated;
         for (uint256 x; x < vaultData.inheritors.length; x++) {
             totalEthAllocated += vaultData.inheritorWeishares[vaultData.inheritors[x]];
@@ -61,7 +61,7 @@ library LibDMS {
     }
 
     function getCurrentAllocatedTokens(address _token) internal view returns (uint256) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 totalTokensAllocated;
         for (uint256 x; x < vaultData.inheritors.length; x++) {
             totalTokensAllocated += vaultData.inheritorTokenShares[vaultData.inheritors[x]][_token];
@@ -70,19 +70,19 @@ library LibDMS {
     }
 
     function getCurrentAllocated1155tokens(address _token, uint256 _tokenID) internal view returns (uint256 alloc_) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 x; x < vaultData.inheritors.length; x++) {
             alloc_ += vaultData.inheritorERC1155TokenAllocations[vaultData.inheritors[x]][_token][_tokenID];
         }
     }
 
     function _isERC721Allocated(address _token, uint256 _tokenId) internal view returns (bool allocated_) {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         allocated_ = vaultData.allocatedERC721Tokens[_token][_tokenId];
     }
 
     function _resetClaimed(address _inheritor) internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         vaultData.inheritorWeishares[_inheritor] = 0;
         //resetting all token allocations if he has any
         if (vaultData.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
@@ -101,7 +101,7 @@ library LibDMS {
 
     //only used for multiple address elemented arrays
     function reset(address _inheritor) internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         vaultData.inheritorWeishares[_inheritor] = 0;
         //resetting all token allocations if he has any
         if (vaultData.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
@@ -153,7 +153,7 @@ library LibDMS {
         }
         LibDMSGuards._notExpired();
         uint256 total;
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _newInheritors.length; k++) {
             total += _weiShare[k];
 
@@ -180,7 +180,7 @@ library LibDMS {
         }
         LibDMSGuards._notExpired();
 
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!vaultData.activeInheritors[_inheritors[k]]) {
                 revert NotInheritor();
@@ -204,7 +204,7 @@ library LibDMS {
             revert LengthMismatch();
         }
 
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!LibDMSGuards._activeInheritor(_inheritors[k])) {
                 revert InactiveInheritor();
@@ -227,7 +227,7 @@ library LibDMS {
         if (_inheritors.length != _shares.length) {
             revert LengthMismatch();
         }
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!LibDMSGuards._anInheritor(_inheritors[k])) {
                 revert NotInheritor();
@@ -266,7 +266,7 @@ library LibDMS {
         if (_inheritors.length != _tokenIDs.length) {
             revert LengthMismatch();
         }
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _inheritors.length; k++) {
             if (!LibDMSGuards._anInheritorOrZero(_inheritors[k])) {
                 revert NotInheritor();
@@ -354,7 +354,7 @@ library LibDMS {
         if (_inheritors.length != _amounts.length) {
             revert LengthMismatch();
         }
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 i; i < _inheritors.length; i++) {
             if (!LibDMSGuards._anInheritor(_inheritors[i])) {
                 revert NotInheritor();
@@ -408,7 +408,7 @@ library LibDMS {
     }
 
     function _transferBackup(address _newBackupAddress) internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         address prevBackup = vaultData.backupAddress;
         vaultData.backupAddress = _newBackupAddress;
         emit BackupTransferred(prevBackup, _newBackupAddress, LibDiamond.vaultID());
@@ -417,7 +417,7 @@ library LibDMS {
     ///CLAIMS
 
     function _claimOwnership(address _newBackup) internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
         LibDMSGuards._expired();
         address prevOwner = fsData.vaultOwner;
@@ -430,7 +430,7 @@ library LibDMS {
     }
 
     function _claimERC20Tokens() internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC20Tokens[msg.sender].length;
         if (tokens > 0) {
             for (uint256 i; i < tokens; i++) {
@@ -450,7 +450,7 @@ library LibDMS {
     }
 
     function _claimERC721Tokens() internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC721TokenAddresses[msg.sender].length;
         if (tokens > 0) {
             for (uint256 i; i < tokens; i++) {
@@ -482,7 +482,7 @@ library LibDMS {
     }
 
     function _claimERC1155Tokens() internal {
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC1155TokenAddresses[msg.sender].length;
         if (tokens > 0) {
             for (uint256 i; i < tokens; i++) {
@@ -511,7 +511,7 @@ library LibDMS {
         LibDMSGuards._activeInheritor(msg.sender);
         LibDMSGuards._expired();
         LibDMSGuards._notClaimed(msg.sender);
-        DMSData storage vaultData = LibStorageBinder._bindAndReturnVaultStorage();
+        DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (vaultData.inheritorWeishares[msg.sender] > 0) {
             uint256 amountToClaim = vaultData.inheritorWeishares[msg.sender];
             //reset storage

@@ -23,6 +23,9 @@ struct FacetAndSelectorData {
     mapping(bytes4 => FacetAddressAndPosition) selectorToFacetAndPosition;
     // maps facet addresses to function selectors
     mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
+        // Used to query if a contract implements an interface.
+    // Used to implement ERC-165.
+    mapping(bytes4 => bool) supportedInterfaces;
     // facet addresses
     address[] facetAddresses;
     //Vault ID
@@ -31,18 +34,11 @@ struct FacetAndSelectorData {
     address vaultOwner;
     //Modules
     mapping(string => bool) activeModule;
+    mapping(string=>uint256) moduleStorageCounter;
     string[] activeModules;
 }
 /////STOP/////
 
-///INTERFACE_SUPPORTED
-/////START////
-struct InterFaceData {
-    // Used to query if a contract implements an interface.
-    // Used to implement ERC-165.
-    mapping(bytes4 => bool) supportedInterfaces;
-}
-////STOP////
 
 //DMS_GLOB_DATA
 ////START////
@@ -78,3 +74,6 @@ struct DMSData {
     mapping(address => bool) claimed;
 }
 ////STOP////
+
+
+
