@@ -42,10 +42,10 @@ library LibTokens {
     //ERC20
     function _inputERC20Tokens(address[] calldata _tokenDeps, uint256[] calldata _amounts) internal {
         if (_tokenDeps.length == 0 || _amounts.length == 0) {
-            revert LibDMS.EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         if (_tokenDeps.length != _amounts.length) {
-            revert LibDMS.LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
         for (uint256 i; i < _tokenDeps.length; i++) {
             address token = _tokenDeps[i];

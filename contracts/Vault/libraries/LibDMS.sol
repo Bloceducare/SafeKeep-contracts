@@ -11,6 +11,7 @@ import "../../interfaces/IERC1155.sol";
 
 import {DMSData, FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
+import {LibErrors} from "../libraries/LibErrors.sol";
 
 library LibDMS {
     event VaultPinged(uint256 lastPing, uint256 vaultID);
@@ -34,10 +35,8 @@ library LibDMS {
         address indexed inheritor, address indexed token, uint256 tokenID, uint256 amount, uint256 vaultID
     );
 
-    error LengthMismatch();
     error ActiveInheritor();
     error NotEnoughEtherToAllocate(uint256);
-    error EmptyArray();
     error NotInheritor();
     error EtherAllocationOverflow(uint256 overflow);
     error TokenAllocationOverflow(address token, uint256 overflow);
@@ -146,10 +145,10 @@ library LibDMS {
 
     function _addInheritors(address[] calldata _newInheritors, uint256[] calldata _weiShare) internal {
         if (_newInheritors.length == 0 || _weiShare.length == 0) {
-            revert EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         if (_newInheritors.length != _weiShare.length) {
-            revert LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
         LibDMSGuards._notExpired();
         uint256 total;
@@ -176,7 +175,7 @@ library LibDMS {
 
     function _removeInheritors(address[] calldata _inheritors) internal {
         if (_inheritors.length == 0) {
-            revert EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         LibDMSGuards._notExpired();
 
@@ -198,10 +197,10 @@ library LibDMS {
 
     function _allocateEther(address[] calldata _inheritors, uint256[] calldata _ethShares) internal {
         if (_inheritors.length == 0 || _ethShares.length == 0) {
-            revert EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         if (_inheritors.length != _ethShares.length) {
-            revert LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
 
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
@@ -222,10 +221,10 @@ library LibDMS {
 
     function _allocateERC20Tokens(address token, address[] calldata _inheritors, uint256[] calldata _shares) internal {
         if (_inheritors.length == 0 || _shares.length == 0) {
-            revert EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         if (_inheritors.length != _shares.length) {
-            revert LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _inheritors.length; k++) {
@@ -261,10 +260,10 @@ library LibDMS {
         internal
     {
         if (_inheritors.length == 0 || _tokenIDs.length == 0) {
-            revert EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         if (_inheritors.length != _tokenIDs.length) {
-            revert LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 k; k < _inheritors.length; k++) {
@@ -346,13 +345,13 @@ library LibDMS {
         uint256[] calldata _amounts
     ) internal {
         if (_inheritors.length == 0 || _tokenIDs.length == 0) {
-            revert EmptyArray();
+            revert LibErrors.EmptyArray();
         }
         if (_inheritors.length != _tokenIDs.length) {
-            revert LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
         if (_inheritors.length != _amounts.length) {
-            revert LengthMismatch();
+            revert LibErrors.LengthMismatch();
         }
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 i; i < _inheritors.length; i++) {

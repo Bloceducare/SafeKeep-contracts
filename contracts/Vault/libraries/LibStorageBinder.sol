@@ -10,7 +10,7 @@ import "../facets/ERC20Facet.sol";
 import "../facets/DMSFacet.sol";
 
 
-
+//~(keccak256(abi.encode(slot,200)))
 library LibStorageBinder {
     bytes32 constant SLOT_SALT = keccak256('storage_offset_salt');
 
@@ -60,9 +60,6 @@ function _bindAndReturnDMSStorage()
     {
         bytes32 _slot = _getStorageSlot(
                     type(DiamondCutFacet).name,
-                    // type(ERC20Facet).name,
-                    // type(ERC721Facet).name,
-                    // type(ERC1155Facet).name,
                     type(DMSFacet).name
 
         );
