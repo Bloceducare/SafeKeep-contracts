@@ -18,14 +18,3 @@ Repo for safekeep finance containing all contract components
 
 - DMS (aka Dead Man Switch)
     - DMSFacet
-
-    {
-        FacetCut {
-        address facetAddress;
-        FacetCutAction action;
-        bytes4[] functionSelectors;
-    }[]
-
-    slot
-
-    }
