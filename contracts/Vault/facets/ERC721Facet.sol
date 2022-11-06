@@ -1,44 +1,18 @@
 pragma solidity 0.8.4;
 
-import "../libraries/LibKeep.sol";
+import "../libraries/LibDMS.sol";
 
 import "../libraries/LibTokens.sol";
 
 import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
+import {LibDMSGuards} from "../libraries/LibDMSGuards.sol";
+import {LibGuards} from "../libraries/LibGuards.sol";
+
+import {ERC1155_BATCH_ACCEPTED,ERC1155_ACCEPTED,ERC721WithCall} from "../libraries/LibTokens.sol";
 
 contract ERC721Facet  {
 
-
- struct AllocatedERC721Tokens{
-    address token;
-    uint256[] tokenIDs;
- }
-
- function getAllocatedERC721Tokens(address _inheritor) public view returns(AllocatedERC721Tokens[] memory allocated){
-   VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    Guards._activeInheritor(_inheritor);
-    uint256 tokenAddressCount=vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
-    if(tokenAddressCount>0){
-        allocated=new AllocatedERC721Tokens[](tokenAddressCount);
-        for(uint256 i; i < tokenAddressCount; i++){
-            address _token=vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor][i];
-            allocated[i].token=_token;
-            allocated[i].tokenIDs=vaultData.inheritorAllocatedTokenIds[_inheritor][_token];
-        }
-    }
- }  
-
- function getAllocatedERC721TokenIds(address _inheritor,address _token) external view returns(uint256[] memory){
-     VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    Guards._activeInheritor(_inheritor);
-    return vaultData.inheritorAllocatedTokenIds[_inheritor][_token];
- }
- function getAllocatedERC721TokenAddresses(address _inheritor) public view returns(address[] memory){
-   VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-   Guards._activeInheritor(_inheritor);
-   return vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor];
- }
 
   //DEPOSITS
 
@@ -46,7 +20,7 @@ contract ERC721Facet  {
     address _token,
     uint256 _tokenID
   ) external {
-   // Guards._onlyVaultOwner();
+   // LibDMSGuards._onlyVaultOwner();
     LibTokens._inputERC721Token(_token, _tokenID);
   }
 
@@ -60,7 +34,7 @@ contract ERC721Facet  {
     address _token,
     uint256 _tokenID
   ) external {
-   // Guards._onlyVaultOwner();
+   // LibDMSGuards._onlyVaultOwner();
     LibTokens._safeInputERC721Token(_token, _tokenID);
   }
 
@@ -70,7 +44,7 @@ contract ERC721Facet  {
     address _token,
     uint256 _tokenID,bytes calldata data
   ) external {
-    //Guards._onlyVaultOwner();
+    //LibDMSGuards._onlyVaultOwner();
     LibTokens._safeInputERC721TokenAndCall(_token, _tokenID,data);
   }
 
@@ -82,8 +56,8 @@ contract ERC721Facet  {
     uint256 _tokenID,
     address _to
   ) public {
-    Guards._onlyVaultOwner();
-    LibKeep._withdrawERC721Token(_token, _tokenID, _to);
+    LibGuards._onlyVaultOwner();
+    LibTokens._withdrawERC721Token(_token, _tokenID, _to);
   }
 
 //APPROVALS
@@ -92,12 +66,12 @@ contract ERC721Facet  {
     address _to,
     uint256 _tokenID
   ) external {
-    Guards._onlyVaultOwner();
+    LibGuards._onlyVaultOwner();
     LibTokens._approveERC721Token(_token, _tokenID,_to);
   }
 
 function approveAllERC721Token(address _token,address _to,bool _approved) external {
-    Guards._onlyVaultOwner();
+    LibGuards._onlyVaultOwner();
     LibTokens._approveAllERC721Token(_token,_to,_approved);
 }
 

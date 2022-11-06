@@ -1,6 +1,6 @@
 import "./DiamondDeployments.sol";
 
-import "../contracts/Vault/libraries/LibKeep.sol";
+import "../contracts/Vault/libraries/LibDMS.sol";
 import "../contracts/Vault/facets/VaultFacet.sol";
 
 contract VaultFacetTest is DDeployments {
@@ -45,7 +45,7 @@ contract VaultFacetTest is DDeployments {
         assertEq(vInfo.inheritors.length, 2);
 
         //cannot remove a non existent inheritor
-        vm.expectRevert(LibKeep.NotInheritor.selector);
+        vm.expectRevert(LibDMS.NotInheritor.selector);
         v1VaultFacet.removeInheritors(toSingletonAdd(mkaddr("non-existent")));
 
         //allocate some erc20,erc721 and erc1155 tokens to an inheritor

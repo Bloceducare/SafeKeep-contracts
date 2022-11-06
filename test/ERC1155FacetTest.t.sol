@@ -2,7 +2,7 @@ pragma solidity 0.8.4;
 
 import "./DiamondDeployments.sol";
 
-import "../contracts/Vault/libraries/LibKeep.sol";
+import "../contracts/Vault/libraries/LibDMS.sol";
 import "../contracts/Vault/facets/ERC1155Facet.sol";
 
 
@@ -52,7 +52,7 @@ vm.startPrank(vault1Owner);
 
 ///ALLOCATIONS
 //try to allocate a token with overflowing balance
-vm.expectRevert(abi.encodeWithSelector(LibKeep.TokenAllocationOverflow.selector,address(erc1155t),1));
+vm.expectRevert(abi.encodeWithSelector(LibDMS.TokenAllocationOverflow.selector,address(erc1155t),1));
 v1VaultFacet.allocateERC1155Tokens(address(erc1155t),toDualAdd(vault1Inheritor1,vault1Inheritor2),toDualUINT(0,1),toDualUINT(3,3));
 
 //add inheritor2

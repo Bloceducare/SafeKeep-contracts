@@ -8,7 +8,7 @@ pragma solidity 0.8.4;
 
 import { IDiamondCut } from "../../interfaces/IDiamondCut.sol";
 
-import { NoPermissions } from "../libraries/LibVaultStorage.sol";
+import { LibErrors } from "../libraries/LibErrors.sol";
 import { LibDiamond } from "../libraries/LibDiamond.sol";
 import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
@@ -25,8 +25,8 @@ contract DiamondCutFacet is IDiamondCut {
     address _init,
     bytes calldata _calldata
   ) external override {
-VaultData storage vaultData=LibStorageBinder._bindAndReturnVaultStorage();
-    if (tx.origin != vaultData.vaultOwner) revert NoPermissions();
+// restrict upgrades to VaultFactoryDiamond only
+    if (msg.sender !=IVaultDiamond(address(this)).vaultFactoryDiamond()) revert LibErrors.NoPermissions();
     LibDiamond.diamondCut(_diamondCut, _init, _calldata);
   }
 

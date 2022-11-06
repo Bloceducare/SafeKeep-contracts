@@ -1,16 +1,16 @@
 pragma solidity 0.8.4;
 
-import "../VaultDiamond.sol";
-import "../libraries/LibLayoutSilo.sol";
+//import "../VaultDiamond.sol";
+import {FacetAndSelectorData,DMSData} from "../libraries/LibLayoutSilo.sol";
 import "../facets/DiamondCutFacet.sol";
 import "../facets/DiamondLoupeFacet.sol";
 import "../facets/ERC1155Facet.sol";
 import "../facets/ERC721Facet.sol";
 import "../facets/ERC20Facet.sol";
-import "../facets/VaultFacet.sol";
+import "../facets/DMSFacet.sol";
 
 
-
+//~(keccak256(abi.encode(slot,200)))
 library LibStorageBinder {
     bytes32 constant SLOT_SALT = keccak256(type(LibKeep).creationCode);
 
@@ -53,31 +53,14 @@ library LibStorageBinder {
         }
     }
 
-function _bindAndReturnInterfaceStorage()
-        internal
-        view
-        returns (InterFaceData storage interFaceData)
-    {
-        bytes32 _slot = _getStorageSlot(
-                    type(DiamondLoupeFacet).name
-        );
-        bytes32 saltedOffset = _slot ^ SLOT_SALT;
-        assembly {
-            interFaceData.slot := saltedOffset
-        }
-    }
-
-function _bindAndReturnVaultStorage()
+function _bindAndReturnDMSStorage()
         internal
         pure
-        returns (VaultData storage vaultData)
+        returns (DMSData storage vaultData)
     {
         bytes32 _slot = _getStorageSlot(
                     type(DiamondCutFacet).name,
-                    type(ERC20Facet).name,
-                    type(ERC721Facet).name,
-                    type(ERC1155Facet).name,
-                    type(VaultFacet).name
+                    type(DMSFacet).name
 
         );
         bytes32 saltedOffset = _slot ^ SLOT_SALT;

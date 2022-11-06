@@ -2,7 +2,7 @@ pragma solidity 0.8.4;
 
 import "./DiamondDeployments.sol";
 import "../contracts/Vault/libraries/LibDiamond.sol";
-import "../contracts/Vault/libraries/LibKeep.sol";
+import "../contracts/Vault/libraries/LibDMS.sol";
 
 contract ERC20FacetTest is DDeployments {
     uint256 snapshotId;
@@ -46,7 +46,7 @@ contract ERC20FacetTest is DDeployments {
         uint256 v1erc20BalanceT1 = erc20t.balanceOf(vault1);
         uint256 v1erc20BalanceT2 = erc20t2.balanceOf(vault1);
         vm.startPrank(vault1Owner);
-        vm.expectRevert(LibKeep.InsufficientTokens.selector);
+        vm.expectRevert(LibDMS.InsufficientTokens.selector);
         v1ERC20Facet.batchWithdrawERC20Token(
             toDualAdd(address(erc20t), address(erc20t2)), toDualUINT(v1erc20BalanceT1, v1erc20BalanceT2 + 10), depositor1
         );
@@ -67,11 +67,11 @@ contract ERC20FacetTest is DDeployments {
         ///ALLOCATIONS
 
         //Allocating a non-existent token
-        vm.expectRevert(abi.encodeWithSelector(LibKeep.TokenAllocationOverflow.selector, address(erc20t2), 100e18));
+        vm.expectRevert(abi.encodeWithSelector(LibDMS.TokenAllocationOverflow.selector, address(erc20t2), 100e18));
         v1VaultFacet.allocateERC20Tokens(address(erc20t2), toSingletonAdd(vault1Inheritor1), toSingletonUINT(100e18));
 
         //Allocating to a non-inheritor
-        vm.expectRevert(LibKeep.NotInheritor.selector);
+        vm.expectRevert(LibDMS.NotInheritor.selector);
         v1VaultFacet.allocateERC20Tokens(address(erc20t2), toSingletonAdd(vault1Inheritor2), toSingletonUINT(100e18));
 
         //add inheritor 2
@@ -86,7 +86,7 @@ contract ERC20FacetTest is DDeployments {
 
         //try to allocate token T1 to the first inheritor
         //should overflow
-        vm.expectRevert(abi.encodeWithSelector(LibKeep.TokenAllocationOverflow.selector, address(erc20t), 50e18));
+        vm.expectRevert(abi.encodeWithSelector(LibDMS.TokenAllocationOverflow.selector, address(erc20t), 50e18));
         v1VaultFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(50e18));
 
         //free up 50 tokens from inheritor2 by unallocating them
@@ -102,7 +102,7 @@ contract ERC20FacetTest is DDeployments {
         assertEq(v1ERC20Facet.inheritorERC20TokenAllocation(vault1Inheritor1, address(erc20t)), 50e18);
 
         //vault owner cannot withdraw any T1 tokens
-        vm.expectRevert(LibKeep.InsufficientTokens.selector);
+        vm.expectRevert(LibDMS.InsufficientTokens.selector);
         v1ERC20Facet.withdrawERC20Token(address(erc20t), v1erc20BalanceT1, depositor1);
 
         //unallocate from an inheritor to free up some tokens
