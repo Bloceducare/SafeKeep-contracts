@@ -106,8 +106,7 @@ library LibDMS {
         if (vaultData.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
             for (uint256 x; x < vaultData.inheritorAllocatedERC20Tokens[_inheritor].length; x++) {
                 vaultData.inheritorTokenShares[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] = 0;
-                vaultData.inheritorActiveTokens[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] =
-                    false;
+                vaultData.inheritorActiveTokens[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] = false;
             }
             //remove all token addresses
             delete vaultData.inheritorAllocatedERC20Tokens[_inheritor];
@@ -343,7 +342,9 @@ library LibDMS {
         address[] calldata _inheritors,
         uint256[] calldata _tokenIDs,
         uint256[] calldata _amounts
-    ) internal {
+    )
+        internal
+    {
         if (_inheritors.length == 0 || _tokenIDs.length == 0) {
             revert LibErrors.EmptyArray();
         }

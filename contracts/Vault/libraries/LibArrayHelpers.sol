@@ -1,6 +1,6 @@
 pragma solidity 0.8.4;
 
-library LibArrayHelpers {
+library LibKeepHelpers {
     function findAddIndex(address _item, address[] memory addressArray) internal pure returns (uint256 i) {
         for (i; i < addressArray.length; i++) {
             //using the conventional method since we cannot have duplicate addresses
@@ -10,7 +10,11 @@ library LibArrayHelpers {
         }
     }
 
-    function findUintIndex(uint256 _item, uint256[] memory noArray) internal pure returns (uint256 i) {
+    function findUintIndex(uint _item, uint[] memory noArray)
+        internal
+        pure
+        returns (uint256 i)
+    {
         for (i; i < noArray.length; i++) {
             if (noArray[i] == _item) {
                 return i;
@@ -18,7 +22,7 @@ library LibArrayHelpers {
         }
     }
 
-    function removeUint(uint256[] storage _noArray, uint256 to) internal {
+    function removeUint(uint[] storage _noArray, uint to) internal {
         require(_noArray.length > 0, "Non-elemented number array");
         uint256 index = findUintIndex(to, _noArray);
         if (_noArray.length == 1) {
@@ -47,8 +51,8 @@ library LibArrayHelpers {
         }
     }
 
-    function _inUintArray(uint256[] memory _array, uint256 _targ) internal pure returns (bool exists_) {
-        if (_array.length > 0) {
+    function _inUintArray(uint256[] memory _array,uint256 _targ) internal pure returns (bool exists_) {
+      if(_array.length>0){
             for (uint256 i; i < _array.length; i++) {
                 if (_targ == _array[i]) {
                     exists_ = true;
@@ -57,8 +61,8 @@ library LibArrayHelpers {
         }
     }
 
-    function _inAddressArray(address[] memory _array, address _targ) internal pure returns (bool exists_) {
-        if (_array.length > 0) {
+    function _inAddressArray(address[] memory _array,address _targ) internal pure returns (bool exists_) {
+      if(_array.length>0){
             for (uint256 i; i < _array.length; i++) {
                 if (_targ == _array[i]) {
                     exists_ = true;
@@ -66,6 +70,4 @@ library LibArrayHelpers {
             }
         }
     }
-
-
 }

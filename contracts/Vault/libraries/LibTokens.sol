@@ -31,12 +31,20 @@ library LibTokens {
     event ERC721TokenWIthdrawal(address token, uint256 tokenID, address to, uint256 vaultID);
 
     event ERC1155TokenDeposit(
-        address indexed token, address indexed from, uint256 tokenID, uint256 amount, uint256 vaultID
+        address indexed token,
+        address indexed from,
+        uint256 tokenID,
+        uint256 amount,
+        uint256 vaultID
     );
     event ERC1155TokenWithdrawal(address token, uint256 tokenID, uint256 amount, address to, uint256 vaultID);
 
     event BatchERC1155TokenDeposit(
-        address indexed token, address indexed from, uint256[] tokenIDs, uint256[] amounts, uint256 vaultID
+        address indexed token,
+        address indexed from,
+        uint256[] tokenIDs,
+        uint256[] amounts,
+        uint256 vaultID
     );
 
     //ERC20
@@ -69,7 +77,13 @@ library LibTokens {
         emit ERC20TokenDeposit(_token, msg.sender, _amount, LibDiamond.vaultID());
     }
 
-    function _approveERC20Token(address _spender, address _token, uint256 _amount) internal {
+    function _approveERC20Token(
+        address _spender,
+        address _token,
+        uint256 _amount
+    )
+        internal
+    {
         IERC20(_token).approve(_spender, _amount);
                 //ping if DMS is installed
         if(LibModuleManager._isActiveModule("DMS")){
@@ -218,7 +232,11 @@ else{
         emit ERC1155TokenDeposit(_token, msg.sender, _tokenID, _value, LibDiamond.vaultID());
     }
 
-    function _safeBatchInputERC1155Tokens(address _token, uint256[] calldata _tokenIDs, uint256[] calldata _values)
+    function _safeBatchInputERC1155Tokens(
+        address _token,
+        uint256[] calldata _tokenIDs,
+        uint256[] calldata _values
+    )
         internal
     {
      
