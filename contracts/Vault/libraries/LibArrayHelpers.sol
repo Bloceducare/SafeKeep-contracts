@@ -1,6 +1,6 @@
 pragma solidity 0.8.4;
 
-library LibKeepHelpers {
+library LibArrayHelpers {
     function findAddIndex(address _item, address[] memory addressArray) internal pure returns (uint256 i) {
         for (i; i < addressArray.length; i++) {
             //using the conventional method since we cannot have duplicate addresses
