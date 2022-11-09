@@ -1,6 +1,7 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.4;
 
-
-import {DMSData,FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
+import {DMSData, FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
 import {LibStorageBinder} from "../libraries/LibStorageBinder.sol";
 
 error NotBackupAddress();
@@ -10,11 +11,10 @@ error HasExpired();
 error Claimed();
 
 library LibDMSGuards {
-
-//check
-function _onlyVaultOwnerOrBackup() internal view {
+    //check
+    function _onlyVaultOwnerOrBackup() internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
-        FacetAndSelectorData storage fsData=LibStorageBinder._bindAndReturnFacetStorage();
+        FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
         if (msg.sender != vaultData.backupAddress && msg.sender != fsData.vaultOwner) {
             revert NotOwnerOrBackupAddress();
         }
@@ -82,6 +82,4 @@ function _onlyVaultOwnerOrBackup() internal view {
             revert Claimed();
         }
     }
-
-
 }

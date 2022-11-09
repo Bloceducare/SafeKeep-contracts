@@ -12,7 +12,7 @@ interface IModuleData {
         //storage location
         bytes32 slot;
         //keccak hash of facets involved
-        bytes32 fileHash;
+        uint256 timeAdded;
         //human readable names of facets involved in alphabetical order
         string[] facetNames;
     }

@@ -9,6 +9,7 @@ import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";
 
 import {FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
+import "../../interfaces/IVaultDiamond.sol";
 
 library LibDiamond {
     error InValidFacetCutAction();
@@ -24,15 +25,6 @@ library LibDiamond {
     error NonEmptyCalldata();
     error EmptyCalldata();
     error InitCallFailed();
-    // bytes32 constant VAULT_STORAGE_POSITION =
-    //     keccak256("diamond.standard.keep.storage");
-
-    // function vaultStorage() internal pure returns (VaultStorage storage vaultData) {
-    //     bytes32 position = VAULT_STORAGE_POSITION;
-    //     assembly {
-    //         vaultData.slot := position
-    //     }
-    // }
 
     event OwnershipTransferred(
         address indexed previousOwner,
@@ -60,6 +52,9 @@ library LibDiamond {
         if (msg.sender != LibStorageBinder._bindAndReturnFacetStorage().vaultOwner) revert NotVaultOwner();
     }
 
+function vaultFactory() internal view returns(address){
+    return IVaultDiamond(address(this)).vaultFactoryDiamond();
+}
     event DiamondCut(
         IDiamondCut.FacetCut[] _diamondCut,
         address _init,
