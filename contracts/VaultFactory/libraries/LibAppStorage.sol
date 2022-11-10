@@ -1,6 +1,6 @@
 pragma solidity 0.8.4;
 
-import "../../Vault/libraries/LibKeepHelpers.sol";
+import "../../Vault/libraries/LibArrayHelpers.sol";
 
 struct FactoryAppStorage {
     //master vaultID
@@ -16,9 +16,8 @@ struct FactoryAppStorage {
     address diamondLoupeFacet;
     address vaultFacet;
     address slotChecker;
-
     //facet selector data for spawned vaults
-    
+
     bytes4[] ERC20SELECTORS;
     bytes4[] ERC721SELECTORS;
     bytes4[] ERC1155SELECTORS;
@@ -28,7 +27,11 @@ struct FactoryAppStorage {
 }
 
 library LibAppStorage {
-    function factoryAppStorage() internal pure returns (FactoryAppStorage storage fs) {
+    function factoryAppStorage()
+        internal
+        pure
+        returns (FactoryAppStorage storage fs)
+    {
         assembly {
             fs.slot := 0
         }

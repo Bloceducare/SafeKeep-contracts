@@ -7,8 +7,15 @@ import "../../interfaces/IVaultDiamond.sol";
 import "../../interfaces/IDiamondCut.sol";
 import "../../interfaces/IVaultFacet.sol";
 
+import {FactoryAppStorage, StorageLayout} from "../libraries/LibFactoryAppStorage.sol";
+
 contract VaultSpawnerFacet is StorageLayout {
-    event VaultCreated(address indexed owner, address indexed backup, uint256 indexed startingBalance, uint256 vaultID);
+    event VaultCreated(
+        address indexed owner,
+        address indexed backup,
+        uint256 indexed startingBalance,
+        uint256 vaultID
+    );
 
     error BackupAddressError();
 
@@ -17,11 +24,7 @@ contract VaultSpawnerFacet is StorageLayout {
         uint256[] calldata _weiShare,
         uint256 _startingBal,
         address _backupAddress
-    )
-        external
-        payable
-        returns (address addr)
-    {
+    ) external payable returns (address addr) {
         if (_backupAddress == msg.sender) {
             revert BackupAddressError();
         }
@@ -31,10 +34,14 @@ contract VaultSpawnerFacet is StorageLayout {
         assert(_inheritors.length == _weiShare.length);
         //spawn contract
         bytes memory code = type(VaultDiamond).creationCode;
-        bytes32 entropy = keccak256(abi.encode(msg.sender, block.timestamp, fs.VAULTID));
+        bytes32 entropy = keccak256(
+            abi.encode(msg.sender, block.timestamp, fs.VAULTID)
+        );
         assembly {
             addr := create2(0, add(code, 0x20), mload(code), entropy)
-            if iszero(extcodesize(addr)) { revert(0, 0) }
+            if iszero(extcodesize(addr)) {
+                revert(0, 0)
+            }
         }
         //init diamond with diamondCut facet
         //insert a constant cut facet...modular and reusable across diamonds
@@ -43,7 +50,7 @@ contract VaultSpawnerFacet is StorageLayout {
         //confirm for EOA auth in same call frame
         assert(IVaultDiamond(addr).tempOwner() == tx.origin);
         //deposit startingBal
-        (bool success,) = addr.call{value: _startingBal}("");
+        (bool success, ) = addr.call{value: _startingBal}("");
         assert(success);
 
         //proceed to upgrade new diamond with default facets
@@ -74,7 +81,7 @@ contract VaultSpawnerFacet is StorageLayout {
             functionSelectors: fs.VAULTFACETSELECTORS
         });
 
-          cut[5] = IDiamondCut.FacetCut({
+        cut[5] = IDiamondCut.FacetCut({
             facetAddress: fs.slotChecker,
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: fs.SLOTCHECKERSELECTORS

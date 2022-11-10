@@ -6,11 +6,15 @@ struct FactoryAppStorage {
     //master vaultID
     uint256 VAULTID;
     //human readable names to Module data
-    mapping(string=>IModuleData.ModuleData) masterModules;
+    mapping(string => IModuleData.ModuleData) masterModules;
 }
 
 library LibFactoryAppStorage {
-    function factoryAppStorage() internal pure returns (FactoryAppStorage storage fs) {
+    function factoryAppStorage()
+        internal
+        pure
+        returns (FactoryAppStorage storage fs)
+    {
         assembly {
             fs.slot := 0
         }

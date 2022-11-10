@@ -11,7 +11,7 @@ pragma solidity 0.8.4;
 import {LibDiamond} from "./libraries/LibDiamond.sol";
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
-import {FacetAndSelectorData,DMSData} from "./libraries/LibLayoutSilo.sol";
+import {FacetAndSelectorData, DMSData} from "./libraries/LibLayoutSilo.sol";
 
 import {LibStorageBinder} from "./libraries/LibStorageBinder.sol";
 
@@ -28,7 +28,7 @@ contract VaultDiamond {
     }
 
     function init(address _diamondCutFacet, address _backup) public {
-        VaultData storage vaultData = LibStorageBinder
+        DMSData storage vaultData = LibStorageBinder
             ._bindAndReturnVaultStorage();
         assert(!_init);
         assert(
