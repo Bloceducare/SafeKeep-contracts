@@ -100,7 +100,7 @@ ERC20Facet: This facet manages the logic required to carry out transactions for 
 ## Dead Man Switch(DMS) Module.
 
 The DMSFacet facet, which is part of the Dead Man Switch Module, manages the logic that permits the cryptocurrencies in a vault to be distributed to others.
-The term "dead Man Switch" refers to the component of safe that involves recovery.
+The term "dead Man Switch" refers to the component of safeKeep that involves recovery.
  just in case anything unexpected happens. It offers features like assigning assets to others to withdraw only after a fair period of inactivity from the vault, utilizing the backup address provided to claim new owner of vault when existing ownership is being compromised, and this is where cryptocurrencies can be inherited when owner dies.
 
         After you pass away, your cryptoasset will be distributed to your inheritors, preventing it from getting stranded on the blockchain indefinitely.
