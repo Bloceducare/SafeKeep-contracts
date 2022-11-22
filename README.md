@@ -6,7 +6,7 @@ Repo for safekeep finance containing all contract components
 
 A smart contract wallet called **SafeKeep** is used to store, send, and receive cryptocurrency assets. It also helps prevent the loss of money over the long term. In cases of unanticipated events like wallet loss, owner death, compromised wallets, etc., Safekeep recovers funds.
 
-The endless capabilities that can be introduced to safeKeep in the future to suit new features in the bitcoin realm are what I find most intriguing about it. When a vault owner decides he no longer needs a certain function, he can downgrade it from his vault as well. These features are referred to as modules and can be installed into each vault at his discretion.
+The endless capabilities that can be introduced to safeKeep in the future to suit new features in the blockchain realm are what I find most intriguing about it. When a vault owner decides he no longer needs a certain function, he can downgrade it from his vault as well. These features are referred to as modules and can be installed into each vault at his discretion.
 
 ## The technicality of building safeKeep:
 
@@ -99,7 +99,7 @@ ERC20Facet: This facet manages the logic required to carry out transactions for 
 
 ## Dead Man Switch(DMS) Module.
 
-The DMSFacet facet, which is part of the Dead Man Switch Module, manages the logic that permits the bitcoin in a vault to be distributed to others.
+The DMSFacet facet, which is part of the Dead Man Switch Module, manages the logic that permits the cryptocurrencies in a vault to be distributed to others.
 The term "dead Man Switch" refers to the component of safe that involves recovery.
  just in case anything unexpected happens. It offers features like assigning assets to others to withdraw only after a fair period of inactivity from the vault, utilizing the backup address provided to claim new owner of vault when existing ownership is being compromised, and this is where cryptocurrencies can be inherited when owner dies.
 
