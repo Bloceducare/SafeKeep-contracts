@@ -1,5 +1,6 @@
 node_modules
 typechain-types
+typechain
 #Hardhat files
 cache
 artifacts
