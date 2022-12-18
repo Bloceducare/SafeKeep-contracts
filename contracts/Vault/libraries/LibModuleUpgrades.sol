@@ -24,7 +24,8 @@ library LibModuleUpgrades {
      * address _vault*
      */
     event VaultDowngraded(string indexed _moduleName);
-
+    
+    /// @notice allows a vault to be upgraded by adding a module
     function _upgradeVaultWithModule(string calldata _name) internal {
         LibDiamond.enforceIsContractOwner();
         //make sure this module doesn't currently exist in this vault
@@ -43,6 +44,7 @@ library LibModuleUpgrades {
         //consider gossiping this upgrade to vaultFactory
     }
 
+    /// @notice allows vault to be downgraded by removing module
     function _downgradeVaultWithModule(string calldata _name) internal {
         LibDiamond.enforceIsContractOwner();
         //make sure this module doesn't currently exist in this vault

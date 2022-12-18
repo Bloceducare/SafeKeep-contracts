@@ -9,7 +9,7 @@ pragma solidity 0.8.4;
 import {LibDiamond} from "./libraries/LibDiamond.sol";
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
-import {FacetAndSelectorData,DMSData} from "./libraries/LibLayoutSilo.sol";
+import {FacetAndSelectorData, DMSData} from "./libraries/LibLayoutSilo.sol";
 
 import {LibStorageBinder} from "./libraries/LibStorageBinder.sol";
 
@@ -19,20 +19,25 @@ import "../interfaces/IVaultDiamond.sol";
 
 contract VaultDiamond {
     address public vaultFactoryDiamond;
-    
-    constructor(IDiamondCut.FacetCut[] memory _selectorModule,IDiamondCut.FacetCut[] memory _tokenModule, address _vaultOwner) payable {
+
+    /// @notice sets selector and token module at deployment
+    constructor(
+        IDiamondCut.FacetCut[] memory _selectorModule,
+        IDiamondCut.FacetCut[] memory _tokenModule,
+        address _vaultOwner
+    ) payable {
         LibDiamond.diamondCut(_selectorModule, address(0), "");
         LibDiamond.diamondCut(_tokenModule, address(0), "");
         //set module installation record to true
-        FacetAndSelectorData storage fsData=LibStorageBinder._bindAndReturnFacetStorage();
-        fsData.activeModule["Selector"]=true;
-        fsData.activeModule["Token"]=true;
+        FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
+        fsData.activeModule["Selector"] = true;
+        fsData.activeModule["Token"] = true;
         fsData.activeModules.push("Selector");
         fsData.activeModules.push("Token");
         LibDiamond.setVaultOwner(_vaultOwner);
-        vaultFactoryDiamond=msg.sender; 
+        vaultFactoryDiamond = msg.sender;
     }
-    
+
     // Find facet for function that is called and execute the
     // function if a facet is found and return any value.
 

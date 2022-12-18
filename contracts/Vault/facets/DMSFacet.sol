@@ -50,8 +50,7 @@ contract DMSFacet {
         uint256 amount;
     }
 
-   
-
+    ///  @notice checks throgh the vault and return dataa associated with it
     function inspectVault() public view returns (VaultInfo memory info) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
@@ -63,6 +62,7 @@ contract DMSFacet {
         info.inheritors = vaultData.inheritors;
     }
 
+    /// @notice returns all ethers that has been allocated from the vault
     function allEtherAllocations() public view returns (AllInheritorEtherAllocs[] memory eAllocs) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 count = vaultData.inheritors.length;
@@ -73,6 +73,7 @@ contract DMSFacet {
         }
     }
 
+    /// @notice returns all ether allocates to _inheritor
     function inheritorEtherAllocation(address _inheritor) public view returns (uint256 _allocatedEther) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (!LibDMSGuards._anInheritor(_inheritor)) {
@@ -81,10 +82,12 @@ contract DMSFacet {
         _allocatedEther = vaultData.inheritorWeishares[_inheritor];
     }
 
+    // @notice retuns the amount of all ether that has been allocated in the vault
     function getAllocatedEther() public view returns (uint256) {
         return LibDMS.getCurrentAllocatedEth();
     }
 
+    /// @notice returns the amoounf of free(unallocated) ether in the vault
     function getUnallocatedEther() public view returns (uint256 unallocated_) {
         uint256 currentBalance = address(this).balance;
         if (currentBalance > 0) {
@@ -92,10 +95,12 @@ contract DMSFacet {
         }
     }
 
+    /// @notice returns the current ether balance of the vault
     function etherBalance() public view returns (uint256) {
         return address(this).balance;
     }
 
+    /// @notice gets the aloocated ERC20 tokens to inheritor
     function getAllocatedERC20Tokens(address _inheritor) public view returns (AllocatedERC20Tokens[] memory tAllocs) {
         LibDMSGuards._activeInheritor(_inheritor);
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
@@ -110,11 +115,13 @@ contract DMSFacet {
         }
     }
 
+    /// @notice returns the amount of a token aloocated to an inheritor
     function inheritorERC20TokenAllocation(address _inheritor, address _token) public view returns (uint256) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         return vaultData.inheritorTokenShares[_inheritor][_token];
     }
 
+    /// @notice returns free(unallocated) ERC20 tokens in the vault
     function getUnallocatedTokens(address _token) public view returns (uint256 unallocated_) {
         uint256 bal = IERC20(_token).balanceOf(address(this));
         uint256 allocated = LibDMS.getCurrentAllocatedTokens(_token);
@@ -122,7 +129,7 @@ contract DMSFacet {
             unallocated_ = bal - allocated;
         }
     }
-
+    /// @notice returns allocated ERC721 tokens to an inheritor
     function getAllocatedERC721Tokens(address _inheritor)
         public
         view
@@ -141,18 +148,21 @@ contract DMSFacet {
         }
     }
 
+    /// @notice returns the amount of an ERC721 token allocated to an inheritor
     function getAllocatedERC721TokenIds(address _inheritor, address _token) external view returns (uint256[] memory) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         LibDMSGuards._activeInheritor(_inheritor);
         return vaultData.inheritorAllocatedTokenIds[_inheritor][_token];
     }
 
+    /// @notice returns ERC721 token addresses allocated to an inheritor
     function getAllocatedERC721TokenAddresses(address _inheritor) public view returns (address[] memory) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         LibDMSGuards._activeInheritor(_inheritor);
         return vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor];
     }
 
+    /// @notice returns the amount of an ERC1155 token allocated to an inheritor
     function getAllocatedERC1155Tokens(address _token, address _inheritor)
         public
         view
@@ -171,6 +181,7 @@ contract DMSFacet {
         }
     }
 
+    /// @notice returns all ERC1155 tokens allocated to an inheritor
     function getAllAllocatedERC1155Tokens(address _inheritor)
         public
         view
@@ -192,6 +203,7 @@ contract DMSFacet {
         }
     }
 
+    /// @notice retuns free(unallocated) ERC1155 tokens in the vault
     function getUnallocatedERC115Tokens(address _token, uint256 _tokenId) public view returns (uint256 remaining_) {
         uint256 allocated = LibDMS.getCurrentAllocated1155tokens(_token, _tokenId);
         uint256 available = IERC1155(_token).balanceOf(address(this), _tokenId);
@@ -204,26 +216,30 @@ contract DMSFacet {
     ///WRITE FUNCTIONS///
     ////////////////////
     //note: owner restriction is in external fns
+    /// @notice adds inheritors and weishares to the vault
     function addInheritors(address[] calldata _newInheritors, uint256[] calldata _weiShare) external {
         LibGuards._onlyVaultOwner();
         LibDMS._addInheritors(_newInheritors, _weiShare);
     }
 
+    /// @notice removes inheritors from the vault
     function removeInheritors(address[] calldata _inheritors) external {
         LibGuards._onlyVaultOwner();
         LibDMS._removeInheritors(_inheritors);
     }
-
+    /// @notice allocate ether to inheritors
     function allocateEther(address[] calldata _inheritors, uint256[] calldata _ethShares) external {
         LibGuards._onlyVaultOwner();
         LibDMS._allocateEther(_inheritors, _ethShares);
     }
 
+    /// @notice allocate ERC20 tokens to inheritors
     function allocateERC20Tokens(address token, address[] calldata _inheritors, uint256[] calldata _shares) external {
         LibGuards._onlyVaultOwner();
         LibDMS._allocateERC20Tokens(token, _inheritors, _shares);
     }
 
+    /// @notice allocate ERC721 tokens to inheritors
     function allocateERC721Tokens(address token, address[] calldata _inheritors, uint256[] calldata _tokenIDs)
         external
     {
@@ -231,6 +247,7 @@ contract DMSFacet {
         LibDMS._allocateERC721Tokens(token, _inheritors, _tokenIDs);
     }
 
+    /// @notice allocate ERC1155 tokens to inheritors
     function allocateERC1155Tokens(
         address token,
         address[] calldata _inheritors,
@@ -241,26 +258,29 @@ contract DMSFacet {
         LibDMS._allocateERC1155Tokens(token, _inheritors, _tokenIDs, _amounts);
     }
 
+    /// @notice transfer vault ownership to _newVaultOwner
     function transferOwnership(address _newVaultOwner) public {
         LibGuards._onlyVaultOwner();
         LibDMS._transferOwnerShip(_newVaultOwner);
     }
-
+    /// @notice transfer vault backup to _newBackupAddress
     function transferBackup(address _newBackupAddress) public {
         LibDMSGuards._onlyVaultOwnerOrBackup();
         LibDMS._transferBackup(_newBackupAddress);
     }
 
     //CLAIMS
+    /// @notice allow backup address to claim ownership
     function claimOwnership(address _newBackupAddress) public {
         LibDMSGuards._enforceIsBackupAddress();
         LibDMS._claimOwnership(_newBackupAddress);
     }
 
+    /// @notice allow inheritor to claim all allocated assets
     function claimAllAllocations() external {
         LibDMS._claimAll();
     }
-
+    /// @notice pings vault and resets inactivity timer
     function ping() external {
         LibGuards._onlyVaultOwner();
         LibDMS._ping();

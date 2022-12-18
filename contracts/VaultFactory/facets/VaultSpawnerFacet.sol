@@ -10,19 +10,14 @@ import "../../interfaces/IVaultFacet.sol";
 import {FactoryAppStorage, StorageLayout} from "../libraries/LibFactoryAppStorage.sol";
 
 contract VaultSpawnerFacet is StorageLayout {
-    event VaultCreated(
-        address indexed owner,
-        uint256 indexed startingBalance,
-        uint256 vaultID
-    );
+    event VaultCreated(address indexed owner, uint256 indexed startingBalance, uint256 vaultID);
 
     error BackupAddressError();
-
-    function createVault(address _vaultOwner, uint256 _startingBal)
-        external
-        payable
-        returns (address addr)
-    {
+    
+    /// @notice creates vault attached with token and selector modules
+    /// @param _vaultOwner address to be set
+    /// @param _startingBal of the vault which must be sent in the same transaction 
+    function createVault(address _vaultOwner, uint256 _startingBal) external payable returns (address addr) {
         if (_startingBal > 0) {
             assert(_startingBal == msg.value);
         }
@@ -30,12 +25,8 @@ contract VaultSpawnerFacet is StorageLayout {
         bytes32 entropy = keccak256(abi.encode(_vaultOwner, fs.VAULTID));
 
         //get Selector and Token Module FacetCuts
-        IDiamondCut.FacetCut[] storage selectorModuleCut = fs
-            .masterModules["Selector"]
-            .facetData;
-        IDiamondCut.FacetCut[] storage tokenModuleCut = fs
-            .masterModules["Token"]
-            .facetData;
+        IDiamondCut.FacetCut[] storage selectorModuleCut = fs.masterModules["Selector"].facetData;
+        IDiamondCut.FacetCut[] storage tokenModuleCut = fs.masterModules["Token"].facetData;
 
         VaultDiamond vDiamond = new VaultDiamond{
             salt: entropy,

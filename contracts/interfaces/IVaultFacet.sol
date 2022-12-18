@@ -20,9 +20,10 @@ interface IVaultFacet {
     );
 
     event EthDeposited(uint256 _amount, uint256 _vaultID);
-
+    // adda inheritors and weishares to a vault
     function addInheritors(address[] calldata _newInheritors, uint256[] calldata _weiShare) external;
-
+    //  sets a new backup address 
     function transferBackup(address _newBackupAddress) external;
+    /// @notice returns allocated ether in a a vault
     function allEtherAllocations() external view returns (AllInheritorEtherAllocs[] memory eAllocs);
 }

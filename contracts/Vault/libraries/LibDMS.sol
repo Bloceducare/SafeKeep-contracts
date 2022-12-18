@@ -43,14 +43,14 @@ library LibDMS {
     error InactiveInheritor();
     error NoAllocatedTokens();
 
-    //owner check is in external fn
+    /// @notice pings vault and resets the timeline for inactivity
     function _ping() internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         vaultData.lastPing = block.timestamp;
         emit VaultPinged(block.timestamp, LibDiamond.vaultID());
     }
-
-    function getCurrentAllocatedEth() internal view returns (uint256) {
+        /// @notice gets the total ETH allocated in a vault
+        function getCurrentAllocatedEth() internal view returns (uint256) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 totalEthAllocated;
         for (uint256 x; x < vaultData.inheritors.length; x++) {
@@ -59,6 +59,7 @@ library LibDMS {
         return totalEthAllocated;
     }
 
+    /// @dev returns the total amount of an allocated token
     function getCurrentAllocatedTokens(address _token) internal view returns (uint256) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 totalTokensAllocated;
@@ -68,6 +69,7 @@ library LibDMS {
         return totalTokensAllocated;
     }
 
+    /// @notice returns the allocated amount of an Erc1155 id
     function getCurrentAllocated1155tokens(address _token, uint256 _tokenID) internal view returns (uint256 alloc_) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         for (uint256 x; x < vaultData.inheritors.length; x++) {
@@ -75,11 +77,14 @@ library LibDMS {
         }
     }
 
+    /// @notice checks if an ERC 721 token has been allocated
     function _isERC721Allocated(address _token, uint256 _tokenId) internal view returns (bool allocated_) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         allocated_ = vaultData.allocatedERC721Tokens[_token][_tokenId];
     }
 
+    /// @notice this removes all the tokens that have 
+    /// been previously allocated to an inheritor for all token types
     function _resetClaimed(address _inheritor) internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         vaultData.inheritorWeishares[_inheritor] = 0;
@@ -98,7 +103,8 @@ library LibDMS {
         }
     }
 
-    //only used for multiple address elemented arrays
+    /// @notice resets allocated tokens
+    /// only used for multiple address elemented arrays
     function reset(address _inheritor) internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         vaultData.inheritorWeishares[_inheritor] = 0;
@@ -106,7 +112,8 @@ library LibDMS {
         if (vaultData.inheritorAllocatedERC20Tokens[_inheritor].length > 0) {
             for (uint256 x; x < vaultData.inheritorAllocatedERC20Tokens[_inheritor].length; x++) {
                 vaultData.inheritorTokenShares[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] = 0;
-                vaultData.inheritorActiveTokens[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] = false;
+                vaultData.inheritorActiveTokens[_inheritor][vaultData.inheritorAllocatedERC20Tokens[_inheritor][x]] =
+                    false;
             }
             //remove all token addresses
             delete vaultData.inheritorAllocatedERC20Tokens[_inheritor];
@@ -141,7 +148,7 @@ library LibDMS {
     }
 
     //INHERITOR MUTATING OPERATIONS
-
+    /// @dev adds new set of inheritors to a vault with their wei shares
     function _addInheritors(address[] calldata _newInheritors, uint256[] calldata _weiShare) internal {
         if (_newInheritors.length == 0 || _weiShare.length == 0) {
             revert LibErrors.EmptyArray();
@@ -172,6 +179,7 @@ library LibDMS {
         emit EthAllocated(_newInheritors, _weiShare, LibDiamond.vaultID());
     }
 
+    /// @notice removes inheritors from vaulr
     function _removeInheritors(address[] calldata _inheritors) internal {
         if (_inheritors.length == 0) {
             revert LibErrors.EmptyArray();
@@ -194,6 +202,7 @@ library LibDMS {
 
     //ALLOCATION MUTATING OPERATIONS
 
+    /// @notice allocate ether to active inheritors of a vault
     function _allocateEther(address[] calldata _inheritors, uint256[] calldata _ethShares) internal {
         if (_inheritors.length == 0 || _ethShares.length == 0) {
             revert LibErrors.EmptyArray();
@@ -218,6 +227,7 @@ library LibDMS {
         emit EthAllocated(_inheritors, _ethShares, LibDiamond.vaultID());
     }
 
+    /// @notice allocate token to aactive inheritors with their respective shares
     function _allocateERC20Tokens(address token, address[] calldata _inheritors, uint256[] calldata _shares) internal {
         if (_inheritors.length == 0 || _shares.length == 0) {
             revert LibErrors.EmptyArray();
@@ -255,6 +265,7 @@ library LibDMS {
         emit ERC20TokensAllocated(token, _inheritors, _shares, LibDiamond.vaultID());
     }
 
+    /// @notice allocates ERC721 tokens to active inheritors
     function _allocateERC721Tokens(address _token, address[] calldata _inheritors, uint256[] calldata _tokenIDs)
         internal
     {
@@ -337,14 +348,16 @@ library LibDMS {
         _ping();
     }
 
+    /// @notice allocates ERC115 tokens to active inheritors
+    /// @param _inheritors to be added
+    /// @param _tokenIDs of ERC155  to be allocated
+    /// @param _amounts of the token to be allocated to inheritor
     function _allocateERC1155Tokens(
         address _token,
         address[] calldata _inheritors,
         uint256[] calldata _tokenIDs,
         uint256[] calldata _amounts
-    )
-        internal
-    {
+    ) internal {
         if (_inheritors.length == 0 || _tokenIDs.length == 0) {
             revert LibErrors.EmptyArray();
         }
@@ -399,7 +412,7 @@ library LibDMS {
     }
 
     //ACCESS TRANSFER
-
+    //// @notice transfers vault ownership to new owner
     function _transferOwnerShip(address _newOwner) internal {
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
         address prevOwner = fsData.vaultOwner;
@@ -407,6 +420,7 @@ library LibDMS {
         emit OwnershipTransferred(prevOwner, _newOwner, LibDiamond.vaultID());
     }
 
+    /// @notice sets a new backup address
     function _transferBackup(address _newBackupAddress) internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         address prevBackup = vaultData.backupAddress;
@@ -416,6 +430,7 @@ library LibDMS {
 
     ///CLAIMS
 
+    /// @notice transfers vault ownership to caller and sets new backup address
     function _claimOwnership(address _newBackup) internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
@@ -429,6 +444,7 @@ library LibDMS {
         emit BackupTransferred(prevBackup, _newBackup, LibDiamond.vaultID());
     }
 
+    /// @notice allows an inheritor to claim their ERC20 tokens share from the vault
     function _claimERC20Tokens() internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC20Tokens[msg.sender].length;
@@ -449,6 +465,7 @@ library LibDMS {
         }
     }
 
+    /// @notice allows inheritor to claim the ERC721 token allocated to them from the vault
     function _claimERC721Tokens() internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC721TokenAddresses[msg.sender].length;
@@ -481,6 +498,7 @@ library LibDMS {
         }
     }
 
+    /// @notice allows inheritors to claim the ERC1155 tokens allocated to them from the vault
     function _claimERC1155Tokens() internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokens = vaultData.inheritorAllocatedERC1155TokenAddresses[msg.sender].length;
@@ -506,6 +524,7 @@ library LibDMS {
         }
     }
 
+    /// @notice allows an inheritor to claim all tokens allocated to them in a single transaction
     function _claimAll() internal {
         LibDMSGuards._anInheritor(msg.sender);
         LibDMSGuards._activeInheritor(msg.sender);

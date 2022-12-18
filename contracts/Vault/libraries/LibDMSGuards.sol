@@ -11,7 +11,7 @@ error HasExpired();
 error Claimed();
 
 library LibDMSGuards {
-    //check
+    /// @notice ensures that a caller is vault owner or backup address
     function _onlyVaultOwnerOrBackup() internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
@@ -19,6 +19,7 @@ library LibDMSGuards {
             revert NotOwnerOrBackupAddress();
         }
     }
+    /// @dev checks that caller is a backup address
 
     function _enforceIsBackupAddress() internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
@@ -26,6 +27,7 @@ library LibDMSGuards {
             revert NotBackupAddress();
         }
     }
+    /// checks if an address is an active inheritor on a vault
 
     function _activeInheritor(address _inheritor) internal view returns (bool active_) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
@@ -35,6 +37,7 @@ library LibDMSGuards {
             active_ = (vaultData.activeInheritors[_inheritor]);
         }
     }
+    ///  checks if an address has been set as inheritor
 
     function _anInheritor(address _inheritor) internal view returns (bool inh) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
@@ -48,7 +51,7 @@ library LibDMSGuards {
             }
         }
     }
-
+    /// checks if address is an inheritor or address(0)
     function _anInheritorOrZero(address _inheritor) internal view returns (bool inh) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (_inheritor == address(0)) {
@@ -62,6 +65,7 @@ library LibDMSGuards {
         }
     }
 
+    /// checks if the vault timeline for inactivity has expired
     function _expired() internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (block.timestamp - vaultData.lastPing <= 24 weeks) {
@@ -69,13 +73,14 @@ library LibDMSGuards {
         }
     }
 
+    /// checks if the vault timeline for inactivity is still valid
     function _notExpired() internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (block.timestamp - vaultData.lastPing > 24 weeks) {
             revert HasExpired();
         }
     }
-
+    /// @notice check if an inheritor has claimed the assets allocated to them
     function _notClaimed(address _inheritor) internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (vaultData.claimed[_inheritor]) {

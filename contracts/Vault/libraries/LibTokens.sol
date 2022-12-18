@@ -23,60 +23,24 @@ library LibTokens {
     event ERC20ErrorHandled(address);
     event ERC721ErrorHandled(address);
 
-    event ERC20TokenDeposit(
-        address indexed token,
-        address indexed from,
-        uint256 amount,
-        uint256 vaultID
-    );
-    event ERC20TokenWithdrawal(
-        address token,
-        uint256 amount,
-        address to,
-        uint256 vaultID
-    );
+    event ERC20TokenDeposit(address indexed token, address indexed from, uint256 amount, uint256 vaultID);
+    event ERC20TokenWithdrawal(address token, uint256 amount, address to, uint256 vaultID);
 
-    event ERC721TokenDeposit(
-        address indexed token,
-        address indexed from,
-        uint256 tokenID,
-        uint256 vaultID
-    );
-    event ERC721TokenWIthdrawal(
-        address token,
-        uint256 tokenID,
-        address to,
-        uint256 vaultID
-    );
+    event ERC721TokenDeposit(address indexed token, address indexed from, uint256 tokenID, uint256 vaultID);
+    event ERC721TokenWIthdrawal(address token, uint256 tokenID, address to, uint256 vaultID);
 
     event ERC1155TokenDeposit(
-        address indexed token,
-        address indexed from,
-        uint256 tokenID,
-        uint256 amount,
-        uint256 vaultID
+        address indexed token, address indexed from, uint256 tokenID, uint256 amount, uint256 vaultID
     );
-    event ERC1155TokenWithdrawal(
-        address token,
-        uint256 tokenID,
-        uint256 amount,
-        address to,
-        uint256 vaultID
-    );
+    event ERC1155TokenWithdrawal(address token, uint256 tokenID, uint256 amount, address to, uint256 vaultID);
 
     event BatchERC1155TokenDeposit(
-        address indexed token,
-        address indexed from,
-        uint256[] tokenIDs,
-        uint256[] amounts,
-        uint256 vaultID
+        address indexed token, address indexed from, uint256[] tokenIDs, uint256[] amounts, uint256 vaultID
     );
 
     //ERC20
-    function _inputERC20Tokens(
-        address[] calldata _tokenDeps,
-        uint256[] calldata _amounts
-    ) internal {
+    /// @notice allows caller to deposit several tokens to the vault with the respective amounts 
+    function _inputERC20Tokens(address[] calldata _tokenDeps, uint256[] calldata _amounts) internal {
         if (_tokenDeps.length == 0 || _amounts.length == 0) {
             revert LibErrors.EmptyArray();
         }
@@ -91,12 +55,7 @@ library LibTokens {
                 success;
             } catch {
                 if (success) {
-                    emit ERC20TokenDeposit(
-                        token,
-                        msg.sender,
-                        amount,
-                        LibDiamond.vaultID()
-                    );
+                    emit ERC20TokenDeposit(token, msg.sender, amount, LibDiamond.vaultID());
                 } else {
                     emit ErrorHandled(token);
                     continue;
@@ -105,21 +64,14 @@ library LibTokens {
         }
     }
 
+    /// @notice deposit a token to the vault contract
     function _inputERC20Token(address _token, uint256 _amount) internal {
         assert(IERC20(_token).transferFrom(msg.sender, address(this), _amount));
-        emit ERC20TokenDeposit(
-            _token,
-            msg.sender,
-            _amount,
-            LibDiamond.vaultID()
-        );
+        emit ERC20TokenDeposit(_token, msg.sender, _amount, LibDiamond.vaultID());
     }
 
-    function _approveERC20Token(
-        address _spender,
-        address _token,
-        uint256 _amount
-    ) internal {
+    /// @notice caller approves spender to use amount of tokens
+    function _approveERC20Token(address _spender, address _token, uint256 _amount) internal {
         IERC20(_token).approve(_spender, _amount);
         //ping if DMS is installed
         if (LibModuleManager._isActiveModule("DMS")) {
@@ -127,11 +79,8 @@ library LibTokens {
         }
     }
 
-    function _withdrawERC20Token(
-        address _token,
-        uint256 _amount,
-        address _to
-    ) internal {
+    /// @notice allows caller to withdraw unallocated ether in the vault
+    function _withdrawERC20Token(address _token, uint256 _amount, address _to) internal {
         uint256 availableTokens;
         uint256 currentBalance = IERC20(_token).balanceOf(address(this));
         //check if DMS module is installed
@@ -156,12 +105,7 @@ library LibTokens {
                 success;
             } catch {
                 if (success) {
-                    emit ERC20TokenWithdrawal(
-                        _token,
-                        _amount,
-                        _to,
-                        LibDiamond.vaultID()
-                    );
+                    emit ERC20TokenWithdrawal(_token, _amount, _to, LibDiamond.vaultID());
                 } else {
                     emit ERC20ErrorHandled(_token);
                 }
@@ -171,11 +115,8 @@ library LibTokens {
         }
     }
 
-    function _withdrawERC20Tokens(
-        address[] calldata _tokenAdds,
-        uint256[] calldata _amounts,
-        address _to
-    ) internal {
+    /// @notice alows caller to withdraw tokens that haven't been allocated
+    function _withdrawERC20Tokens(address[] calldata _tokenAdds, uint256[] calldata _amounts, address _to) internal {
         if (_tokenAdds.length == 0 || _amounts.length == 0) {
             revert LibErrors.EmptyArray();
         }
@@ -208,12 +149,7 @@ library LibTokens {
                     success;
                 } catch {
                     if (success) {
-                        emit ERC20TokenWithdrawal(
-                            token,
-                            amount,
-                            _to,
-                            LibDiamond.vaultID()
-                        );
+                        emit ERC20TokenWithdrawal(token, amount, _to, LibDiamond.vaultID());
                     } else {
                         emit ERC20ErrorHandled(token);
                     }
@@ -224,80 +160,49 @@ library LibTokens {
         }
     }
 
+    /// @notice allows user to transfer ERC721 tokens to the vault
     //ERC721
     function _inputERC721Token(address _token, uint256 _tokenID) internal {
         IERC721(_token).transferFrom(msg.sender, address(this), _tokenID);
-        emit ERC721TokenDeposit(
-            _token,
-            msg.sender,
-            _tokenID,
-            LibDiamond.vaultID()
-        );
+        emit ERC721TokenDeposit(_token, msg.sender, _tokenID, LibDiamond.vaultID());
     }
-
+     /// @notice allows user to deposut ERC721 tokens to the vault via the safeTransferFrom method
     function _safeInputERC721Token(address _token, uint256 _tokenID) internal {
         IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenID);
-        emit ERC721TokenDeposit(
-            _token,
-            msg.sender,
-            _tokenID,
-            LibDiamond.vaultID()
-        );
+        emit ERC721TokenDeposit(_token, msg.sender, _tokenID, LibDiamond.vaultID());
+    }
+    /// @notice allows user to deposut ERC721 tokens to the vault
+    /// and pass data alongside
+    function _safeInputERC721TokenAndCall(address _token, uint256 _tokenID, bytes calldata _data) internal {
+        IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenID, _data);
     }
 
-    function _safeInputERC721TokenAndCall(
-        address _token,
-        uint256 _tokenID,
-        bytes calldata _data
-    ) internal {
-        IERC721(_token).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _tokenID,
-            _data
-        );
-    }
-
-    function _approveERC721Token(
-        address _token,
-        uint256 _tokenID,
-        address _to
-    ) internal {
+    /// @notice approves _to to spend specific token ID
+    function _approveERC721Token(address _token, uint256 _tokenID, address _to) internal {
         IERC721(_token).approve(_to, _tokenID);
     }
 
-    function _approveAllERC721Token(
-        address _token,
-        address _to,
-        bool _approved
-    ) internal {
+    /// @notice set approval for all token ID's of the token
+    function _approveAllERC721Token(address _token, address _to, bool _approved) internal {
         IERC721(_token).setApprovalForAll(_to, _approved);
     }
 
-    function _withdrawERC721Token(
-        address _token,
-        uint256 _tokenID,
-        address _to
-    ) internal {
+    /// @notice allows caller to withdraw a token ID 
+    function _withdrawERC721Token(address _token, uint256 _tokenID, address _to) internal {
         if (IERC721(_token).ownerOf(_tokenID) != address(this)) {
             revert NotERC721Owner();
         }
         if (LibModuleManager._isActiveModule("DMS")) {
-            if (LibDMS._isERC721Allocated(_token, _tokenID))
+            if (LibDMS._isERC721Allocated(_token, _tokenID)) {
                 revert("UnAllocate Token First");
+            }
             LibDMS._ping();
         }
-        try
-            IERC721(_token).safeTransferFrom(address(this), _to, _tokenID)
-        {} catch {
+        try IERC721(_token).safeTransferFrom(address(this), _to, _tokenID) {}
+        catch {
             string memory reason;
             if (bytes(reason).length == 0) {
-                emit ERC721TokenWIthdrawal(
-                    _token,
-                    _tokenID,
-                    _to,
-                    LibDiamond.vaultID()
-                );
+                emit ERC721TokenWIthdrawal(_token, _tokenID, _to, LibDiamond.vaultID());
             } else {
                 emit ERC721ErrorHandled(_token);
             }
@@ -305,73 +210,31 @@ library LibTokens {
     }
 
     //ERC1155
-
-    function _safeInputERC1155Token(
-        address _token,
-        uint256 _tokenID,
-        uint256 _value
-    ) internal {
-        IERC1155(_token).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _tokenID,
-            _value,
-            ""
-        );
-        emit ERC1155TokenDeposit(
-            _token,
-            msg.sender,
-            _tokenID,
-            _value,
-            LibDiamond.vaultID()
-        );
+    /// aloows caller to deposit a unit of ERC1155 to the vault
+    function _safeInputERC1155Token(address _token, uint256 _tokenID, uint256 _value) internal {
+        IERC1155(_token).safeTransferFrom(msg.sender, address(this), _tokenID, _value, "");
+        emit ERC1155TokenDeposit(_token, msg.sender, _tokenID, _value, LibDiamond.vaultID());
     }
 
-    function _safeBatchInputERC1155Tokens(
-        address _token,
-        uint256[] calldata _tokenIDs,
-        uint256[] calldata _values
-    ) internal {
-        IERC1155(_token).safeBatchTransferFrom(
-            msg.sender,
-            address(this),
-            _tokenIDs,
-            _values,
-            ""
-        );
-        emit BatchERC1155TokenDeposit(
-            _token,
-            msg.sender,
-            _tokenIDs,
-            _values,
-            LibDiamond.vaultID()
-        );
+    /// @notice allows deposits of multiple Id's of ERC1155 token to the vault
+    function _safeBatchInputERC1155Tokens(address _token, uint256[] calldata _tokenIDs, uint256[] calldata _values)
+        internal
+    {
+        IERC1155(_token).safeBatchTransferFrom(msg.sender, address(this), _tokenIDs, _values, "");
+        emit BatchERC1155TokenDeposit(_token, msg.sender, _tokenIDs, _values, LibDiamond.vaultID());
     }
 
-    function _approveAllERC1155Token(
-        address _token,
-        address _to,
-        bool _approved
-    ) internal {
+    /// @notice caller approves _to to spend all tokens
+    function _approveAllERC1155Token(address _token, address _to, bool _approved) internal {
         IERC1155(_token).setApprovalForAll(_to, _approved);
     }
 
-    function _withdrawERC1155Token(
-        address _token,
-        uint256 _tokenID,
-        uint256 _amount,
-        address _to
-    ) internal {
-        uint256 currentBalance = IERC1155(_token).balanceOf(
-            address(this),
-            _tokenID
-        );
+    /// @notice allow user to withdraw a unit of ERC1155 token
+    function _withdrawERC1155Token(address _token, uint256 _tokenID, uint256 _amount, address _to) internal {
+        uint256 currentBalance = IERC1155(_token).balanceOf(address(this), _tokenID);
         uint256 availableTokens;
         if (LibModuleManager._isActiveModule("DMS")) {
-            uint256 allocated = LibDMS.getCurrentAllocated1155tokens(
-                _token,
-                _tokenID
-            );
+            uint256 allocated = LibDMS.getCurrentAllocated1155tokens(_token, _tokenID);
             if (currentBalance > allocated) {
                 availableTokens = currentBalance - allocated;
                 LibDMS._ping();
@@ -391,19 +254,7 @@ library LibTokens {
             revert InsufficientTokens();
         }
 
-        IERC1155(_token).safeTransferFrom(
-            address(this),
-            _to,
-            _tokenID,
-            _amount,
-            ""
-        );
-        emit ERC1155TokenWithdrawal(
-            _token,
-            _tokenID,
-            _amount,
-            _to,
-            LibDiamond.vaultID()
-        );
+        IERC1155(_token).safeTransferFrom(address(this), _to, _tokenID, _amount, "");
+        emit ERC1155TokenWithdrawal(_token, _tokenID, _amount, _to, LibDiamond.vaultID());
     }
 }

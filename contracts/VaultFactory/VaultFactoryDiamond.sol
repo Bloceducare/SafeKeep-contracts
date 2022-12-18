@@ -2,10 +2,6 @@
 pragma solidity ^0.8.0;
 
 /**
- * \
- * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
- * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
- *
  * Implementation of a diamond.
  * /*****************************************************************************
  */
@@ -15,7 +11,12 @@ import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
 import "./libraries/LibFactoryAppStorage.sol";
 
+// struct Facet {
+//     address facetAddress;
+//     bytes4[] functionSelectors;
+// }
 contract VaultFactoryDiamond {
+    /// @notice sts contract owner and the diamond cut facet
     constructor(address _contractOwner, address _diamondCutFacet) payable {
         LibFactoryDiamond.setContractOwner(_contractOwner);
 
@@ -31,10 +32,10 @@ contract VaultFactoryDiamond {
         LibFactoryDiamond.diamondCut(cut, address(0), "");
     }
 
-
-
+    /// @notice returns contract owner
     function owner() public view returns (address owner_) {
-        LibFactoryDiamond.DiamondStorage storage ds = LibFactoryDiamond.diamondStorage();
+        LibFactoryDiamond.DiamondStorage storage ds = LibFactoryDiamond
+            .diamondStorage();
         owner_ = ds.contractOwner;
     }
 
@@ -60,8 +61,12 @@ contract VaultFactoryDiamond {
             returndatacopy(0, 0, returndatasize())
             // return any return value or error back to the caller
             switch result
-            case 0 { revert(0, returndatasize()) }
-            default { return(0, returndatasize()) }
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
         }
     }
 
