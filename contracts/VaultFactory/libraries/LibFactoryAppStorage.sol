@@ -2,11 +2,12 @@ pragma solidity 0.8.4;
 
 import "../../Vault/libraries/LibArrayHelpers.sol";
 import {IModuleData} from "../../interfaces/IModuleData.sol";
+
 struct FactoryAppStorage {
     //master vaultID
     uint256 VAULTID;
     //human readable names to Module data
-    mapping(string=>IModuleData.ModuleData) masterModules;
+    mapping(string => IModuleData.ModuleData) masterModules;
 }
 
 library LibFactoryAppStorage {

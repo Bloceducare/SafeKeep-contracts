@@ -2,10 +2,6 @@
 pragma solidity ^0.8.0;
 
 /**
- * \
- * Author: Nick Mudge <nick@perfectabstractions.com> (https://twitter.com/mudgen)
- * EIP-2535 Diamonds: https://eips.ethereum.org/EIPS/eip-2535
- *
  * Implementation of a diamond.
  * /*****************************************************************************
  */
@@ -13,9 +9,14 @@ pragma solidity ^0.8.0;
 import {LibFactoryDiamond} from "./libraries/LibFactoryDiamond.sol";
 import {IDiamondCut} from "../interfaces/IDiamondCut.sol";
 
-import "./libraries/LibAppStorage.sol";
+import "./libraries/LibFactoryAppStorage.sol";
 
+// struct Facet {
+//     address facetAddress;
+//     bytes4[] functionSelectors;
+// }
 contract VaultFactoryDiamond {
+    /// @notice sts contract owner and the diamond cut facet
     constructor(address _contractOwner, address _diamondCutFacet) payable {
         LibFactoryDiamond.setContractOwner(_contractOwner);
 
@@ -31,32 +32,10 @@ contract VaultFactoryDiamond {
         LibFactoryDiamond.diamondCut(cut, address(0), "");
     }
 
-    function setAddresses(address[] calldata _addresses) external {
-        LibFactoryDiamond.enforceIsContractOwner();
-        FactoryAppStorage storage s = LibAppStorage.factoryAppStorage();
-        s.diamondCutFacet = _addresses[0];
-        s.erc20Facet = _addresses[1];
-        s.erc721Facet = _addresses[2];
-        s.erc1155Facet = _addresses[3];
-        s.diamondLoupeFacet = _addresses[4];
-        s.vaultFacet = _addresses[5];
-        s.slotChecker=_addresses[6];
-    }
-
-    function setSelectors(bytes4[][] calldata _selectors) external {
-        LibFactoryDiamond.enforceIsContractOwner();
-        FactoryAppStorage storage fs = LibAppStorage.factoryAppStorage();
-        assert(_selectors.length == 6);
-        fs.ERC20SELECTORS = _selectors[0];
-        fs.ERC721SELECTORS = _selectors[1];
-        fs.ERC1155SELECTORS = _selectors[2];
-        fs.DIAMONDLOUPEFACETSELECTORS = _selectors[3];
-        fs.VAULTFACETSELECTORS = _selectors[4];
-        fs.SLOTCHECKERSELECTORS = _selectors[5];
-    }
-
+    /// @notice returns contract owner
     function owner() public view returns (address owner_) {
-        LibFactoryDiamond.DiamondStorage storage ds = LibFactoryDiamond.diamondStorage();
+        LibFactoryDiamond.DiamondStorage storage ds = LibFactoryDiamond
+            .diamondStorage();
         owner_ = ds.contractOwner;
     }
 
@@ -82,8 +61,12 @@ contract VaultFactoryDiamond {
             returndatacopy(0, 0, returndatasize())
             // return any return value or error back to the caller
             switch result
-            case 0 { revert(0, returndatasize()) }
-            default { return(0, returndatasize()) }
+            case 0 {
+                revert(0, returndatasize())
+            }
+            default {
+                return(0, returndatasize())
+            }
         }
     }
 

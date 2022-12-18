@@ -49,6 +49,7 @@ library LibFactoryDiamond {
         address contractOwner;
     }
 
+    /// @notice sets the slot where diamond is stored
     function diamondStorage() internal pure returns (DiamondStorage storage ds) {
         bytes32 position = DIAMOND_STORAGE_POSITION;
         assembly {
@@ -58,6 +59,7 @@ library LibFactoryDiamond {
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
+    /// @notice sets address as the conttact owner
     function setContractOwner(address _newOwner) internal {
         DiamondStorage storage ds = diamondStorage();
         address previousOwner = ds.contractOwner;
@@ -65,10 +67,12 @@ library LibFactoryDiamond {
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
+    /// @notice returns the address of current contract owner
     function contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = diamondStorage().contractOwner;
     }
 
+    /// @notice ensures that calller is contract owner
     function enforceIsContractOwner() internal view {
         if (msg.sender != diamondStorage().contractOwner) revert NotDiamondOwner();
     }
@@ -76,6 +80,12 @@ library LibFactoryDiamond {
     event DiamondCut(IDiamondCut.FacetCut[] _diamondCut, address _init, bytes _calldata);
 
     // Internal function version of diamondCut
+
+     /// @notice Add/replace/remove any number of functions
+    /// @param _diamondCut Contains the facet addresses and function selectors
+    /// @param _init The address of the contract or facet to execute _calldata
+    /// @param _calldata A function call, including function selector and arguments
+
     function diamondCut(
         IDiamondCut.FacetCut[] memory _diamondCut,
         address _init,
@@ -97,6 +107,9 @@ library LibFactoryDiamond {
         initializeDiamondCut(_init, _calldata);
     }
 
+    /// @notice adds new functions to a facet 
+    /// @param _facetAddress facet where the function will be added  
+    /// @param _functionSelectors arrays of functions to be added 
     function addFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
         if (_functionSelectors.length <= 0) revert NoSelectorsInFacet();
         DiamondStorage storage ds = diamondStorage();
@@ -114,7 +127,7 @@ library LibFactoryDiamond {
             selectorPosition++;
         }
     }
-
+    /// @notice replaces functions in a selected facet
     function replaceFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
         if (_functionSelectors.length <= 0) revert NoSelectorsInFacet();
         DiamondStorage storage ds = diamondStorage();
@@ -134,6 +147,7 @@ library LibFactoryDiamond {
         }
     }
 
+    /// @notice removes functions from a facet
     function removeFunctions(address _facetAddress, bytes4[] memory _functionSelectors) internal {
         if (_functionSelectors.length <= 0) revert NoSelectorsInFacet();
         DiamondStorage storage ds = diamondStorage();
@@ -146,12 +160,16 @@ library LibFactoryDiamond {
         }
     }
 
+    /// @notice add facet to diamond
     function addFacet(DiamondStorage storage ds, address _facetAddress) internal {
         enforceHasContractCode(_facetAddress);
         ds.facetFunctionSelectors[_facetAddress].facetAddressPosition = ds.facetAddresses.length;
         ds.facetAddresses.push(_facetAddress);
     }
 
+    /// @dev adds a functions to a selected facet
+    /// @param _selector of the functions to be added
+    /// _facetAddress of the function
     function addFunction(
         DiamondStorage storage ds,
         bytes4 _selector,
@@ -163,6 +181,7 @@ library LibFactoryDiamond {
         ds.selectorToFacetAndPosition[_selector].facetAddress = _facetAddress;
     }
 
+    /// @notice removes a function from a a facet
     function removeFunction(
         DiamondStorage storage ds,
         address _facetAddress,
@@ -199,6 +218,7 @@ library LibFactoryDiamond {
         }
     }
 
+    /// initilize diamond cut with associated calldata
     function initializeDiamondCut(address _init, bytes memory _calldata) internal {
         if (_init == address(0)) {
             if (_calldata.length > 0) revert NonEmptyCalldata();
@@ -218,7 +238,7 @@ library LibFactoryDiamond {
             }
         }
     }
-
+    /// @notice ensures that address is a contract type
     function enforceHasContractCode(address _contract) internal view {
         uint256 contractSize;
         assembly {

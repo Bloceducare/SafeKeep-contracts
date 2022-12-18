@@ -12,11 +12,12 @@ interface IModuleData {
         //storage location
         bytes32 slot;
         //keccak hash of facets involved
-        bytes32 fileHash;
+        uint256 timeAdded;
         //human readable names of facets involved in alphabetical order
         string[] facetNames;
     }
-
+    /// @notice returns acive modules in a vault
     function getActiveModules() external view returns (string[] memory);
+    /// @notice checks for the status of a module
     function isActiveModule(string memory _name) external view returns (bool exists_);
 }
