@@ -39,7 +39,7 @@ library LibTokens {
     );
 
     //ERC20
-    /// @notice allows caller to deposit several tokens to the vault with the respective amounts 
+    /// @notice allows caller to deposit several tokens to the vault with the respective amounts
     function _inputERC20Tokens(address[] calldata _tokenDeps, uint256[] calldata _amounts) internal {
         if (_tokenDeps.length == 0 || _amounts.length == 0) {
             revert LibErrors.EmptyArray();
@@ -166,13 +166,15 @@ library LibTokens {
         IERC721(_token).transferFrom(msg.sender, address(this), _tokenID);
         emit ERC721TokenDeposit(_token, msg.sender, _tokenID, LibDiamond.vaultID());
     }
-     /// @notice allows user to deposut ERC721 tokens to the vault via the safeTransferFrom method
+    /// @notice allows user to deposut ERC721 tokens to the vault via the safeTransferFrom method
+
     function _safeInputERC721Token(address _token, uint256 _tokenID) internal {
         IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenID);
         emit ERC721TokenDeposit(_token, msg.sender, _tokenID, LibDiamond.vaultID());
     }
     /// @notice allows user to deposut ERC721 tokens to the vault
     /// and pass data alongside
+
     function _safeInputERC721TokenAndCall(address _token, uint256 _tokenID, bytes calldata _data) internal {
         IERC721(_token).safeTransferFrom(msg.sender, address(this), _tokenID, _data);
     }
@@ -187,7 +189,7 @@ library LibTokens {
         IERC721(_token).setApprovalForAll(_to, _approved);
     }
 
-    /// @notice allows caller to withdraw a token ID 
+    /// @notice allows caller to withdraw a token ID
     function _withdrawERC721Token(address _token, uint256 _tokenID, address _to) internal {
         if (IERC721(_token).ownerOf(_tokenID) != address(this)) {
             revert NotERC721Owner();

@@ -34,8 +34,7 @@ contract VaultFactoryDiamond {
 
     /// @notice returns contract owner
     function owner() public view returns (address owner_) {
-        LibFactoryDiamond.DiamondStorage storage ds = LibFactoryDiamond
-            .diamondStorage();
+        LibFactoryDiamond.DiamondStorage storage ds = LibFactoryDiamond.diamondStorage();
         owner_ = ds.contractOwner;
     }
 
@@ -61,12 +60,8 @@ contract VaultFactoryDiamond {
             returndatacopy(0, 0, returndatasize())
             // return any return value or error back to the caller
             switch result
-            case 0 {
-                revert(0, returndatasize())
-            }
-            default {
-                return(0, returndatasize())
-            }
+            case 0 { revert(0, returndatasize()) }
+            default { return(0, returndatasize()) }
         }
     }
 

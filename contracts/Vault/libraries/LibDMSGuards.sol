@@ -52,6 +52,7 @@ library LibDMSGuards {
         }
     }
     /// checks if address is an inheritor or address(0)
+
     function _anInheritorOrZero(address _inheritor) internal view returns (bool inh) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (_inheritor == address(0)) {
@@ -81,6 +82,7 @@ library LibDMSGuards {
         }
     }
     /// @notice check if an inheritor has claimed the assets allocated to them
+
     function _notClaimed(address _inheritor) internal view {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         if (vaultData.claimed[_inheritor]) {

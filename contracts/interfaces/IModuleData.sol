@@ -17,6 +17,7 @@ interface IModuleData {
         string[] facetNames;
     }
     /// @notice returns acive modules in a vault
+
     function getActiveModules() external view returns (string[] memory);
     /// @notice checks for the status of a module
     function isActiveModule(string memory _name) external view returns (bool exists_);

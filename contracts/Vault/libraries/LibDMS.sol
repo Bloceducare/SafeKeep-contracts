@@ -49,8 +49,9 @@ library LibDMS {
         vaultData.lastPing = block.timestamp;
         emit VaultPinged(block.timestamp, LibDiamond.vaultID());
     }
-        /// @notice gets the total ETH allocated in a vault
-        function getCurrentAllocatedEth() internal view returns (uint256) {
+    /// @notice gets the total ETH allocated in a vault
+
+    function getCurrentAllocatedEth() internal view returns (uint256) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 totalEthAllocated;
         for (uint256 x; x < vaultData.inheritors.length; x++) {
@@ -83,7 +84,7 @@ library LibDMS {
         allocated_ = vaultData.allocatedERC721Tokens[_token][_tokenId];
     }
 
-    /// @notice this removes all the tokens that have 
+    /// @notice this removes all the tokens that have
     /// been previously allocated to an inheritor for all token types
     function _resetClaimed(address _inheritor) internal {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();

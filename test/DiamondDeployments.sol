@@ -29,6 +29,7 @@ import "./MockERC20.sol";
 import "./MockERC721.sol";
 
 import {IModuleData} from "../contracts/interfaces/IModuleData.sol";
+import "../contracts/Vault/facets/MultisigFacet.sol";
 
 contract DDeployments is Test {
     //Vault facet Addresss
@@ -77,6 +78,7 @@ contract DDeployments is Test {
     ERC1155Facet v1ERC1155Facet;
     EtherFacet v1EtherFacet;
     DMSFacet v1dmsFacet;
+    MultisigFacet multisigFacet;
 
     function setUp() public {
         //deploy mock tokens
@@ -112,6 +114,9 @@ contract DDeployments is Test {
             address(this),
             address(dCutFactoryFacet)
         );
+
+        // Deploy Multisig facet
+        multisigFacet = new MultisigFacet();
 
         //upgrade factory diamond
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](3);
@@ -195,7 +200,10 @@ contract DDeployments is Test {
         selectorName[0] = "Selector";
         selectorName[1] = "Token";
         //Register Selector and Token Modules in Factory
-        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(data, selectorName);
+        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(
+            data,
+            selectorName
+        );
 
         vault1Owner = mkaddr("vault1Owner");
         vault1Inheritor1 = mkaddr("vault1Inheritor1");
@@ -203,7 +211,9 @@ contract DDeployments is Test {
 
         //make sure vault1Owner is tx.origin
         vm.prank(address(this), vault1Owner);
-        vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(vault1Owner, 1e18);
+        vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
+            value: 1 ether
+        }(vault1Owner, 1e18);
 
         //Register DMS Module in factory diamond
 
@@ -222,12 +232,15 @@ contract DDeployments is Test {
         string[] memory DMSselectorName = new string[](1);
         DMSselectorName[0] = "DMS";
 
-        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(DMSdata, DMSselectorName);
+        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(
+            DMSdata,
+            DMSselectorName
+        );
         //upgrade DMS Module Vault diamond
         vm.prank(vault1Owner);
         ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("DMS");
 
-        //export contract types
+        //export contract types8
         v1ERC20Facet = ERC20Facet(vault1);
         v1ERC721Facet = ERC721Facet(vault1);
         v1ERC1155Facet = ERC1155Facet(vault1);
@@ -236,7 +249,33 @@ contract DDeployments is Test {
         ownerFacet = OwnershipFacet(vault1);
 
         vm.prank(vault1Owner);
-        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor1), toSingletonUINT(10000));
+        v1dmsFacet.addInheritors(
+            toSingletonAdd(vault1Inheritor1),
+            toSingletonUINT(10000)
+        );
+
+        // Diamond cut for multisig module
+        IDiamondCut.FacetCut[] memory multisigCut = new IDiamondCut.FacetCut[](
+            1
+        );
+        multisigCut[0] = IDiamondCut.FacetCut({
+            facetAddress: address(multisigFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: generateSelectors("MultisigFacet")
+        });
+
+        IModuleData.ModuleData[]
+            memory multisigData = new IModuleData.ModuleData[](1);
+        multisigData[0].facetData = multisigCut;
+        string[] memory multisigSelectorName = new string[](1);
+        multisigSelectorName[0] = "Multisig";
+        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(
+            multisigData,
+            multisigSelectorName
+        );
+        //upgrade Multisig Module Vault diamond
+        vm.prank(vault1Owner);
+        ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Multisig");
     }
 
     function testDefaultModules() public {
@@ -251,7 +290,9 @@ contract DDeployments is Test {
         ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Selector");
 
         // downgrade an already exosting vault
-        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule("Selector");
+        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule(
+            "Selector"
+        );
         // vm.stopPrank();
     }
 
@@ -260,7 +301,9 @@ contract DDeployments is Test {
         ModuleManagerFacet(address(vault1)).isActiveModule("DMS");
     }
 
-    function generateSelectors(string memory _facetName) internal returns (bytes4[] memory selectors) {
+    function generateSelectors(
+        string memory _facetName
+    ) internal returns (bytes4[] memory selectors) {
         string[] memory cmd = new string[](3);
         cmd[0] = "node";
         cmd[1] = "scripts/genSelectors.js";
@@ -270,7 +313,9 @@ contract DDeployments is Test {
     }
 
     function mkaddr(string memory name) public returns (address) {
-        address addr = address(uint160(uint256(keccak256(abi.encodePacked(name)))));
+        address addr = address(
+            uint160(uint256(keccak256(abi.encodePacked(name))))
+        );
         vm.label(addr, name);
         return addr;
     }
@@ -302,7 +347,11 @@ function toDualAdd(address _no, address _no2) pure returns (address[] memory) {
     return arr;
 }
 
-function toTriUINT(uint256 _no, uint256 _no2, uint256 _no3) pure returns (uint256[] memory) {
+function toTriUINT(
+    uint256 _no,
+    uint256 _no2,
+    uint256 _no3
+) pure returns (uint256[] memory) {
     uint256[] memory arr = new uint256[](3);
     arr[0] = _no;
     arr[1] = _no2;
@@ -310,7 +359,11 @@ function toTriUINT(uint256 _no, uint256 _no2, uint256 _no3) pure returns (uint25
     return arr;
 }
 
-function toTriAddress(address _add, address _add2, address _add3) pure returns (address[] memory) {
+function toTriAddress(
+    address _add,
+    address _add2,
+    address _add3
+) pure returns (address[] memory) {
     address[] memory arr = new address[](3);
     arr[0] = _add;
     arr[1] = _add2;

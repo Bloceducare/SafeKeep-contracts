@@ -12,6 +12,7 @@ contract EtherFacet {
         LibEther._depositEther(_amount);
     }
     /// @notice allows caller to withdraw Ether from the vault
+
     function withdrawEther(uint256 _amount, address _to) external {
         LibGuards._onlyVaultOwner();
         LibEther._withdrawEth(_amount, _to);

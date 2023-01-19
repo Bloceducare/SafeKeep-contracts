@@ -50,7 +50,7 @@ contract DMSFacet {
         uint256 amount;
     }
 
-    ///  @notice checks throgh the vault and return dataa associated with it
+    ///  @notice checks throgh the vault and return data associated with it
     function inspectVault() public view returns (VaultInfo memory info) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();

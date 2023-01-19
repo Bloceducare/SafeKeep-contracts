@@ -8,6 +8,7 @@ import "../facets/ERC1155Facet.sol";
 import "../facets/ERC721Facet.sol";
 import "../facets/ERC20Facet.sol";
 import "../facets/DMSFacet.sol";
+import {MultisigData} from "../libraries/LibMultisigData.sol";
 
 //~(keccak256(abi.encode(slot,200)))
 library LibStorageBinder {
@@ -18,7 +19,7 @@ library LibStorageBinder {
         slot = keccak256(bytes(_facetName1));
     }
 
-    /// @notice returns slot of two facets 
+    /// @notice returns slot of two facets
     function _getStorageSlot(string memory _facetName1, string memory _facetName2)
         internal
         pure
@@ -36,7 +37,7 @@ library LibStorageBinder {
     //     slot = keccak256(bytes(abi.encode(_facetName1, _facetName2,_facetName3,_facetName4,_facetName5)));
     // }
 
-    /// @notice binds a facet to its storage slot from the diamon loupe facet 
+    /// @notice binds a facet to its storage slot from the diamon loupe facet
     function _bindAndReturnFacetStorage() internal pure returns (FacetAndSelectorData storage selectorData) {
         bytes32 _slot = _getStorageSlot(type(DiamondCutFacet).name, type(DiamondLoupeFacet).name);
         bytes32 saltedOffset = _slot ^ SLOT_SALT;
@@ -51,6 +52,14 @@ library LibStorageBinder {
         bytes32 saltedOffset = _slot ^ SLOT_SALT;
         assembly {
             vaultData.slot := saltedOffset
+        }
+    }
+
+    function _bindAndReturnMultisigStorage() internal pure returns (MultisigData storage multisigData) {
+        bytes32 _slot = _getStorageSlot(type(DiamondCutFacet).name, type(DMSFacet).name);
+        bytes32 saltedOffset = _slot ^ SLOT_SALT;
+        assembly {
+            multisigData.slot := saltedOffset
         }
     }
 }

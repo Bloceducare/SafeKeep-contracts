@@ -19,6 +19,7 @@ contract ERC721Facet {
         LibTokens._inputERC721Token(_token, _tokenID);
     }
     /// @notice allows caller to deposit an ERC721 token with multiple Ids into the vault
+
     function depositERC721Tokens(address _token, uint256[] calldata _tokenIDs) external {
         for (uint256 i; i < _tokenIDs.length; i++) {
             LibTokens._inputERC721Token(_token, _tokenIDs[i]);
@@ -51,6 +52,7 @@ contract ERC721Facet {
         LibTokens._approveERC721Token(_token, _tokenID, _to);
     }
     /// @notice approves all ERC721 tokens to be spent by _to
+
     function approveAllERC721Token(address _token, address _to, bool _approved) external {
         LibGuards._onlyVaultOwner();
         LibTokens._approveAllERC721Token(_token, _to, _approved);

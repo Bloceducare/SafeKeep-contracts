@@ -16,6 +16,7 @@ contract ERC1155Facet {
         LibTokens._safeInputERC1155Token(_token, _tokenID, _amount);
     }
     /// @notice allows caller to deposit an ERC1155 with multiple tokenIDs into the vault
+
     function batchDepositERC1155Tokens(address _token, uint256[] calldata _tokenIDs, uint256[] calldata _amounts)
         external
     {
@@ -45,7 +46,7 @@ contract ERC1155Facet {
         }
     }
 
-    //APPROVALS 
+    //APPROVALS
     /// @notice approves an ERC1155 token to be spent by _to
     function approveERC1155Token(address _token, address _to, bool _approved) external {
         LibGuards._onlyVaultOwner();
@@ -53,7 +54,7 @@ contract ERC1155Facet {
     }
 
     //DEPOSIT COMPATIBILITY
-    /// @notice checks if ERC155 token deposit is allowed in the vault 
+    /// @notice checks if ERC155 token deposit is allowed in the vault
     function onERC1155Received(address, address, uint256, uint256, bytes memory) public pure returns (bytes4) {
         return ERC1155_ACCEPTED;
     }

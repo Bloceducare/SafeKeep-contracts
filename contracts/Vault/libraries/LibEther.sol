@@ -33,7 +33,7 @@ library LibEther {
             if (_amount > availableEther) revert InsufficientEth();
         }
         if (availableEther >= _amount) {
-            (bool success, ) = _to.call{value: _amount}("");
+            (bool success,) = _to.call{value: _amount}("");
             assert(success);
         } else {
             revert EthWithdrawalError();
