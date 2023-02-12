@@ -253,7 +253,27 @@ contract DDeployments is Test {
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(10000)
         );
+    }
 
+    function testDefaultModules() public {
+        // OwnershipFacet(address(vault1)).owner();
+
+        vm.startPrank(vault1Owner);
+        OwnershipFacet(address(vault1)).owner();
+
+        // upgrade an already existing vault
+        ModuleManagerFacet(address(vault1)).getActiveModules();
+        vm.expectRevert(ModuleAlreadyInstalled.selector);
+        ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Selector");
+
+        // downgrade an already exosting vault
+        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule(
+            "Selector"
+        );
+        // vm.stopPrank();
+    }
+
+    function addMultisigModule() public {
         // Diamond cut for multisig module
         IDiamondCut.FacetCut[] memory multisigCut = new IDiamondCut.FacetCut[](
             1
@@ -273,27 +293,9 @@ contract DDeployments is Test {
             multisigData,
             multisigSelectorName
         );
-        //upgrade Multisig Module Vault diamond
+        //Add Multisig Module Vault diamond
         vm.prank(vault1Owner);
         ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Multisig");
-    }
-
-    function testDefaultModules() public {
-        // OwnershipFacet(address(vault1)).owner();
-
-        vm.startPrank(vault1Owner);
-        OwnershipFacet(address(vault1)).owner();
-
-        // upgrade an already existing vault
-        ModuleManagerFacet(address(vault1)).getActiveModules();
-        vm.expectRevert(ModuleAlreadyInstalled.selector);
-        ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Selector");
-
-        // downgrade an already exosting vault
-        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule(
-            "Selector"
-        );
-        // vm.stopPrank();
     }
 
     function testUpgradeModule() public {

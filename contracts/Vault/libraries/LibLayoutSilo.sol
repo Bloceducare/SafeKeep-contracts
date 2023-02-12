@@ -59,7 +59,6 @@ struct DMSData {
     mapping(address => mapping(address => uint256)) inheritorTokenShares;
     //address of tokens allocated
     mapping(address => address[]) inheritorAllocatedERC20Tokens;
-
     //ERC721
     // maps token address to inheritor
     mapping(address => mapping(address => bool)) whitelist;
@@ -71,7 +70,6 @@ struct DMSData {
     mapping(address => mapping(uint256 => bool)) allocatedERC721Tokens;
     // Erc721 tokens allocated to an inheritor
     mapping(address => address[]) inheritorAllocatedERC721TokenAddresses;
-
     //ERC1155
     // maps token address and id to inheritor
     mapping(address => mapping(address => mapping(uint256 => uint256))) inheritorERC1155TokenAllocations;

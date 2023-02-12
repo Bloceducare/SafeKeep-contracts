@@ -37,13 +37,16 @@ library LibMultisig {
         uint256 _quorum
     ) internal {
         LibGuards._onlyVaultOwner();
-        if (_quorum > _signers.length) revert NotEnoughSigners();
+        if (_signers.length == 0) revert Invalid();
+        if (_quorum >= _signers.length) revert NotEnoughSigners();
         MultisigData storage multisigData = LibStorageBinder
             ._bindAndReturnMultisigStorage();
         multisigData.signers = _signers;
         multisigData.quorum = _quorum;
         for (uint256 i = 0; i < _signers.length; i++) {
-            multisigData.isSigner[_signers[i]] = true;
+            address signer = _signers[i];
+            multisigData.isSigner[signer] = true;
+            multisigData.signers.push(signer);
         }
         emit MultisigActivation(_signers, _quorum);
     }
@@ -67,8 +70,9 @@ library LibMultisig {
         MultisigData storage multisigData = LibStorageBinder
             ._bindAndReturnMultisigStorage();
         if (!multisigData.isSigner[_signer]) revert NotSigner();
-        if (multisigData.quorum > multisigData.signers.length - 1)
+        if (multisigData.quorum > multisigData.signers.length - 1) {
             revert NotEnoughSigners();
+        }
         multisigData.isSigner[_signer] = false;
         for (uint256 i = 0; i < multisigData.signers.length; i++) {
             if (multisigData.signers[i] == _signer) {
@@ -125,10 +129,14 @@ library LibMultisig {
         MultisigData storage multisigData = LibStorageBinder
             ._bindAndReturnMultisigStorage();
         if (!multisigData.isSigner[msg.sender]) revert NotSigner();
-        if (multisigData.transactions[_transactionId].destination == address(0))
+        if (
+            multisigData.transactions[_transactionId].destination == address(0)
+        ) {
             revert TransactionDoesNotExist();
-        if (multisigData.confirmations[_transactionId][msg.sender])
+        }
+        if (multisigData.confirmations[_transactionId][msg.sender]) {
             revert AlreadyConfirmed();
+        }
         multisigData.confirmations[_transactionId][msg.sender] = true;
         emit Confirmation(msg.sender, _transactionId);
         executeTransaction(_transactionId);
@@ -159,8 +167,9 @@ library LibMultisig {
         MultisigData storage multisigData = LibStorageBinder
             ._bindAndReturnMultisigStorage();
         if (!multisigData.isSigner[msg.sender]) revert NotSigner();
-        if (multisigData.confirmations[_transactionId][msg.sender])
+        if (multisigData.confirmations[_transactionId][msg.sender]) {
             revert AlreadyConfirmed();
+        }
         multisigData.confirmations[_transactionId][msg.sender] = false;
         emit Revocation(msg.sender, _transactionId);
     }
@@ -189,8 +198,9 @@ library LibMultisig {
     function executeTransaction(uint256 _transactionId) internal {
         MultisigData storage multisigData = LibStorageBinder
             ._bindAndReturnMultisigStorage();
-        if (multisigData.transactions[_transactionId].executed)
+        if (multisigData.transactions[_transactionId].executed) {
             revert AlreadyConfirmed();
+        }
         if (isConfirmed(_transactionId)) {
             Transaction storage txn = multisigData.transactions[_transactionId];
 

@@ -4,7 +4,10 @@ pragma solidity 0.8.4;
 import {LibMultisig} from "../libraries/LibMultisig.sol";
 
 contract MultisigFacet {
-    function activateMultisig(address[] memory _signers, uint256 _quorum) external {
+    function activateMultisig(
+        address[] memory _signers,
+        uint256 _quorum
+    ) external {
         LibMultisig._activateMultisig(_signers, _quorum);
     }
 
@@ -24,7 +27,11 @@ contract MultisigFacet {
         LibMultisig.updateQuorum(_quorum);
     }
 
-    function submitTransaction(address _to, uint256 _value, bytes memory _data) external returns (uint256) {
+    function submitTransaction(
+        address _to,
+        uint256 _value,
+        bytes memory _data
+    ) external returns (uint256) {
         return LibMultisig.submitTransaction(_to, _value, _data);
     }
 
@@ -36,7 +43,9 @@ contract MultisigFacet {
         LibMultisig.revokeTransaction(_transactionId);
     }
 
-    function getConfirmations(uint256 _transactionId) external view returns (address) {
+    function getConfirmations(
+        uint256 _transactionId
+    ) external view returns (address) {
         LibMultisig.getConfirmationCount(_transactionId);
     }
 
