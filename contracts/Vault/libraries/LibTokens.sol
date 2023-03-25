@@ -10,6 +10,8 @@ import {LibModuleManager} from "../libraries/LibModuleManager.sol";
 import {LibErrors} from "../libraries/LibErrors.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 
+import {LibCore} from "../libraries/LibCore.sol";
+
 bytes4 constant ERC1155_ACCEPTED = 0xf23a6e61;
 bytes4 constant ERC1155_BATCH_ACCEPTED = 0xbc197c81;
 bytes4 constant ERC721WithCall = 0xb88d4fde;
@@ -123,7 +125,7 @@ library LibTokens {
         IERC20(_token).approve(_spender, _amount);
         //ping if DMS is installed
         if (LibModuleManager._isActiveModule("DMS")) {
-            LibDMS._ping();
+           LibCore._ping();
         }
     }
 
@@ -140,7 +142,7 @@ library LibTokens {
         if (LibModuleManager._isActiveModule("DMS")) {
             if (currentBalance > alloc) {
                 availableTokens = currentBalance - alloc;
-                LibDMS._ping();
+                LibCore._ping();
             } else {
                 revert InsufficientTokens();
             }
@@ -191,7 +193,7 @@ library LibTokens {
             if (LibModuleManager._isActiveModule("DMS")) {
                 if (currentBalance > allocated) {
                     availableTokens = currentBalance - allocated;
-                    LibDMS._ping();
+                    LibCore._ping();
                 } else {
                     revert InsufficientTokens();
                 }
@@ -285,7 +287,7 @@ library LibTokens {
         if (LibModuleManager._isActiveModule("DMS")) {
             if (LibDMS._isERC721Allocated(_token, _tokenID))
                 revert("UnAllocate Token First");
-            LibDMS._ping();
+            LibCore._ping();
         }
         try
             IERC721(_token).safeTransferFrom(address(this), _to, _tokenID)
@@ -374,7 +376,7 @@ library LibTokens {
             );
             if (currentBalance > allocated) {
                 availableTokens = currentBalance - allocated;
-                LibDMS._ping();
+                LibCore._ping();
             }
             if (currentBalance < _amount) {
                 revert InsufficientTokens();

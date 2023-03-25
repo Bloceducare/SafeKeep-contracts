@@ -6,7 +6,27 @@ import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
 
 library LibGuards {
-    function _onlyVaultOwner() internal view {
-        LibDiamond.enforceIsContractOwner();
-    }
+	error NotBackupAddress();
+	error NotOwnerOrBackupAddress();
+
+	function _onlyVaultOwner() internal view {
+		LibDiamond.enforceIsContractOwner();
+	}
+
+	//check
+	function _onlyVaultOwnerOrBackup() internal view {
+		FacetAndSelectorData storage fsData = LibStorageBinder
+			._bindAndReturnFacetStorage();
+		if (msg.sender != fsData.backupAddress && msg.sender != fsData.vaultOwner) {
+			revert NotOwnerOrBackupAddress();
+		}
+	}
+
+	function _enforceIsBackupAddress() internal view {
+		FacetAndSelectorData storage fsData = LibStorageBinder
+			._bindAndReturnFacetStorage();
+		if (msg.sender != fsData.backupAddress) {
+			revert NotBackupAddress();
+		}
+	}
 }

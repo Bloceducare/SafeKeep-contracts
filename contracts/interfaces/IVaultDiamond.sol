@@ -6,6 +6,4 @@ interface IVaultDiamond {
 
     //via delegatecall on diamond
     function vaultOwner() external view returns (address);
-
-
 }

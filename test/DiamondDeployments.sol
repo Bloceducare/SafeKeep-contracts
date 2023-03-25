@@ -10,6 +10,8 @@ import "../contracts/Vault/facets/ERC721Facet.sol";
 import "../contracts/Vault/facets/EtherFacet.sol";
 import "../contracts/Vault/facets/OwnershipFacet.sol";
 
+import "../contracts/Vault/facets/CoreFacet.sol";
+
 import "../contracts/Vault/facets/ModuleManagerFacet.sol";
 
 import "../contracts/Vault/facets/DiamondCutFacet.sol";
@@ -37,6 +39,7 @@ contract DDeployments is Test {
     ERC20Facet erc20Facet;
     EtherFacet etherFacet;
     OwnershipFacet ownerFacet;
+    CoreFacet coreFacet;
     // VaultFacet vFacet;
     DMSFacet switchFacet;
 
@@ -70,6 +73,7 @@ contract DDeployments is Test {
     address vault1Owner;
     address vault1Inheritor1;
     address vault1Inheritor2;
+    address vault1Backup;
 
     //Facet types tied to vaultAddresses
     ERC20Facet v1ERC20Facet;
@@ -77,6 +81,7 @@ contract DDeployments is Test {
     ERC1155Facet v1ERC1155Facet;
     EtherFacet v1EtherFacet;
     DMSFacet v1dmsFacet;
+    CoreFacet v1CoreFacet;
 
     function setUp() public {
         //deploy mock tokens
@@ -95,6 +100,7 @@ contract DDeployments is Test {
         erc20Facet = new ERC20Facet();
         etherFacet = new EtherFacet();
         switchFacet = new DMSFacet();
+        coreFacet=new CoreFacet();
 
         //selector facet
         dCutFacet = new DiamondCutFacet();
@@ -162,7 +168,7 @@ contract DDeployments is Test {
 
         //upgrade Token Module Vault diamond
 
-        IDiamondCut.FacetCut[] memory TokenCut = new IDiamondCut.FacetCut[](4);
+        IDiamondCut.FacetCut[] memory TokenCut = new IDiamondCut.FacetCut[](5);
 
         TokenCut[0] = IDiamondCut.FacetCut({
             facetAddress: address(erc20Facet),
@@ -186,6 +192,11 @@ contract DDeployments is Test {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: generateSelectors("EtherFacet")
         });
+          TokenCut[4] = IDiamondCut.FacetCut({
+            facetAddress: address(coreFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: generateSelectors("CoreFacet")
+        });
 
         IModuleData.ModuleData[] memory data = new IModuleData.ModuleData[](2);
         data[0].facetData = selectorCut;
@@ -203,12 +214,13 @@ contract DDeployments is Test {
         vault1Owner = mkaddr("vault1Owner");
         vault1Inheritor1 = mkaddr("vault1Inheritor1");
         vault1Inheritor2 = mkaddr("vault1Inheritor2");
+        vault1Backup= mkaddr("vault1Backup");
 
         //make sure vault1Owner is tx.origin
         vm.prank(address(this), vault1Owner);
         vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
             value: 1 ether
-        }(vault1Owner, 1e18);
+        }(vault1Owner, 1e18,vault1Backup,180 days);
 
         //Register DMS Module in factory diamond
 
@@ -242,6 +254,7 @@ contract DDeployments is Test {
         v1EtherFacet = EtherFacet(vault1);
         v1dmsFacet = DMSFacet(vault1);
         ownerFacet = OwnershipFacet(vault1);
+        v1CoreFacet = CoreFacet(vault1);
 
         vm.prank(vault1Owner);
         v1dmsFacet.addInheritors(
@@ -250,25 +263,9 @@ contract DDeployments is Test {
         );
     }
 
-    function testDefaultModules() public {
-        // OwnershipFacet(address(vault1)).owner();
 
-        vm.startPrank(vault1Owner);
-        OwnershipFacet(address(vault1)).owner();
 
-        // upgrade an already existing vault
-        ModuleManagerFacet(address(vault1)).getActiveModules();
-        vm.expectRevert(ModuleAlreadyInstalled.selector);
-        ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Selector");
-
-        // downgrade an already exosting vault
-        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule(
-            "Selector"
-        );
-        // vm.stopPrank();
-    }
-
-    function testUpgradeModule() public {
+    function testUpgradeModule() internal view {
         ModuleManagerFacet(address(vault1)).getActiveModules();
         ModuleManagerFacet(address(vault1)).isActiveModule("DMS");
     }

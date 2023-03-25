@@ -28,6 +28,12 @@ struct FacetAndSelectorData {
     uint256 vaultID;
     // owner of the vault
     address vaultOwner;
+      //last time pinged
+    uint256 lastPing;
+    //backup address
+    address backupAddress;
+    //ping window
+    uint256 pingWindow;
     //Modules
     mapping(string => bool) activeModule;
     mapping(string=>uint256) moduleStorageCounter;
@@ -39,10 +45,6 @@ struct FacetAndSelectorData {
 //DMS_GLOB_DATA
 ////START////
 struct DMSData {
-    //last time pinged
-    uint256 lastPing;
-    //backup address
-    address backupAddress;
     //array of all inheritors
     address[] inheritors;
     //active inheritors

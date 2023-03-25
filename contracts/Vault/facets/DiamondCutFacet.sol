@@ -10,6 +10,7 @@ import {IDiamondCut} from "../../interfaces/IDiamondCut.sol";
 
 import {LibErrors} from "../libraries/LibErrors.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
+import {LibGuards} from "../libraries/LibGuards.sol";
 import "../libraries/LibLayoutSilo.sol";
 import "../libraries/LibStorageBinder.sol";
 
@@ -27,8 +28,7 @@ contract DiamondCutFacet is IDiamondCut {
         address _init,
         bytes calldata _calldata
     ) external override {
-        // restrict upgrades to VaultFactoryDiamond only
-        // if (msg.sender !=IVaultDiamond(address(this)).vaultFactoryDiamond()) revert LibErrors.NoPermissions();
+        LibGuards._onlyVaultOwner();
         LibDiamond.diamondCut(_diamondCut, _init, _calldata);
     }
 }

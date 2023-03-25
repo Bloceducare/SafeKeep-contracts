@@ -98,7 +98,7 @@ contract DMSFacetTest is DDeployments {
         // //TESTS FOR OWNERSHIP TRANSFER AND BACKUP
         address newVault1Owner = mkaddr("NewVault1Owner");
         //transfer ownership to another address
-        v1dmsFacet.transferOwnership(newVault1Owner);
+        v1CoreFacet.transferOwnership(newVault1Owner);
         address newOwner = ownerFacet.owner();
         assertEq(newOwner, newVault1Owner);
         vm.stopPrank();

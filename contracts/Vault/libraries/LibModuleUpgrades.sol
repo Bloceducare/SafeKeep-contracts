@@ -32,9 +32,10 @@ library LibModuleUpgrades {
         if (fsData.activeModule[_name]) revert ModuleAlreadyInstalled();
         //get facet data
         //no need to check for existence in registry as this will revert if it does not exist
+        //this could also be used as factory/registry auth
         IDiamondCut.FacetCut[] memory facetData = IVaultFactory(LibDiamond.vaultFactory()).getFacetCuts(_name);
         //upgrade vault
-        IDiamondCut(address(this)).diamondCut(facetData, address(0), "");
+        LibDiamond.diamondCut(facetData, address(0), "");
 
         fsData.activeModule[_name] = true;
         fsData.activeModules.push(_name);
@@ -58,7 +59,7 @@ library LibModuleUpgrades {
             facetData[i].facetAddress = address(0);
         }
         //downgrade vault
-        IDiamondCut(address(this)).diamondCut(facetData, address(0), "");
+       LibDiamond.diamondCut(facetData, address(0), "");
         fsData.activeModule[_name] = true;
         LibArrayHelpers.removeString(fsData.activeModules, _name);
         emit VaultDowngraded(_name);

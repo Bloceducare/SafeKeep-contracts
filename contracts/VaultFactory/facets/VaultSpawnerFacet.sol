@@ -18,7 +18,7 @@ contract VaultSpawnerFacet is StorageLayout {
 
     error BackupAddressError();
 
-    function createVault(address _vaultOwner, uint256 _startingBal)
+    function createVault(address _vaultOwner, uint256 _startingBal,address _backupAddress, uint256 _backupDelay)
         external
         payable
         returns (address addr)
@@ -40,7 +40,7 @@ contract VaultSpawnerFacet is StorageLayout {
         VaultDiamond vDiamond = new VaultDiamond{
             salt: entropy,
             value: _startingBal
-        }(selectorModuleCut, tokenModuleCut, _vaultOwner);
+        }(selectorModuleCut, tokenModuleCut, _vaultOwner, _backupAddress, _backupDelay,fs.VAULTID);
         addr = address(vDiamond);
         emit VaultCreated(msg.sender, _startingBal, fs.VAULTID);
         fs.VAULTID++;
