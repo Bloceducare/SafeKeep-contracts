@@ -15,6 +15,7 @@ Repo for safekeep finance containing all contract components
     - ERC721Facet
     - ERC1155Facet
     - EtherFacet
+    - CoreFacet
 
 - DMS (aka Dead Man Switch)
     - DMSFacet
