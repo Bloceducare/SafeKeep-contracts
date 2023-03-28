@@ -8,8 +8,7 @@ import {FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
 import {LibStorageBinder} from "../libraries/LibStorageBinder.sol";
 
 contract CoreFacet {
-
-    struct Vault{
+    struct Vault {
         address vaultOwner;
         address backupAddress;
         uint256 vaultID;
@@ -17,36 +16,36 @@ contract CoreFacet {
         uint256 pingWindow;
         string[] modules;
     }
-	///////////////////
-	//WRITE FUNCTIONS//
-	/////////////////
-	//move to Interactionfacet
-	function ping() external {
-		LibGuards._onlyVaultOwner();
-		LibCore._ping();
-	}
 
-	function transferBackup(address _newBackupAddress) public {
-		LibGuards._onlyVaultOwnerOrBackup();
-		LibCore._transferBackup(_newBackupAddress);
-	}
+    ///////////////////
+    //WRITE FUNCTIONS//
+    /////////////////
+    //move to Interactionfacet
+    function ping() external {
+        LibGuards._onlyVaultOwner();
+        LibCore._ping();
+    }
 
-	function transferOwnership(address _newVaultOwner) public {
-		LibGuards._onlyVaultOwner();
-		LibCore._transferOwnership(_newVaultOwner);
-	}
+    function transferBackup(address _newBackupAddress) public {
+        LibGuards._onlyVaultOwnerOrBackup();
+        LibCore._transferBackup(_newBackupAddress);
+    }
 
-	function claimOwnership(address _newBackupAddress) public {
-		LibGuards._enforceIsBackupAddress();
-		LibCore._claimOwnership(_newBackupAddress);
-	}
+    function transferOwnership(address _newVaultOwner) public {
+        LibGuards._onlyVaultOwner();
+        LibCore._transferOwnership(_newVaultOwner);
+    }
+
+    function claimOwnership(address _newBackupAddress) public {
+        LibGuards._enforceIsBackupAddress();
+        LibCore._claimOwnership(_newBackupAddress);
+    }
 
     function execute(address _target, bytes memory _data) external payable {
         LibGuards._onlyVaultOwner();
-      
-        (bool success,) = _target.call{value: msg.value}(_data);
+
+        (bool success, ) = _target.call{value: msg.value}(_data);
         assert(success);
-       
     }
 
     ///////////////////
@@ -54,7 +53,8 @@ contract CoreFacet {
     //////////////////
 
     function getVault() external view returns (Vault memory vault_) {
-        FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
+        FacetAndSelectorData storage fsData = LibStorageBinder
+            ._bindAndReturnFacetStorage();
         vault_.vaultOwner = fsData.vaultOwner;
         vault_.backupAddress = fsData.backupAddress;
         vault_.vaultID = fsData.vaultID;

@@ -58,6 +58,8 @@ contract EtherOpsTests is DDeployments {
         );
         assertEq(v1Inheritor2EtherAlloc, freeEther - 10000000);
 
+        ModuleManagerFacet(vault1).getActiveModules();
+
         //try to withdraw more than available
         freeEther = v1dmsFacet.getUnallocatedEther();
         vm.expectRevert(LibEther.InsufficientEth.selector);
