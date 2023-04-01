@@ -18,5 +18,10 @@ interface IModuleData {
     }
 
     function getActiveModules() external view returns (string[] memory);
-    function isActiveModule(string memory _name) external view returns (bool exists_);
+
+    function isActiveModule(
+        string memory _name
+    ) external view returns (bool exists_);
+
+    function downgradeVaultWithModule(string calldata _name) external;
 }
