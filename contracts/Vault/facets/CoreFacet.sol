@@ -37,7 +37,7 @@ contract CoreFacet {
 	}
 
 	function claimOwnership(address _newBackupAddress) public {
-		LibGuards._enforceIsBackupAddress();
+		LibGuards._onlyBackup();
 		LibCore._claimOwnership(_newBackupAddress);
 	}
 

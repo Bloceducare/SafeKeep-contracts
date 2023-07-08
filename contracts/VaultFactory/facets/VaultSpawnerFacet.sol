@@ -12,7 +12,7 @@ import {FactoryAppStorage, StorageLayout} from "../libraries/LibFactoryAppStorag
 contract VaultSpawnerFacet is StorageLayout {
     event VaultCreated(
         address indexed owner,
-        uint256 indexed startingBalance,
+        address  vaultAddress,
         uint256 vaultID
     );
 
@@ -42,7 +42,7 @@ contract VaultSpawnerFacet is StorageLayout {
             value: _startingBal
         }(selectorModuleCut, tokenModuleCut, _vaultOwner, _backupAddress, _backupDelay,fs.VAULTID);
         addr = address(vDiamond);
-        emit VaultCreated(msg.sender, _startingBal, fs.VAULTID);
+        emit VaultCreated(msg.sender, addr, fs.VAULTID);
         fs.VAULTID++;
     }
 }

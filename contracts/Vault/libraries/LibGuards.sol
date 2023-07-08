@@ -13,20 +13,19 @@ library LibGuards {
 		LibDiamond.enforceIsContractOwner();
 	}
 
-	//check
+	function _onlyBackup() internal view {
+		FacetAndSelectorData storage fsData = LibStorageBinder
+			._bindAndReturnFacetStorage();
+		if (msg.sender != fsData.backupAddress) {
+			revert NotBackupAddress();
+		}
+	}
+
 	function _onlyVaultOwnerOrBackup() internal view {
 		FacetAndSelectorData storage fsData = LibStorageBinder
 			._bindAndReturnFacetStorage();
 		if (msg.sender != fsData.backupAddress && msg.sender != fsData.vaultOwner) {
 			revert NotOwnerOrBackupAddress();
-		}
-	}
-
-	function _enforceIsBackupAddress() internal view {
-		FacetAndSelectorData storage fsData = LibStorageBinder
-			._bindAndReturnFacetStorage();
-		if (msg.sender != fsData.backupAddress) {
-			revert NotBackupAddress();
 		}
 	}
 }
