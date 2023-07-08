@@ -100,7 +100,7 @@ contract DDeployments is Test {
         erc20Facet = new ERC20Facet();
         etherFacet = new EtherFacet();
         switchFacet = new DMSFacet();
-        coreFacet=new CoreFacet();
+        coreFacet = new CoreFacet();
 
         //selector facet
         dCutFacet = new DiamondCutFacet();
@@ -114,10 +114,7 @@ contract DDeployments is Test {
         dCutFactoryFacet = new DiamondCutFactoryFacet();
         dloupeFactoryFacet = new DiamondLoupeFactoryFacet();
         vm.label(address(this), "Factory Lord");
-        vFactoryDiamond = new VaultFactoryDiamond(
-            address(this),
-            address(dCutFactoryFacet)
-        );
+        vFactoryDiamond = new VaultFactoryDiamond(address(this), address(dCutFactoryFacet));
 
         //upgrade factory diamond
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](3);
@@ -141,9 +138,7 @@ contract DDeployments is Test {
 
         //upgrade Selector Module Vault diamond
 
-        IDiamondCut.FacetCut[] memory selectorCut = new IDiamondCut.FacetCut[](
-            4
-        );
+        IDiamondCut.FacetCut[] memory selectorCut = new IDiamondCut.FacetCut[](4);
         selectorCut[0] = IDiamondCut.FacetCut({
             facetAddress: address(dCutFacet),
             action: IDiamondCut.FacetCutAction.Add,
@@ -192,7 +187,7 @@ contract DDeployments is Test {
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: generateSelectors("EtherFacet")
         });
-          TokenCut[4] = IDiamondCut.FacetCut({
+        TokenCut[4] = IDiamondCut.FacetCut({
             facetAddress: address(coreFacet),
             action: IDiamondCut.FacetCutAction.Add,
             functionSelectors: generateSelectors("CoreFacet")
@@ -206,21 +201,16 @@ contract DDeployments is Test {
         selectorName[0] = "Selector";
         selectorName[1] = "Token";
         //Register Selector and Token Modules in Factory
-        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(
-            data,
-            selectorName
-        );
+        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(data, selectorName);
 
         vault1Owner = mkaddr("vault1Owner");
         vault1Inheritor1 = mkaddr("vault1Inheritor1");
         vault1Inheritor2 = mkaddr("vault1Inheritor2");
-        vault1Backup= mkaddr("vault1Backup");
+        vault1Backup = mkaddr("vault1Backup");
 
         //make sure vault1Owner is tx.origin
         vm.prank(address(this), vault1Owner);
-        vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{
-            value: 1 ether
-        }(vault1Owner, 1e18,vault1Backup,180 days);
+        vault1 = VaultSpawnerFacet(address(vFactoryDiamond)).createVault{value: 1 ether}(vault1Owner, 1e18, vault1Backup, 180 days);
 
         //Register DMS Module in factory diamond
 
@@ -231,18 +221,13 @@ contract DDeployments is Test {
             functionSelectors: generateSelectors("DMSFacet")
         });
 
-        IModuleData.ModuleData[] memory DMSdata = new IModuleData.ModuleData[](
-            1
-        );
+        IModuleData.ModuleData[] memory DMSdata = new IModuleData.ModuleData[](1);
         DMSdata[0].facetData = DMSCut;
 
         string[] memory DMSselectorName = new string[](1);
         DMSselectorName[0] = "DMS";
 
-        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(
-            DMSdata,
-            DMSselectorName
-        );
+        ModuleRegistryFacet(address(vFactoryDiamond)).addModules(DMSdata, DMSselectorName);
         //upgrade DMS Module Vault diamond
         vm.prank(vault1Owner);
         ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("DMS");
@@ -257,23 +242,15 @@ contract DDeployments is Test {
         v1CoreFacet = CoreFacet(vault1);
 
         vm.prank(vault1Owner);
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(10000)
-        );
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor1), toSingletonUINT(10000));
     }
-
-
 
     function testUpgradeModule() internal view {
         ModuleManagerFacet(address(vault1)).getActiveModules();
         ModuleManagerFacet(address(vault1)).isActiveModule("DMS");
     }
 
-    function generateSelectors(string memory _facetName)
-        internal
-        returns (bytes4[] memory selectors)
-    {
+    function generateSelectors(string memory _facetName) internal returns (bytes4[] memory selectors) {
         string[] memory cmd = new string[](3);
         cmd[0] = "node";
         cmd[1] = "scripts/genSelectors.js";
@@ -283,9 +260,7 @@ contract DDeployments is Test {
     }
 
     function mkaddr(string memory name) public returns (address) {
-        address addr = address(
-            uint160(uint256(keccak256(abi.encodePacked(name))))
-        );
+        address addr = address(uint160(uint256(keccak256(abi.encodePacked(name)))));
         vm.label(addr, name);
         return addr;
     }

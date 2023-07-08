@@ -9,7 +9,6 @@ error HasExpired();
 error Claimed();
 
 library LibDMSGuards {
-
     function _activeInheritor(address _inheritor) internal view returns (bool active_) {
         DMSData storage dmsData = LibStorageBinder._bindAndReturnDMSStorage();
         if (_inheritor == address(0)) {
@@ -53,7 +52,7 @@ library LibDMSGuards {
     }
 
     function _notExpired() internal view {
-         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
+        FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
         if (block.timestamp - fsData.lastPing > fsData.pingWindow) {
             revert HasExpired();
         }

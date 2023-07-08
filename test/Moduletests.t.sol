@@ -1,13 +1,9 @@
 pragma solidity 0.8.4;
 
-
 import "./DiamondDeployments.sol";
 
-
-contract ModuleTests is DDeployments{
-
-
-        function testDefaultModules() public {
+contract ModuleTests is DDeployments {
+    function testDefaultModules() public {
         // OwnershipFacet(address(vault1)).owner();
 
         vm.startPrank(vault1Owner);
@@ -19,9 +15,6 @@ contract ModuleTests is DDeployments{
         ModuleManagerFacet(address(vault1)).upgradeVaultWithModule("Selector");
 
         // downgrade an already existing vault
-        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule(
-            "Selector"
-        );
-       
+        ModuleManagerFacet(address(vault1)).downgradeVaultWithModule("Selector");
     }
 }

@@ -26,10 +26,7 @@ contract ERC20FacetTest is DDeployments {
 
         //attempt to deposit 2 tokens
         //making sure a failure doesn't revert the whole txn
-        v1ERC20Facet.depositERC20Tokens(
-            toDualAdd(address(erc20t), address(erc20t2)),
-            toDualUINT(maxDepositorBalance + 10, maxDepositorBalance)
-        );
+        v1ERC20Facet.depositERC20Tokens(toDualAdd(address(erc20t), address(erc20t2)), toDualUINT(maxDepositorBalance + 10, maxDepositorBalance));
 
         //confirm deposit
         assertEq(erc20t2.balanceOf(vault1), maxDepositorBalance);
@@ -74,116 +71,51 @@ contract ERC20FacetTest is DDeployments {
         ///ALLOCATIONS
 
         // Allocating a non-existent token
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibDMS.TokenAllocationOverflow.selector,
-                address(erc20t2),
-                100e18
-            )
-        );
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t2),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(100e18)
-        );
+        vm.expectRevert(abi.encodeWithSelector(LibDMS.TokenAllocationOverflow.selector, address(erc20t2), 100e18));
+        v1dmsFacet.allocateERC20Tokens(address(erc20t2), toSingletonAdd(vault1Inheritor1), toSingletonUINT(100e18));
 
         // Allocating to a non-inheritor
         vm.expectRevert(LibDMS.NotInheritor.selector);
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t2),
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(100e18)
-        );
+        v1dmsFacet.allocateERC20Tokens(address(erc20t2), toSingletonAdd(vault1Inheritor2), toSingletonUINT(100e18));
 
         // add inheritor 2
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(1000 wei)
-        );
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor2), toSingletonUINT(1000 wei));
 
         //Allocate normally
         //Allocate all token T1 present in vault 1
         v1erc20BalanceT1 = erc20t.balanceOf(vault1);
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(v1erc20BalanceT1)
-        );
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor2), toSingletonUINT(v1erc20BalanceT1));
 
         //try to allocate token T1 to the first inheritor
         //should overflow
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibDMS.TokenAllocationOverflow.selector,
-                address(erc20t),
-                50e18
-            )
-        );
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(50e18)
-        );
+        vm.expectRevert(abi.encodeWithSelector(LibDMS.TokenAllocationOverflow.selector, address(erc20t), 50e18));
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(50e18));
 
         //free up 50 tokens from inheritor2 by unallocating them
-        uint256 inheritor2T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(
-            vault1Inheritor2,
-            address(erc20t)
-        );
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(inheritor2T1Alloc - 50e18)
-        );
+        uint256 inheritor2T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(vault1Inheritor2, address(erc20t));
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor2), toSingletonUINT(inheritor2T1Alloc - 50e18));
 
         //allocate to inheritor1 normally now
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(50e18)
-        );
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(50e18));
 
         // confirm allocation
-        assertEq(
-            v1dmsFacet.inheritorERC20TokenAllocation(
-                vault1Inheritor1,
-                address(erc20t)
-            ),
-            50e18
-        );
+        assertEq(v1dmsFacet.inheritorERC20TokenAllocation(vault1Inheritor1, address(erc20t)), 50e18);
 
         // //vault owner cannot withdraw any T1 tokens
         vm.expectRevert(InsufficientTokens.selector);
-        v1ERC20Facet.withdrawERC20Token(
-            address(erc20t),
-            v1erc20BalanceT1,
-            depositor1
-        );
+        v1ERC20Facet.withdrawERC20Token(address(erc20t), v1erc20BalanceT1, depositor1);
 
         //unallocate from an inheritor to free up some tokens
-        inheritor2T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(
-            vault1Inheritor2,
-            address(erc20t)
-        );
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(inheritor2T1Alloc - 20e18)
-        );
+        inheritor2T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(vault1Inheritor2, address(erc20t));
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor2), toSingletonUINT(inheritor2T1Alloc - 20e18));
 
         // //withdraw all free tokens
         uint256 unall = v1dmsFacet.getUnallocatedTokens(address(erc20t));
         v1ERC20Facet.withdrawERC20Token(address(erc20t), unall, depositor1);
 
         // //vault T1 balance should now be made up of all inheritor allocations ONLY
-        uint256 inheritor1T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(
-            vault1Inheritor1,
-            address(erc20t)
-        );
-        inheritor2T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(
-            vault1Inheritor2,
-            address(erc20t)
-        );
+        uint256 inheritor1T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(vault1Inheritor1, address(erc20t));
+        inheritor2T1Alloc = v1dmsFacet.inheritorERC20TokenAllocation(vault1Inheritor2, address(erc20t));
         v1erc20BalanceT1 = erc20t.balanceOf(vault1);
         assertEq(v1erc20BalanceT1, inheritor1T1Alloc + inheritor2T1Alloc);
     }

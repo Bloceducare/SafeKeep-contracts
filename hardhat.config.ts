@@ -1,15 +1,14 @@
 /* global task ethers */
 
-import '@typechain/hardhat'
-import '@nomiclabs/hardhat-ethers'
-import '@nomiclabs/hardhat-waffle'
+import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
+import "@nomiclabs/hardhat-waffle";
 //import '@nomiclabs/hardhat-truffle5'
-import '@nomiclabs/hardhat-etherscan'
+import "@nomiclabs/hardhat-etherscan";
 
-require('dotenv').config()
-require('solidity-coverage')
+require("dotenv").config();
+require("solidity-coverage");
 // require('./tasks/generateDiamondABI.js')
-
 
 // You have to export an object to set up your config
 // This object can have the following optional entries:
@@ -30,7 +29,7 @@ module.exports = {
       },
       blockGasLimit: 20000000,
       timeout: 120000,
-      gas: 'auto',
+      gas: "auto",
     },
     localhost: {
       timeout: 8000000,
@@ -44,7 +43,7 @@ module.exports = {
     },
   },
   gasReporter: {
-    currency: 'USD',
+    currency: "USD",
     gasPrice: 100,
     enabled: false,
   },
@@ -57,7 +56,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: '0.8.1',
+        version: "0.8.1",
         settings: {
           optimizer: {
             enabled: true,
@@ -67,4 +66,4 @@ module.exports = {
       },
     ],
   },
-}
+};

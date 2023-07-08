@@ -8,16 +8,16 @@ import {LibDiamond} from "../libraries/LibDiamond.sol";
 library LibEther {
     error InsufficientEth();
     error EthWithdrawalError();
-error AmountMismatch();
+    error AmountMismatch();
 
- event EthDeposited(uint256 _amount,address _from, uint256 _vaultID);
-  event EthWithdrawn(uint256 _amount,address _to, uint256 _vaultID);
+    event EthDeposited(uint256 _amount, address _from, uint256 _vaultID);
+    event EthWithdrawn(uint256 _amount, address _to, uint256 _vaultID);
 
- function _depositEther(uint256 _amount) internal {
+    function _depositEther(uint256 _amount) internal {
         if (_amount != msg.value) {
             revert AmountMismatch();
         }
-        emit EthDeposited(_amount,msg.sender, LibDiamond.vaultID());
+        emit EthDeposited(_amount, msg.sender, LibDiamond.vaultID());
     }
 
     function _withdrawEth(uint256 _amount, address _to) internal {
@@ -30,13 +30,11 @@ error AmountMismatch();
             if (_amount > availableEther) revert InsufficientEth();
         }
         if (availableEther >= _amount) {
-            (bool success,) = _to.call{value: _amount}("");
+            (bool success, ) = _to.call{value: _amount}("");
             assert(success);
         } else {
             revert EthWithdrawalError();
         }
-        emit EthWithdrawn(_amount,_to, LibDiamond.vaultID());
+        emit EthWithdrawn(_amount, _to, LibDiamond.vaultID());
     }
-
-
 }

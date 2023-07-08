@@ -50,8 +50,6 @@ contract DMSFacet {
         uint256 amount;
     }
 
-   
-
     function inspectVault() public view returns (VaultInfo memory info) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
@@ -123,11 +121,7 @@ contract DMSFacet {
         }
     }
 
-    function getAllocatedERC721Tokens(address _inheritor)
-        public
-        view
-        returns (AllocatedERC721Tokens[] memory allocated)
-    {
+    function getAllocatedERC721Tokens(address _inheritor) public view returns (AllocatedERC721Tokens[] memory allocated) {
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         LibDMSGuards._activeInheritor(_inheritor);
         uint256 tokenAddressCount = vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor].length;
@@ -153,11 +147,7 @@ contract DMSFacet {
         return vaultData.inheritorAllocatedERC721TokenAddresses[_inheritor];
     }
 
-    function getAllocatedERC1155Tokens(address _token, address _inheritor)
-        public
-        view
-        returns (AllocatedERC1155Tokens[] memory alloc_)
-    {
+    function getAllocatedERC1155Tokens(address _token, address _inheritor) public view returns (AllocatedERC1155Tokens[] memory alloc_) {
         LibDMSGuards._activeInheritor(_inheritor);
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokenCount = vaultData.inheritorAllocatedTokenIds[_inheritor][_token].length;
@@ -171,11 +161,7 @@ contract DMSFacet {
         }
     }
 
-    function getAllAllocatedERC1155Tokens(address _inheritor)
-        public
-        view
-        returns (AllAllocatedERC1155Tokens[] memory alloc_)
-    {
+    function getAllAllocatedERC1155Tokens(address _inheritor) public view returns (AllAllocatedERC1155Tokens[] memory alloc_) {
         LibDMSGuards._activeInheritor(_inheritor);
         DMSData storage vaultData = LibStorageBinder._bindAndReturnDMSStorage();
         uint256 tokenAddressCount = vaultData.inheritorAllocatedERC1155TokenAddresses[_inheritor].length;
@@ -219,14 +205,20 @@ contract DMSFacet {
         LibDMS._allocateEther(_inheritors, _ethShares);
     }
 
-    function allocateERC20Tokens(address token, address[] calldata _inheritors, uint256[] calldata _shares) external {
+    function allocateERC20Tokens(
+        address token,
+        address[] calldata _inheritors,
+        uint256[] calldata _shares
+    ) external {
         LibGuards._onlyVaultOwner();
         LibDMS._allocateERC20Tokens(token, _inheritors, _shares);
     }
 
-    function allocateERC721Tokens(address token, address[] calldata _inheritors, uint256[] calldata _tokenIDs)
-        external
-    {
+    function allocateERC721Tokens(
+        address token,
+        address[] calldata _inheritors,
+        uint256[] calldata _tokenIDs
+    ) external {
         LibGuards._onlyVaultOwner();
         LibDMS._allocateERC721Tokens(token, _inheritors, _tokenIDs);
     }
@@ -241,13 +233,9 @@ contract DMSFacet {
         LibDMS._allocateERC1155Tokens(token, _inheritors, _tokenIDs, _amounts);
     }
 
-//move to Interactionfacet
-
-
+    //move to Interactionfacet
 
     function claimAllAllocations() external {
         LibDMS._claimAll();
     }
-
-
 }

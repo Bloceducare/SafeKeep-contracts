@@ -18,28 +18,18 @@ contract DMSFacetTest is DDeployments {
         erc721t.setApprovalForAll(vault1, true);
 
         //deposit
-        v1ERC20Facet.depositERC20Tokens(
-            toSingletonAdd(address(erc20t)),
-            toSingletonUINT(100e18)
-        );
+        v1ERC20Facet.depositERC20Tokens(toSingletonAdd(address(erc20t)), toSingletonUINT(100e18));
 
         v1ERC721Facet.depositERC721Tokens(address(erc721t), toSingletonUINT(0));
 
-        v1ERC1155Facet.batchDepositERC1155Tokens(
-            address(erc1155t),
-            toSingletonUINT(0),
-            toSingletonUINT(2)
-        );
+        v1ERC1155Facet.batchDepositERC1155Tokens(address(erc1155t), toSingletonUINT(0), toSingletonUINT(2));
 
         vm.stopPrank();
 
         vm.startPrank(vault1Owner);
         //test inheritor addition and removal
         //add another inheritor
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(1000 wei)
-        );
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor2), toSingletonUINT(1000 wei));
 
         DMSFacet.VaultInfo memory vInfo = v1dmsFacet.inspectVault();
         assertEq(vInfo.inheritors.length, 2);
@@ -50,26 +40,13 @@ contract DMSFacetTest is DDeployments {
 
         //allocate some erc20,erc721 and erc1155 tokens to an inheritor
         //erc20
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(100e18)
-        );
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(100e18));
 
         // //erc721
-        v1dmsFacet.allocateERC721Tokens(
-            address(erc721t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(0)
-        );
+        v1dmsFacet.allocateERC721Tokens(address(erc721t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(0));
 
         // //erc1155
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(0),
-            toSingletonUINT(2)
-        );
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(0), toSingletonUINT(2));
 
         // //confirm allocations
         v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor1);
@@ -79,18 +56,9 @@ contract DMSFacetTest is DDeployments {
         v1dmsFacet.removeInheritors(toSingletonAdd(vault1Inheritor1));
 
         //re-confirm allocations
-        assertEq(
-            v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor1).length,
-            0
-        );
-        assertEq(
-            v1dmsFacet.getAllocatedERC20Tokens(vault1Inheritor1).length,
-            0
-        );
-        assertEq(
-            v1dmsFacet.getAllocatedERC721Tokens(vault1Inheritor1).length,
-            0
-        );
+        assertEq(v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor1).length, 0);
+        assertEq(v1dmsFacet.getAllocatedERC20Tokens(vault1Inheritor1).length, 0);
+        assertEq(v1dmsFacet.getAllocatedERC721Tokens(vault1Inheritor1).length, 0);
 
         vInfo = v1dmsFacet.inspectVault();
         assertEq(vInfo.inheritors.length, 1);
@@ -105,32 +73,16 @@ contract DMSFacetTest is DDeployments {
         vm.startPrank(newVault1Owner);
 
         // //add inheritor1 again and allocate
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(10000000 wei)
-        );
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor1), toSingletonUINT(10000000 wei));
 
         // //erc20
-        v1dmsFacet.allocateERC20Tokens(
-            address(erc20t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(100e18)
-        );
+        v1dmsFacet.allocateERC20Tokens(address(erc20t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(100e18));
 
         // //erc721
-        v1dmsFacet.allocateERC721Tokens(
-            address(erc721t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(0)
-        );
+        v1dmsFacet.allocateERC721Tokens(address(erc721t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(0));
 
         // //erc1155
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t),
-            toSingletonAdd(vault1Inheritor1),
-            toSingletonUINT(0),
-            toSingletonUINT(2)
-        );
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t), toSingletonAdd(vault1Inheritor1), toSingletonUINT(0), toSingletonUINT(2));
 
         vm.stopPrank();
 

@@ -2,7 +2,6 @@ pragma solidity 0.8.4;
 
 //A record of data layouts...these are immutable and cannot be extended
 
-
 ///DIAMOND_FACET_SELECTOR
 ////START/////
 struct FacetAddressAndPosition {
@@ -19,7 +18,7 @@ struct FacetAndSelectorData {
     mapping(bytes4 => FacetAddressAndPosition) selectorToFacetAndPosition;
     // maps facet addresses to function selectors
     mapping(address => FacetFunctionSelectors) facetFunctionSelectors;
-        // Used to query if a contract implements an interface.
+    // Used to query if a contract implements an interface.
     // Used to implement ERC-165.
     mapping(bytes4 => bool) supportedInterfaces;
     // facet addresses
@@ -28,7 +27,7 @@ struct FacetAndSelectorData {
     uint256 vaultID;
     // owner of the vault
     address vaultOwner;
-      //last time pinged
+    //last time pinged
     uint256 lastPing;
     //backup address
     address backupAddress;
@@ -36,11 +35,10 @@ struct FacetAndSelectorData {
     uint256 pingWindow;
     //Modules
     mapping(string => bool) activeModule;
-    mapping(string=>uint256) moduleStorageCounter;
+    mapping(string => uint256) moduleStorageCounter;
     string[] activeModules;
 }
 /////STOP/////
-
 
 //DMS_GLOB_DATA
 ////START////
@@ -72,6 +70,3 @@ struct DMSData {
     mapping(address => bool) claimed;
 }
 ////STOP////
-
-
-

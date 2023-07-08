@@ -35,23 +35,11 @@ contract ERC1155FacetTest is DDeployments {
         //batch deposit
         //make sure a failure does not reverts the whole txn
         vm.expectRevert(stdError.arithmeticError);
-        v1ERC1155Facet.batchDepositERC1155Tokens(
-            address(erc1155t),
-            toTriUINT(1, 2, 3),
-            toTriUINT(2, 2, 5)
-        );
+        v1ERC1155Facet.batchDepositERC1155Tokens(address(erc1155t), toTriUINT(1, 2, 3), toTriUINT(2, 2, 5));
 
         //deposit tokens normally
-        v1ERC1155Facet.batchDepositERC1155Tokens(
-            address(erc1155t),
-            toTriUINT(1, 2, 3),
-            toTriUINT(2, 2, 2)
-        );
-        v1ERC1155Facet.batchDepositERC1155Tokens(
-            address(erc1155t2),
-            toTriUINT(1, 2, 3),
-            toTriUINT(2, 2, 2)
-        );
+        v1ERC1155Facet.batchDepositERC1155Tokens(address(erc1155t), toTriUINT(1, 2, 3), toTriUINT(2, 2, 2));
+        v1ERC1155Facet.batchDepositERC1155Tokens(address(erc1155t2), toTriUINT(1, 2, 3), toTriUINT(2, 2, 2));
 
         vm.stopPrank();
 
@@ -59,96 +47,39 @@ contract ERC1155FacetTest is DDeployments {
 
         ///ALLOCATIONS
         //try to allocate a token with overflowing balance
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibDMS.TokenAllocationOverflow.selector,
-                address(erc1155t),
-                1
-            )
-        );
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t),
-            toDualAdd(vault1Inheritor1, vault1Inheritor2),
-            toDualUINT(0, 1),
-            toDualUINT(3, 3)
-        );
+        vm.expectRevert(abi.encodeWithSelector(LibDMS.TokenAllocationOverflow.selector, address(erc1155t), 1));
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t), toDualAdd(vault1Inheritor1, vault1Inheritor2), toDualUINT(0, 1), toDualUINT(3, 3));
 
         //add inheritor2
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(1000 wei)
-        );
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor2), toSingletonUINT(1000 wei));
 
         //allocate normally
         //allocating id 0 and 1
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t),
-            toDualAdd(vault1Inheritor1, vault1Inheritor2),
-            toDualUINT(0, 1),
-            toDualUINT(2, 2)
-        );
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t2),
-            toDualAdd(vault1Inheritor1, vault1Inheritor2),
-            toDualUINT(0, 1),
-            toDualUINT(2, 2)
-        );
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t), toDualAdd(vault1Inheritor1, vault1Inheritor2), toDualUINT(0, 1), toDualUINT(2, 2));
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t2), toDualAdd(vault1Inheritor1, vault1Inheritor2), toDualUINT(0, 1), toDualUINT(2, 2));
 
         //allocating id 2 and 3
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t),
-            toDualAdd(vault1Inheritor1, vault1Inheritor2),
-            toDualUINT(2, 3),
-            toDualUINT(2, 2)
-        );
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t2),
-            toDualAdd(vault1Inheritor1, vault1Inheritor2),
-            toDualUINT(2, 3),
-            toDualUINT(2, 2)
-        );
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t), toDualAdd(vault1Inheritor1, vault1Inheritor2), toDualUINT(2, 3), toDualUINT(2, 2));
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t2), toDualAdd(vault1Inheritor1, vault1Inheritor2), toDualUINT(2, 3), toDualUINT(2, 2));
 
         //confirm storage
-        DMSFacet.AllAllocatedERC1155Tokens[]
-            memory inheritor1Allocs = v1dmsFacet.getAllAllocatedERC1155Tokens(
-                vault1Inheritor1
-            );
-        DMSFacet.AllAllocatedERC1155Tokens[]
-            memory inheritor2Allocs = v1dmsFacet.getAllAllocatedERC1155Tokens(
-                vault1Inheritor2
-            );
+        DMSFacet.AllAllocatedERC1155Tokens[] memory inheritor1Allocs = v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor1);
+        DMSFacet.AllAllocatedERC1155Tokens[] memory inheritor2Allocs = v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor2);
 
         //2 tokens allocated
         assertEq(inheritor2Allocs.length, 2);
 
         //cannot withdraw allocated tokens
         vm.expectRevert("UnAllocate TokensFirst");
-        v1ERC1155Facet.withdrawERC1155Token(
-            address(erc1155t2),
-            3,
-            2,
-            depositor1
-        );
+        v1ERC1155Facet.withdrawERC1155Token(address(erc1155t2), 3, 2, depositor1);
 
         //make sure unallocation removes address completely
         //completely unallocating tokenID 3 from inheritor2
-        v1dmsFacet.allocateERC1155Tokens(
-            address(erc1155t2),
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(3),
-            toSingletonUINT(0)
-        );
-        inheritor2Allocs = v1dmsFacet.getAllAllocatedERC1155Tokens(
-            vault1Inheritor2
-        );
+        v1dmsFacet.allocateERC1155Tokens(address(erc1155t2), toSingletonAdd(vault1Inheritor2), toSingletonUINT(3), toSingletonUINT(0));
+        inheritor2Allocs = v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor2);
         assertEq(inheritor2Allocs.length, 1);
 
         //can successfully withdraw now
-        v1ERC1155Facet.withdrawERC1155Token(
-            address(erc1155t2),
-            3,
-            2,
-            depositor1
-        );
+        v1ERC1155Facet.withdrawERC1155Token(address(erc1155t2), 3, 2, depositor1);
     }
 }

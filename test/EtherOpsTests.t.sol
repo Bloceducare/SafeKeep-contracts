@@ -16,15 +16,10 @@ contract EtherOpsTests is DDeployments {
 
         // get ether allocation data for all inheritors
         // only one inheritor currently present
-        DMSFacet.AllInheritorEtherAllocs[]
-            memory eAllocs = new DMSFacet.AllInheritorEtherAllocs[](1);
-        eAllocs[0] = DMSFacet.AllInheritorEtherAllocs({
-            inheritor: vault1Inheritor1,
-            weiAlloc: 10000
-        });
+        DMSFacet.AllInheritorEtherAllocs[] memory eAllocs = new DMSFacet.AllInheritorEtherAllocs[](1);
+        eAllocs[0] = DMSFacet.AllInheritorEtherAllocs({inheritor: vault1Inheritor1, weiAlloc: 10000});
         //get data onchain
-        DMSFacet.AllInheritorEtherAllocs[] memory onchainAllocs = v1dmsFacet
-            .allEtherAllocations();
+        DMSFacet.AllInheritorEtherAllocs[] memory onchainAllocs = v1dmsFacet.allEtherAllocations();
         assertEq(onchainAllocs[0].inheritor, eAllocs[0].inheritor);
         assertEq(onchainAllocs[0].weiAlloc, eAllocs[0].weiAlloc);
 
@@ -37,25 +32,12 @@ contract EtherOpsTests is DDeployments {
         uint256 v1Inheritor2eAlloc = freeEther - 10000000;
 
         //try to allocate more thn available ether
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                LibDMS.EtherAllocationOverflow.selector,
-                2 ether - freeEther
-            )
-        );
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(2 ether)
-        );
+        vm.expectRevert(abi.encodeWithSelector(LibDMS.EtherAllocationOverflow.selector, 2 ether - freeEther));
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor2), toSingletonUINT(2 ether));
 
         //allocate normally
-        v1dmsFacet.addInheritors(
-            toSingletonAdd(vault1Inheritor2),
-            toSingletonUINT(v1Inheritor2eAlloc)
-        );
-        uint256 v1Inheritor2EtherAlloc = v1dmsFacet.inheritorEtherAllocation(
-            vault1Inheritor2
-        );
+        v1dmsFacet.addInheritors(toSingletonAdd(vault1Inheritor2), toSingletonUINT(v1Inheritor2eAlloc));
+        uint256 v1Inheritor2EtherAlloc = v1dmsFacet.inheritorEtherAllocation(vault1Inheritor2);
         assertEq(v1Inheritor2EtherAlloc, freeEther - 10000000);
 
         //try to withdraw more than available
@@ -65,10 +47,7 @@ contract EtherOpsTests is DDeployments {
 
         //unallocate from both inheritors
         //ORDER matters(not really anymore)
-        v1dmsFacet.allocateEther(
-            toDualAdd(vault1Inheritor2, vault1Inheritor1),
-            toDualUINT(v1Inheritor2eAlloc - 500, 10000 - 500)
-        );
+        v1dmsFacet.allocateEther(toDualAdd(vault1Inheritor2, vault1Inheritor1), toDualUINT(v1Inheritor2eAlloc - 500, 10000 - 500));
         v1EtherFacet.withdrawEther(freeEther + 1000, vault1Owner);
 
         //no more free ether

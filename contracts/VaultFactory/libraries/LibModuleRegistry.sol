@@ -12,6 +12,7 @@ error NonExistentModule(string moduleName);
 
 library LibModuleRegistry {
     event ModuleAdded(string indexed _name, IModuleData.ModuleData _module);
+
     //allow Proxy Factory admin(multisig) to add modules to Module Registry
 
     function _addModules(IModuleData.ModuleData[] calldata _modules, string[] calldata _names) internal {
@@ -26,6 +27,7 @@ library LibModuleRegistry {
             emit ModuleAdded(_names[i], _modules[i]);
         }
     }
+
     //to-do _removeModules
 
     function _getModules(string[] memory _names) internal view returns (IModuleData.ModuleData[] memory modules_) {

@@ -6,7 +6,7 @@ struct FactoryAppStorage {
     //master vaultID
     uint256 VAULTID;
     //human readable names to Module data
-    mapping(string=>IModuleData.ModuleData) masterModules;
+    mapping(string => IModuleData.ModuleData) masterModules;
 }
 
 library LibFactoryAppStorage {

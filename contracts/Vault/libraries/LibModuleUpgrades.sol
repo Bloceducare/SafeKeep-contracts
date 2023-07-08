@@ -59,7 +59,7 @@ library LibModuleUpgrades {
             facetData[i].facetAddress = address(0);
         }
         //downgrade vault
-       LibDiamond.diamondCut(facetData, address(0), "");
+        LibDiamond.diamondCut(facetData, address(0), "");
         fsData.activeModule[_name] = true;
         LibArrayHelpers.removeString(fsData.activeModules, _name);
         emit VaultDowngraded(_name);
