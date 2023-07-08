@@ -6,4 +6,6 @@ library LibErrors{
 error LengthMismatch();
 error EmptyArray();
 error NoPermissions();
+error NoZeroAddress();
+
 }

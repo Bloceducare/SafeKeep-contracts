@@ -1,0 +1,6 @@
+DMSFacetTest:testDMSOperations() (gas: 1248729)
+ERC1155FacetTest:testERC1155VaultOperations() (gas: 1524302)
+ERC20FacetTest:testERC20VaultOperations() (gas: 1086804)
+ERC721FacetTest:testERC721VaultOperations() (gas: 1272205)
+EtherOpsTests:testAllVaultEtherOperations() (gas: 370797)
+ModuleTests:testDefaultModules() (gas: 285130)

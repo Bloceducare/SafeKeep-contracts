@@ -8,6 +8,9 @@ remappings = [
     'eth-gas-reporter/=node_modules/eth-gas-reporter/',
     'hardhat/=node_modules/hardhat/',
 ]
+via_ir = false
 verbosity= 5
 ffi=true
+optimizer = true
+optimizer_runs = 200
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

@@ -12,7 +12,7 @@ import "../facets/DMSFacet.sol";
 
 //~(keccak256(abi.encode(slot,200)))
 library LibStorageBinder {
-    bytes32 constant SLOT_SALT = keccak256(type(LibKeep).creationCode);
+    bytes32 constant SLOT_SALT = keccak256('storage_offset_salt');
 
     function _getStorageSlot(string memory _facetName1)
         internal
@@ -28,15 +28,15 @@ library LibStorageBinder {
     ) internal pure returns (bytes32 slot) {
         slot = keccak256(bytes(abi.encode(_facetName1, _facetName2)));
     }
-      function _getStorageSlot(
-        string memory _facetName1,
-        string memory _facetName2,
-        string memory _facetName3,
-        string memory _facetName4,
-        string memory _facetName5
-    ) internal pure returns (bytes32 slot) {
-        slot = keccak256(bytes(abi.encode(_facetName1, _facetName2,_facetName3,_facetName4,_facetName5)));
-    }
+    //   function _getStorageSlot(
+    //     string memory _facetName1,
+    //     string memory _facetName2,
+    //     string memory _facetName3,
+    //     string memory _facetName4,
+    //     string memory _facetName5
+    // ) internal pure returns (bytes32 slot) {
+    //     slot = keccak256(bytes(abi.encode(_facetName1, _facetName2,_facetName3,_facetName4,_facetName5)));
+    // }
 
     function _bindAndReturnFacetStorage()
         internal

@@ -57,9 +57,9 @@ contract DMSFacet {
         FacetAndSelectorData storage fsData = LibStorageBinder._bindAndReturnFacetStorage();
         info.owner = fsData.vaultOwner;
         info.weiBalance = address(this).balance;
-        info.lastPing = vaultData.lastPing;
+        info.lastPing = fsData.lastPing;
         info.id = fsData.vaultID;
-        info.backup = vaultData.backupAddress;
+        info.backup = fsData.backupAddress;
         info.inheritors = vaultData.inheritors;
     }
 
@@ -241,28 +241,13 @@ contract DMSFacet {
         LibDMS._allocateERC1155Tokens(token, _inheritors, _tokenIDs, _amounts);
     }
 
-    function transferOwnership(address _newVaultOwner) public {
-        LibGuards._onlyVaultOwner();
-        LibDMS._transferOwnerShip(_newVaultOwner);
-    }
+//move to Interactionfacet
 
-    function transferBackup(address _newBackupAddress) public {
-        LibDMSGuards._onlyVaultOwnerOrBackup();
-        LibDMS._transferBackup(_newBackupAddress);
-    }
 
-    //CLAIMS
-    function claimOwnership(address _newBackupAddress) public {
-        LibDMSGuards._enforceIsBackupAddress();
-        LibDMS._claimOwnership(_newBackupAddress);
-    }
 
     function claimAllAllocations() external {
         LibDMS._claimAll();
     }
 
-    function ping() external {
-        LibGuards._onlyVaultOwner();
-        LibDMS._ping();
-    }
+
 }

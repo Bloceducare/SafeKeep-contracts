@@ -1,10 +1,9 @@
 import "./DiamondDeployments.sol";
 
 import "../contracts/Vault/libraries/LibDMS.sol";
-import "../contracts/Vault/facets/VaultFacet.sol";
 
-contract VaultFacetTest is DDeployments {
-    function testVaultOperations() public {
+contract DMSFacetTest is DDeployments {
+    function testDMSOperations() public {
         address depositor1 = mkaddr("depositor1");
         //mint some tokens to depositor1
         vm.startPrank(depositor1);
@@ -37,99 +36,96 @@ contract VaultFacetTest is DDeployments {
         vm.startPrank(vault1Owner);
         //test inheritor addition and removal
         //add another inheritor
-        v1VaultFacet.addInheritors(
+        v1dmsFacet.addInheritors(
             toSingletonAdd(vault1Inheritor2),
             toSingletonUINT(1000 wei)
         );
-        VaultFacet.VaultInfo memory vInfo = v1VaultFacet.inspectVault();
+
+        DMSFacet.VaultInfo memory vInfo = v1dmsFacet.inspectVault();
         assertEq(vInfo.inheritors.length, 2);
 
         //cannot remove a non existent inheritor
         vm.expectRevert(LibDMS.NotInheritor.selector);
-        v1VaultFacet.removeInheritors(toSingletonAdd(mkaddr("non-existent")));
+        v1dmsFacet.removeInheritors(toSingletonAdd(mkaddr("non-existent")));
 
         //allocate some erc20,erc721 and erc1155 tokens to an inheritor
         //erc20
-        v1VaultFacet.allocateERC20Tokens(
+        v1dmsFacet.allocateERC20Tokens(
             address(erc20t),
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(100e18)
         );
 
-        //erc721
-        v1VaultFacet.allocateERC721Tokens(
+        // //erc721
+        v1dmsFacet.allocateERC721Tokens(
             address(erc721t),
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(0)
         );
 
-        //erc1155
-        v1VaultFacet.allocateERC1155Tokens(
+        // //erc1155
+        v1dmsFacet.allocateERC1155Tokens(
             address(erc1155t),
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(0),
             toSingletonUINT(2)
         );
 
-        //confirm allocations
-        v1ERC1155Facet.getAllAllocatedERC1155Tokens(vault1Inheritor1);
-        v1ERC20Facet.getAllocatedERC20Tokens(vault1Inheritor1);
-        v1ERC721Facet.getAllocatedERC721Tokens(vault1Inheritor1);
+        // //confirm allocations
+        v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor1);
+        v1dmsFacet.getAllocatedERC20Tokens(vault1Inheritor1);
+        v1dmsFacet.getAllocatedERC721Tokens(vault1Inheritor1);
 
-        v1VaultFacet.removeInheritors(toSingletonAdd(vault1Inheritor1));
+        v1dmsFacet.removeInheritors(toSingletonAdd(vault1Inheritor1));
 
         //re-confirm allocations
         assertEq(
-            v1ERC1155Facet
-                .getAllAllocatedERC1155Tokens(vault1Inheritor1)
-                .length,
+            v1dmsFacet.getAllAllocatedERC1155Tokens(vault1Inheritor1).length,
             0
         );
         assertEq(
-            v1ERC20Facet.getAllocatedERC20Tokens(vault1Inheritor1).length,
+            v1dmsFacet.getAllocatedERC20Tokens(vault1Inheritor1).length,
             0
         );
         assertEq(
-            v1ERC721Facet.getAllocatedERC721Tokens(vault1Inheritor1).length,
+            v1dmsFacet.getAllocatedERC721Tokens(vault1Inheritor1).length,
             0
         );
 
-        vInfo = v1VaultFacet.inspectVault();
+        vInfo = v1dmsFacet.inspectVault();
         assertEq(vInfo.inheritors.length, 1);
 
+        // //TESTS FOR OWNERSHIP TRANSFER AND BACKUP
+        address newVault1Owner = mkaddr("NewVault1Owner");
+        //transfer ownership to another address
+        v1CoreFacet.transferOwnership(newVault1Owner);
+        address newOwner = ownerFacet.owner();
+        assertEq(newOwner, newVault1Owner);
+        vm.stopPrank();
+        vm.startPrank(newVault1Owner);
 
-//TESTS FOR OWNERSHIP TRANSFER AND BACKUP 
-address newVault1Owner=mkaddr('NewVault1Owner');
-//transfer ownership to another address
-v1VaultFacet.transferOwnership(newVault1Owner);
-address newOwner=v1VaultFacet.vaultOwner();
-assertEq(newOwner,newVault1Owner);
-vm.stopPrank();
-vm.startPrank(newVault1Owner);
-
-
-        //add inheritor1 again and allocate
-         v1VaultFacet.addInheritors(
+        // //add inheritor1 again and allocate
+        v1dmsFacet.addInheritors(
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(10000000 wei)
         );
 
-         //erc20
-        v1VaultFacet.allocateERC20Tokens(
+        // //erc20
+        v1dmsFacet.allocateERC20Tokens(
             address(erc20t),
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(100e18)
         );
 
-        //erc721
-        v1VaultFacet.allocateERC721Tokens(
+        // //erc721
+        v1dmsFacet.allocateERC721Tokens(
             address(erc721t),
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(0)
         );
 
-        //erc1155
-        v1VaultFacet.allocateERC1155Tokens(
+        // //erc1155
+        v1dmsFacet.allocateERC1155Tokens(
             address(erc1155t),
             toSingletonAdd(vault1Inheritor1),
             toSingletonUINT(0),
@@ -138,13 +134,13 @@ vm.startPrank(newVault1Owner);
 
         vm.stopPrank();
 
-        //attempt to claim
-        vm.warp(block.timestamp+190 days);
+        // //attempt to claim
+        vm.warp(block.timestamp + 190 days);
         vm.prank(vault1Inheritor1);
-        v1VaultFacet.claimAllAllocations();
-        //ALSO TEST BACKUP-OWNER RECLAMATION HERE
-vm.prank(vault1Backup);
-v1VaultFacet.claimOwnership(mkaddr('newBackup'));
-//There should be a timelock after reclamation before a backup can make vault changes
+        v1dmsFacet.claimAllAllocations();
+        // //ALSO TEST BACKUP-OWNER RECLAMATION HERE
+        // vm.prank(vault1Backup);
+        // v1dmsFacet.claimOwnership(mkaddr("newBackup"));
+        //There should be a timelock after reclamation before a backup can make vault changes
     }
 }
