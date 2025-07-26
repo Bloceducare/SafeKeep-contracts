@@ -4,8 +4,7 @@ import {LibDMS} from "./LibDMS.sol";
 import {IERC721} from "../../interfaces/IERC721.sol";
 import {IERC1155} from "../../interfaces/IERC1155.sol";
 import {IERC20} from "../../interfaces/IERC20.sol";
-import {FacetAndSelectorData} from "../libraries/LibLayoutSilo.sol";
-import {LibStorageBinder} from "../libraries/LibStorageBinder.sol";
+
 import {LibModuleManager} from "../libraries/LibModuleManager.sol";
 import {LibErrors} from "../libraries/LibErrors.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";

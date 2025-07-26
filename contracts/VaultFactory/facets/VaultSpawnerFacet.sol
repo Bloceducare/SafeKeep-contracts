@@ -23,8 +23,14 @@ contract VaultSpawnerFacet is StorageLayout {
         if (_startingBal > 0) {
             assert(_startingBal == msg.value);
         }
-        //spawn contract
-        bytes32 entropy = keccak256(abi.encode(_vaultOwner, fs.VAULTID));
+        // Generate deterministic salt for CREATE2 using efficient inline assembly hashing
+        uint256 vaultId = fs.VAULTID;
+        bytes32 entropy;
+        assembly {
+            mstore(0x00, _vaultOwner)
+            mstore(0x20, vaultId)
+            entropy := keccak256(0x00, 0x40)
+        }
 
         //get Selector and Token Module FacetCuts
         IDiamondCut.FacetCut[] storage selectorModuleCut = fs.masterModules["Selector"].facetData;

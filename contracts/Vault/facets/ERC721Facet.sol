@@ -30,53 +30,32 @@ contract ERC721Facet {
         LibTokens._safeInputERC721Token(_token, _tokenID);
     }
 
-    function safeDepositERC721TokenAndCall(
-        address _token,
-        uint256 _tokenID,
-        bytes calldata data
-    ) external {
+    function safeDepositERC721TokenAndCall(address _token, uint256 _tokenID, bytes calldata data) external {
         //LibDMSGuards._onlyVaultOwner();
         LibTokens._safeInputERC721TokenAndCall(_token, _tokenID, data);
     }
 
     //WITHDRAWALS
 
-    function withdrawERC721Token(
-        address _token,
-        uint256 _tokenID,
-        address _to
-    ) public {
+    function withdrawERC721Token(address _token, uint256 _tokenID, address _to) public {
         LibGuards._onlyVaultOwner();
         LibTokens._withdrawERC721Token(_token, _tokenID, _to);
     }
 
     //APPROVALS
-    function approveSingleERC721Token(
-        address _token,
-        address _to,
-        uint256 _tokenID
-    ) external {
+    function approveSingleERC721Token(address _token, address _to, uint256 _tokenID) external {
         LibGuards._onlyVaultOwner();
         LibTokens._approveERC721Token(_token, _tokenID, _to);
     }
 
-    function approveAllERC721Token(
-        address _token,
-        address _to,
-        bool _approved
-    ) external {
+    function approveAllERC721Token(address _token, address _to, bool _approved) external {
         LibGuards._onlyVaultOwner();
         LibTokens._approveAllERC721Token(_token, _to, _approved);
     }
 
     //DEPOSIT COMPATIBILITY
 
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes memory
-    ) public pure returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes memory) public pure returns (bytes4) {
         return ERC721WithCall;
     }
 }

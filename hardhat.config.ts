@@ -25,23 +25,25 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      forking: {
-        url: process.env.MATIC_URL,
-        timeout: 8000000,
-      },
-      blockGasLimit: 20000000,
-      timeout: 120000,
-      gas: "auto",
+      ...(process.env.MATIC_URL
+        ? {
+            forking: {
+              url: process.env.MATIC_URL,
+            },
+          }
+        : {}),
+      blockGasLimit: 20_000_000,
+      // NOTE: set a fixed chainId so deployments are deterministic across forks
+      chainId: 31337,
     },
     localhost: {
-      timeout: 8000000,
+      chainId: 31337,
     },
     matic: {
-      url: process.env.MATIC_URL,
-      accounts: [process.env.SECRET],
-      blockGasLimit: 200000000000,
-      gasPrice: 10000000000,
-      timeout: 90000,
+      url: process.env.MATIC_URL || "",
+      accounts: process.env.SECRET ? [process.env.SECRET] : [],
+      blockGasLimit: 200_000_000_000,
+      gasPrice: 10_000_000_000,
     },
   },
   gasReporter: {

@@ -205,20 +205,12 @@ contract DMSFacet {
         LibDMS._allocateEther(_inheritors, _ethShares);
     }
 
-    function allocateERC20Tokens(
-        address token,
-        address[] calldata _inheritors,
-        uint256[] calldata _shares
-    ) external {
+    function allocateERC20Tokens(address token, address[] calldata _inheritors, uint256[] calldata _shares) external {
         LibGuards._onlyVaultOwner();
         LibDMS._allocateERC20Tokens(token, _inheritors, _shares);
     }
 
-    function allocateERC721Tokens(
-        address token,
-        address[] calldata _inheritors,
-        uint256[] calldata _tokenIDs
-    ) external {
+    function allocateERC721Tokens(address token, address[] calldata _inheritors, uint256[] calldata _tokenIDs) external {
         LibGuards._onlyVaultOwner();
         LibDMS._allocateERC721Tokens(token, _inheritors, _tokenIDs);
     }

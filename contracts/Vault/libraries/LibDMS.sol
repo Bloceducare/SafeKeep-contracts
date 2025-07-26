@@ -23,11 +23,8 @@ library LibDMS {
     event ERC20TokensAllocated(address indexed token, address[] inheritors, uint256[] amounts, uint256 vaultID);
     event ERC721TokensAllocated(address indexed token, address inheritor, uint256 tokenID, uint256 vaultID);
     event ERC1155TokensAllocated(address indexed token, address inheritor, uint256 tokenID, uint256 amount, uint256 vaultID);
-
     event EthClaimed(address indexed inheritor, uint256 _amount, uint256 vaultID);
-
     event ERC20TokensClaimed(address indexed inheritor, address indexed token, uint256 amount, uint256 vaultID);
-
     event ERC721TokenClaimed(address indexed inheritor, address indexed token, uint256 tokenID, uint256 vaultID);
     event ERC1155TokensClaimed(address indexed inheritor, address indexed token, uint256 tokenID, uint256 amount, uint256 vaultID);
 
@@ -196,8 +193,10 @@ library LibDMS {
             if (!LibDMSGuards._activeInheritor(_inheritors[k])) {
                 revert InactiveInheritor();
             }
-            // update storage
-            dmsData.inheritorWeishares[_inheritors[k]] = _ethShares[k];
+            if (_ethShares[k] > 0) {
+                // update storage
+                dmsData.inheritorWeishares[_inheritors[k]] = _ethShares[k];
+            }
             //make sure limit isn't exceeded
             if (getCurrentAllocatedEth() > address(this).balance) {
                 revert EtherAllocationOverflow(getCurrentAllocatedEth() - address(this).balance);
@@ -207,11 +206,7 @@ library LibDMS {
         emit EthAllocated(_inheritors, _ethShares, LibDiamond.vaultID());
     }
 
-    function _allocateERC20Tokens(
-        address token,
-        address[] calldata _inheritors,
-        uint256[] calldata _shares
-    ) internal {
+    function _allocateERC20Tokens(address token, address[] calldata _inheritors, uint256[] calldata _shares) internal {
         if (_inheritors.length == 0 || _shares.length == 0) {
             revert LibErrors.EmptyArray();
         }
@@ -238,7 +233,6 @@ library LibDMS {
                 dmsData.inheritorActiveTokens[_inheritors[k]][token] = false;
             }
             //finally check that limit isn't exceeded
-            //get vault token balance
             uint256 currentBalance = IERC20(token).balanceOf(address(this));
             if (getCurrentAllocatedTokens(token) > currentBalance) {
                 revert TokenAllocationOverflow(token, getCurrentAllocatedTokens(token) - currentBalance);
@@ -248,11 +242,7 @@ library LibDMS {
         emit ERC20TokensAllocated(token, _inheritors, _shares, LibDiamond.vaultID());
     }
 
-    function _allocateERC721Tokens(
-        address _token,
-        address[] calldata _inheritors,
-        uint256[] calldata _tokenIDs
-    ) internal {
+    function _allocateERC721Tokens(address _token, address[] calldata _inheritors, uint256[] calldata _tokenIDs) internal {
         if (_inheritors.length == 0 || _tokenIDs.length == 0) {
             revert LibErrors.EmptyArray();
         }
